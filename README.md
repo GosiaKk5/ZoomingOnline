@@ -1,8 +1,38 @@
 # ZoomingOnline
 
-## s3 configuration step by step
+## Prerequisites
 
-1. Install and configure MinIO client (mc) on your local machine.
+- Python 3.10 or higher
+- Access to a MinIO server (e.g., Cyfronet S3P)
+
+## Project setup
+
+1. Clone the repository.
+2. Navigate to the project directory.
+3. Install virtual environment and activate it.
+
+```bash
+# For Linux/MacOS
+python3 -m venv venv
+
+source venv/bin/activate
+
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# For Windows
+python -m venv venv
+venv\Scripts\activate
+
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+4. Create `.env` file in the root directory of the project following the example `.env.template` file. Make sure to set the `S3_BUCKET_NAME` variable to the name of your bucket, e.g., `zarr-test-iza`.
+
+## S3 configuration step by step
+
+1. Install and configure MinIO client (mc) on your local machine (if not already installed).
 
 ```bash
 mkdir -p ~/.local/bin
@@ -24,30 +54,32 @@ mc alias set cyf-s3p https://s3p.cloud.cyfronet.pl ACCESS_KEY SECRET_KEY
 mc cp --recursive sample_dataset.zarr cyf-s3p/zarr-test-iza/
 ```
 
-4. To automate the process via slurm, you can use the zarr_upload.sh script below. Make sure to adjust the paths and credentials accordingly.
+## Importing data from HDF5 format to S3 with conversion to Zarr
+
+To automate the process, you can use the `run_importer.slurm` script below. Make sure to adjust the paths and credentials accordingly.
+It will run a Python script that imports data from HDF5 files and uploads it to the S3 bucket in Zarr format. The conversion is done using the `hdf5_to_zarr_importer`.
 
 ```bash
 #!/bin/bash
-#SBATCH --job-name=zarr-upload
-#SBATCH --output=zarr_job.log
-#SBATCH --error=zarr_job.err
+#SBATCH --job-name=import-hdf5
+#SBATCH --output=logs/import_%j.log
+#SBATCH --error=logs/import_%j.err
 #SBATCH --ntasks=1
-#SBATCH --time=00:15:00
-#SBATCH --mem=4G
+#SBATCH --time=00:30:00
+#SBATCH --mem=8G
 
 module load python/3.10.4
-source ~/your-venv-path/bin/activate
 
-python3 ~/Documents/studia_sem_8/LSC/projekt/generate_zarr.py
+source ~/YOUR_REPO_PATH/venv/bin/activate
 
-~/.local/bin/mc alias set cyf-s3p https://s3p.cloud.cyfronet.pl ACCESS_KEY SECRET_KEY
-~/.local/bin/mc cp --recursive ~/Documents/studia_sem_8/LSC/projekt/sample_dataset.zarr cyf-s3p/zarr-test-iza/
+python ~/YOUR_REPO_PATH/data_to_s3_importer.py ~/YOUR_REPO_PATH/data/
+
 ```
 
 5. Submit the job to the Slurm scheduler.
 
 ```bash
-sbatch zarr_upload.sh
+sbatch run_importer.slurm
 ```
 
 ## Running application

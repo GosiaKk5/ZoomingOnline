@@ -1,1 +1,8 @@
 .env
+/logs/*
+/data/*
+
+/venv
+/hdf5_to_zarr_converter/__pycache__
+
+test_data.h5
