@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Raw Data Analysis Plot</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .controls {
+            margin-bottom: 1.5rem;
+        }
+        #reset-button, #load-button {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #reset-button:hover, #load-button:hover {
+            background-color: #0056b3;
+        }
+        .chart-container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .main-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .chart {
+            margin-bottom: 2.5rem;
+        }
+        .brush .selection {
+            fill: rgba(0, 123, 255, 0.2);
+            stroke: #007bff;
+        }
+        .context-rect {
+            fill: red;
+            fill-opacity: 0.15;
+            stroke: red;
+            stroke-width: 1.5px;
+            stroke-dasharray: 4, 2;
+        }
+        .loading-text {
+            font-size: 1rem;
+            font-style: italic;
+            fill: #888;
+            text-anchor: middle;
+        }
+        #input-container {
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        #zarr-input {
+            font-size: 1rem;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 0.5rem;
+            width: 350px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="input-container" style="display: none;">
+    <h3>Load Zarr Data</h3>
+    <p>Please enter the full URL to your .zarr file.</p>
+    <input type="text" id="zarr-input" placeholder="http://localhost:8000/my_data.zarr">
+    <button id="load-button">Load Data</button>
+</div>
+
+<div class="controls" style="display: none;">
+    <button id="reset-button">Reset Zoom</button>
+</div>
+
+<div id="chart-container" class="chart-container" style="display: none;">
+    <div id="main-title" class="main-title"></div>
+    <div id="context-chart" class="chart"></div>
+    <div id="detail-chart" class="chart"></div>
+</div>
+
+<script type="module">
+    const { openArray, slice } = await import("https://cdn.skypack.dev/zarr");
+
+    /**
+     * Reads raw data from a Zarr store and plots it using D3.js.
+     * @param {string} fullUrl - The full URL to the Zarr store.
+     */
+    async function plotRawData(fullUrl) {
+        try {
+            // Show plotting UI
+            document.querySelector('.controls').style.display = 'block';
+            document.querySelector('.chart-container').style.display = 'block';
+
+            // --- General Config ---
+            const margin = { top: 40, right: 40, bottom: 50, left: 60 };
+            const fullWidth = 900;
+            const contextHeight = 200;
+            const detailHeight = 400;
+            const width = fullWidth - margin.left - margin.right;
+
+            // --- Open Zarr Store ---
+            const trc_file_no = 0;
+            const segment_no = 0;
+            const channel_no = 0;
+
+            console.log(`Attempting to open Zarr store: ${fullUrl}`);
+            const store = await openArray({ store: fullUrl, mode: 'r' });
+            const no_of_samples = store.shape[3];
+            document.getElementById('main-title').innerText = "Raw Data Analysis";
+
+            // --- Setup Detail Chart SVG first to show loading text ---
+            const svgDetail = d3.select("#detail-chart").append("svg").attr("viewBox", `0 0 ${fullWidth} ${detailHeight}`).append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+            const loadingText = svgDetail.append("text").attr("class", "loading-text").attr("x", width / 2).attr("y", (detailHeight - margin.top - margin.bottom) / 2).text("Loading overview...").style("display", "block");
+
+            // --- Create Downsampled Overview by chunking, not loading all data ---
+            console.log("Creating downsampled overview by fetching chunks...");
+            const target_overview_points = 2000; // Target number of points for the overview
+            const overview_step = Math.max(1, Math.floor(no_of_samples / target_overview_points));
+            const overviewData = [];
+            let globalYMin = Infinity;
+            let globalYMax = -Infinity;
+
+            for (let i = 0; i < no_of_samples; i += overview_step) {
+                const start = i;
+                const end = Math.min(i + overview_step, no_of_samples);
+                if (start >= end) continue;
+
+                const chunkSlice = await store.get([channel_no, trc_file_no, segment_no, slice(start, end)]);
+                const chunkData = chunkSlice.data;
+                let min = Infinity, max = -Infinity;
+                for (const val of chunkData) {
+                    if (val < min) min = val;
+                    if (val > max) max = val;
+                }
+
+                if (min < globalYMin) globalYMin = min;
+                if (max > globalYMax) globalYMax = max;
+
+                overviewData.push({ index: start + (end - start) / 2, min, max });
+            }
+            console.log("Overview created.");
+            loadingText.style.display = "none";
+
+            // --- Scales ---
+            const xContext = d3.scaleLinear().domain([0, no_of_samples - 1]).range([0, width]);
+            const yContext = d3.scaleLinear().domain([globalYMin, globalYMax]).range([contextHeight - margin.top - margin.bottom, 0]).nice();
+            const xDetail = d3.scaleLinear().range([0, width]);
+            const yDetail = d3.scaleLinear().range([detailHeight - margin.top - margin.bottom, 0]);
+
+            // --- Context Chart (Top) ---
+            const svgContext = d3.select("#context-chart").append("svg").attr("viewBox", `0 0 ${fullWidth} ${contextHeight}`).append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+            svgContext.append("path").datum(overviewData).attr("fill", "cornflowerblue").attr("d", d3.area().x(d => xContext(d.index)).y0(d => yContext(d.min)).y1(d => yContext(d.max)));
+            svgContext.append("g").call(d3.axisLeft(yContext).ticks(3));
+            svgContext.append("g").attr("transform", `translate(0,${contextHeight - margin.top - margin.bottom})`).call(d3.axisBottom(xContext));
+            const contextRect = svgContext.append("rect").attr("class", "context-rect");
+
+            // --- Finish Detail Chart (Bottom) Setup ---
+            svgDetail.append("defs").append("clipPath").attr("id", "clip-detail").append("rect").attr("width", width).attr("height", detailHeight - margin.top - margin.bottom);
+            const xAxisDetail = svgDetail.append("g").attr("transform", `translate(0,${detailHeight - margin.top - margin.bottom})`);
+            const yAxisDetail = svgDetail.append("g");
+            const detailOverviewPath = svgDetail.append("path").attr("fill", "cornflowerblue").attr("clip-path", "url(#clip-detail)");
+            const detailFullPath = svgDetail.append("path").attr("fill", "none").attr("stroke", "seagreen").attr("stroke-width", 1.5).attr("clip-path", "url(#clip-detail)");
+            svgDetail.append("text").attr("transform", `translate(${width / 2}, ${detailHeight - margin.bottom + 15})`).style("text-anchor", "middle").text("Sample Index");
+            svgDetail.append("text").attr("transform", "rotate(-90)").attr("y", -margin.left + 15).attr("x", -(detailHeight / 2) + margin.top).style("text-anchor", "middle").text("ADC Value");
+
+            // --- Update Function ---
+            const detailThreshold = 20000;
+            async function updateDetailChart(domain) {
+                const visibleDomainWidth = domain[1] - domain[0];
+                xDetail.domain(domain);
+
+                detailOverviewPath.style("display", "none");
+                detailFullPath.style("display", "none");
+                loadingText.style("display", "none");
+
+                if (visibleDomainWidth >= detailThreshold) {
+                    const filteredOverview = overviewData.filter(d => d.index >= domain[0] && d.index <= domain[1]);
+                    const yMin = d3.min(filteredOverview, d => d.min);
+                    const yMax = d3.max(filteredOverview, d => d.max);
+                    yDetail.domain([yMin || globalYMin, yMax || globalYMax]).nice();
+                    detailOverviewPath.style("display", "block").datum(overviewData).attr("d", d3.area().x(d => xDetail(d.index)).y0(d => yDetail(d.min)).y1(d => yDetail(d.max)));
+                } else {
+                    loadingText.style("display", "block").text("Loading detailed data...");
+                    const startIndex = Math.max(0, Math.floor(domain[0]));
+                    const endIndex = Math.min(no_of_samples, Math.ceil(domain[1]));
+
+                    const chunkData = await store.get([channel_no, trc_file_no, segment_no, slice(startIndex, endIndex)]);
+                    const detailData = Array.from(chunkData.data).map((v, i) => ({ index: startIndex + i, value: v }));
+
+                    loadingText.style("display", "none");
+                    yDetail.domain(d3.extent(detailData, d => d.value) || [0,0]).nice();
+                    detailFullPath.style("display", "block").datum(detailData).attr("d", d3.line().x(d => xDetail(d.index)).y(d => yDetail(d.value)));
+                }
+
+                xAxisDetail.call(d3.axisBottom(xDetail));
+                yAxisDetail.call(d3.axisLeft(yDetail));
+                contextRect.attr("x", xContext(domain[0])).attr("width", xContext(domain[1]) - xContext(domain[0])).attr("y", 0).attr("height", contextHeight - margin.top - margin.bottom);
+            }
+
+            // --- Brush Logic ---
+            const brushContext = d3.brushX().extent([[0, 0], [width, contextHeight - margin.top - margin.bottom]]).on("end", async ({ selection }) => {
+                if (selection) {
+                    const domain = selection.map(xContext.invert, xContext);
+                    await updateDetailChart(domain);
+                    svgContext.select(".brush").call(brushContext.move, null);
+                }
+            });
+            svgContext.append("g").attr("class", "brush").call(brushContext);
+
+            const brushDetail = d3.brushX().extent([[0, 0], [width, detailHeight - margin.top - margin.bottom]]).on("end", async ({ selection }) => {
+                if (selection) {
+                    const domain = selection.map(xDetail.invert, xDetail);
+                    await updateDetailChart(domain);
+                    svgDetail.select(".brush").call(brushDetail.move, null);
+                }
+            });
+            svgDetail.append("g").attr("class", "brush").call(brushDetail);
+
+            // --- Initial State and Reset ---
+            const initialDomain = [0, no_of_samples - 1];
+            await updateDetailChart(initialDomain);
+            d3.select("#reset-button").on("click", () => updateDetailChart(initialDomain));
+
+        } catch (error) {
+            console.error("Failed to load or plot data:", error);
+            document.getElementById('chart-container').innerHTML = `<div id="error-message" style="color: red; text-align: center; padding: 2rem;"><h3>Error loading data</h3><p>Could not connect to the Zarr data server or the specified path was not found.</p><p><i>Details: ${error.message}</i></p></div>`;
+        }
+    }
+
+    // --- Main Execution Logic ---
+    function initialize() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const zarrUrl = urlParams.get('zarrUrl');
+
+        if (zarrUrl) {
+            // If URL parameter exists, load data directly
+            plotRawData(zarrUrl);
+        } else {
+            // Otherwise, show the input form
+            const inputContainer = document.getElementById('input-container');
+            inputContainer.style.display = 'block';
+
+            document.getElementById('load-button').addEventListener('click', () => {
+                const zarrUrlInput = document.getElementById('zarr-input').value;
+                if (!zarrUrlInput) {
+                    alert("Please enter a URL.");
+                    return;
+                }
+                // Hide input and start plotting
+                inputContainer.style.display = 'none';
+                plotRawData(zarrUrlInput);
+            });
+        }
+    }
+
+    initialize();
+
+</script>
+
+</body>
+</html>
