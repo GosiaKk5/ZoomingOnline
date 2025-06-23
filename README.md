@@ -94,3 +94,9 @@ If you don't have zarr file you can create one by seting `CREATE_ZARR_STORE` var
 file. This will create a dummy zar file.
 
 Then you can open index.html in your browser to see the data.
+
+## GitHub Pages
+
+The application is available at: [https://gosiakk5.github.io/ZoomingOnline/](https://gosiakk5.github.io/ZoomingOnline/).  
+After each push to the `main` branch, the `index.html` file is automatically deployed via the pipeline.
+
