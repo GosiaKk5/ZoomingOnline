@@ -4,14 +4,14 @@ import zarr
 import numpy as np
 import numcodecs
 import shutil
-import os
+from pathlib import Path
 
 PORT = 8000
-
 CREATE_ZARR_STORE = False
 
 def create_zarr_store(path="dummy_scope_data.zarr"):
-    if os.path.isdir(path):
+    path = Path(path)
+    if path.is_dir():
         print(f"Removing existing Zarr store: {path}")
         shutil.rmtree(path)
 
@@ -44,7 +44,7 @@ def create_zarr_store(path="dummy_scope_data.zarr"):
 
     compressor = numcodecs.Blosc(cname='zstd', clevel=3, shuffle=2)
     store = zarr.open(
-        path,
+        str(path),
         mode='w',
         shape=samples_adc.shape,
         chunks=(1, 1, 1, 100000),
