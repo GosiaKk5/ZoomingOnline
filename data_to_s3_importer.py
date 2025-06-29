@@ -7,6 +7,7 @@ import zarr
 import s3fs
 import boto3
 from botocore.config import Config
+from pathlib import Path
 
 load_dotenv()
 
@@ -23,6 +24,8 @@ parser = argparse.ArgumentParser(description="Convert .h5 files to Zarr and uplo
 parser.add_argument("input_folder", help="Folder with .h5 files")
 args = parser.parse_args()
 
+input_folder = Path(args.input_folder)
+
 session = boto3.session.Session()
 
 s3 = s3fs.S3FileSystem(
@@ -37,21 +40,17 @@ s3 = s3fs.S3FileSystem(
     anon=False
 )
 
-for filename in os.listdir(args.input_folder):
+for filename in os.listdir(input_folder):
     if filename.endswith(".h5"):
-        h5_path = os.path.join(args.input_folder, filename)
+        h5_path = input_folder / filename
         zarr_name = filename.replace(".h5", ".zarr")
-        zarr_local_path = os.path.join(args.input_folder, zarr_name)
-
+        zarr_local_path = input_folder / zarr_name
         print(f"\nConverting {h5_path} → {zarr_local_path}")
-        main.convert_hdf5_to_zarr(h5_path, zarr_local_path)
-
+        main.convert_hdf5_to_zarr(str(h5_path), str(zarr_local_path))
         print(f"Uploading {zarr_local_path} to S3 bucket: {S3_BUCKET_NAME}")
         s3_path = f"{S3_BUCKET_NAME}/{zarr_name}"
         store = s3fs.S3Map(root=f"s3://{s3_path}", s3=s3, check=False)
-
-        zarr.copy_store(zarr.DirectoryStore(zarr_local_path), store, if_exists='replace')
-
+        zarr.copy_store(zarr.DirectoryStore(str(zarr_local_path)), store, if_exists='replace')
         print(f"Uploaded to s3://{s3_path}")
 
         shutil.rmtree(zarr_local_path)
