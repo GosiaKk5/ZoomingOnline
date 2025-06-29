@@ -1,8 +1,70 @@
+# Local environment config
 .env
+
+# Logs
 /logs/*
+*.log
+*.out
+slurm-*.out
+
+# Data
 /data/*
-
-/venv
-/hdf5_to_zarr_converter/__pycache__
-
 test_data.h5
+*.h5
+*.hdf5
+*.zarr/
+*.tmp
+
+# Python cache & compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Python virtual environments
+/venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.Python
+
+# Python packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Jupyter notebooks and checkpoints
+.ipynb_checkpoints/
+
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS-specific files
+.DS_Store
+Thumbs.db
