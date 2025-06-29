@@ -1,15 +1,17 @@
 import http.server
-import socketserver
-import zarr
-import numpy as np
-import numcodecs
 import shutil
+import socketserver
 from pathlib import Path
+
+import numcodecs
+import numpy as np
+import zarr
 
 PORT = 8000
 CREATE_ZARR_STORE = False
 
-def create_zarr_store(path="dummy_scope_data.zarr"):
+
+def create_zarr_store(path: str = "dummy_scope_data.zarr") -> None:
     path = Path(path)
     if path.is_dir():
         print(f"Removing existing Zarr store: {path}")
@@ -26,7 +28,8 @@ def create_zarr_store(path="dummy_scope_data.zarr"):
     offset = -0.2
 
     time_s = np.arange(no_of_samples) * horiz_interval
-    voltage_v = np.random.normal(0, 0.01, size=no_of_samples)
+    rng = np.random.default_rng()
+    voltage_v = rng.normal(0, 0.01, size=no_of_samples)
     voltage_v += 0.1 * np.sin(2 * np.pi * 5e3 * time_s)
 
     feature_start_idx = int(443.5e-6 / horiz_interval)
@@ -36,28 +39,25 @@ def create_zarr_store(path="dummy_scope_data.zarr"):
     feature_signal = -0.05 * np.exp(-feature_time) * np.sin(2 * np.pi * 50 * feature_time)
     voltage_v[feature_start_idx:feature_end_idx] += feature_signal
 
-    samples_adc = np.zeros((num_channels, num_trc_files, num_segments, no_of_samples), dtype='int16')
+    samples_adc = np.zeros((num_channels, num_trc_files, num_segments, no_of_samples), dtype="int16")
     for ch in range(num_channels):
         ch_offset = ch * 0.05
         adc = (voltage_v + ch_offset + offset) / gain
-        samples_adc[ch, 0, 0, :] = adc.astype('int16')
+        samples_adc[ch, 0, 0, :] = adc.astype("int16")
 
-    compressor = numcodecs.Blosc(cname='zstd', clevel=3, shuffle=2)
+    compressor = numcodecs.Blosc(cname="zstd", clevel=3, shuffle=2)
     store = zarr.open(
-        str(path),
-        mode='w',
-        shape=samples_adc.shape,
-        chunks=(1, 1, 1, 100000),
-        compressor=compressor,
-        dtype='int16'
+        str(path), mode="w", shape=samples_adc.shape, chunks=(1, 1, 1, 100000), compressor=compressor, dtype="int16"
     )
 
     store[:] = samples_adc
 
+
 class CORSRequestHandler(http.server.SimpleHTTPRequestHandler):
-    def end_headers(self):
-        self.send_header('Access-Control-Allow-Origin', '*')
+    def end_headers(self) -> None:
+        self.send_header("Access-Control-Allow-Origin", "*")
         super().end_headers()
+
 
 with socketserver.TCPServer(("", PORT), CORSRequestHandler) as httpd:
     if CREATE_ZARR_STORE:
