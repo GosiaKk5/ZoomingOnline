@@ -1,0 +1,35 @@
+[project]
+name = "zooming"
+version = "0.1.0"
+description = "Zooming online"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "boto3>=1.38.46",
+    "dotenv>=0.9.9",
+    "h5py>=3.14.0",
+    "s3fs>=0.4.2",
+    "zarr>=2.18.3",
+]
+
+[[package]]
+name = "zooming"
+version = "0.1.0"
+source = { virtual = "." }
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["COM812", "T201", "D100", "D101", "D102", "D103", "D104"]
+
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+
+[dependency-groups]
+dev = [
+    "ruff>=0.12.1",
+]
