@@ -1,0 +1,24 @@
+name: PR Checks
+
+on:
+  pull_request:
+
+jobs:
+  checks:
+    name: Run Linting and Build Site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install required tools
+        run: |
+          pip install ruff
+
+      - name: Run check.sh
+        run: bash ci_scripts/check.sh

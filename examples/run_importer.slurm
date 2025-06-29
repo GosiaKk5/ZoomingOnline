@@ -6,8 +6,8 @@
 #SBATCH --time=00:30:00
 #SBATCH --mem=8G
 
-module load python/3.10.4
+module load python/3.11.4
 
 source ~/YOUR_REPO_PATH/venv/bin/activate
 
-python ~/YOUR_REPO_PATH/data_to_s3_importer.py ~/YOUR_REPO_PATH/data/
+python ~/YOUR_REPO_PATH/src/data_to_s3_importer.py ~/YOUR_REPO_PATH/data/
