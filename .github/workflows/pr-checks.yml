@@ -18,7 +18,7 @@ jobs:
 
       - name: Install required tools
         run: |
-          pip install ruff
+          pip install ruff pytest
 
       - name: Run check.sh
         run: bash ci_scripts/check.sh
