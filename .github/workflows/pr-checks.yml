@@ -5,7 +5,7 @@ on:
 
 jobs:
   checks:
-    name: Run Linting and Build Site
+    name: Run Checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -18,7 +18,7 @@ jobs:
 
       - name: Install required tools
         run: |
-          pip install ruff pytest
+          pip install -e .
 
       - name: Run check.sh
         run: bash ci_scripts/check.sh
