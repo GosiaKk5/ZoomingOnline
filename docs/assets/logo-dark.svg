@@ -1,0 +1,17 @@
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="45" cy="45" r="35" fill="#1f2937" />
+     <clipPath id="lens-clip-dark">
+        <circle cx="45" cy="45" r="32" />
+    </clipPath>
+
+    <g clip-path="url(#lens-clip-dark)">
+        <path d="M 15,45 Q 25,20 35,45" stroke="#60a5fa" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M 35,45 Q 45,70 55,45" stroke="#60a5fa" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M 55,45 Q 65,20 75,45" stroke="#60a5fa" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <line x1="35" y1="20" x2="35" y2="70" stroke="#4b5563" stroke-width="1" stroke-dasharray="2 2"/>
+        <line x1="55" y1="20" x2="55" y2="70" stroke="#4b5563" stroke-width="1" stroke-dasharray="2 2"/>
+    </g>
+
+    <circle cx="45" cy="45" r="35" stroke="#93c5fd" stroke-width="5" fill="none"/>
+    <line x1="68" y1="68" x2="90" y2="90" stroke="#93c5fd" stroke-width="8" stroke-linecap="round"/>
+</svg>
