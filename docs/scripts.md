@@ -10,38 +10,70 @@ python src/<script>.py --help
 
 ## 1️⃣ generate_data.py
 
-Generate synthetic oscilloscope-style waveform data (realistic int16 ADC signal) and save as .zarr or .h5.
+Simulate realistic oscilloscope waveform data and export to Zarr or HDF5.
 
-### ▶ Summary
+✔️ Use for testing downstream pipelines, visualization, or storage behavior with large-scale structured time series.
 
-- Simulates 3-channel analog signal
-- Includes sine + noise + synthetic feature (event "blip")
-- Output: int16 array, default size = 3 × 1 × 1 × 100_000_000
-- Time step ≈ 2 ns (500 MHz sampling)
-- Default output: Zarr, chunked along time axis
+### ✅ Features
 
-### 💾 Output Details
+- Structured waveform data: shape = (channels, trcs, segments, samples)
+- Supports multiple signal types: sine, square, sawtooth, pulse
+- Adds:
+    - Random timing jitter
+    - Glitches (random spikes)
+    - Embedded synthetic event (simulated pulse)
+    - DC drift
+    - Gaussian noise
+- Embeds physical metadata: horizontal interval, gain, offset (in Zarr attributes)
 
-| Format | Compression    | Chunks             |
-|--------|----------------|--------------------|
-| Zarr   | Blosc-Zstd     | (1, 1, 1, 100_000) |
-| HDF5   | Gzip (level=4) | (1, 1, 1, 100_000) |
-
-📐 Shape: (channels, files, segments, samples)
-
-### 🛠 Usage
+### ⚙️ Example Usage
 
 ```bash
-python src/generate_data.py -o waveform.zarr
-python src/generate_data.py -n 1000000 -o waveform.h5
+# Generate 100M-sample sine signal with 2 channels and save as Zarr
+python src/generate_data.py -o output.zarr --channels 2 --samples 1e8
+
+# Generate HDF5 with sawtooth wave, 3 segments
+python src/generate_data.py -o output.h5 --signal sawtooth --segments 3
 ```
+
+### 📐 Data Shape
+
+Default shape:
+
+```python
+(channels=2, trcs=1, segments=3, samples=100_000_000)
+```
+
+Dimensions:
+
+| Axis         | Meaning                         |
+|--------------|---------------------------------|
+| 0 (channels) | Oscilloscope input channels     |
+| 1 (trcs)     | "TRC" files (e.g. recordings)   |
+| 2 (segments) | Repeated waveform segments      |
+| 3 (samples)  | Time-domain samples per segment |
+
+Chunking: (1, 1, 1, 100_000) — efficient slicing along sample axis
+
+### 💾 Output Format + Metadata
+
+| Format | Compression    | Includes Attributes          |
+|--------|----------------|------------------------------|
+| Zarr   | Blosc-Zstd     | horiz_interval, gain, offset |
+| HDF5   | Gzip (level 4) | No metadata (raw array)      |
+
+---
 
 ### Flags:
 
-| Flag          | Description                               |
-|---------------|-------------------------------------------|
-| -o, --output  | Output file (.zarr or .h5)                |
-| -n, --samples | Number of samples (default = 100_000_000) |
+| Flag         | Description                                       |
+|--------------|---------------------------------------------------|
+| -o, --output | Output file path (.zarr or .h5)                   |
+| --samples    | Samples per segment (default: 100_000_000)        |
+| --channels   | Number of input channels (default: 2)             |
+| --trcs       | Number of TRC (recording) files (default: 1)      |
+| --segments   | Segments per channel (default: 3)                 |
+| --signal     | Base waveform type: sine, square, sawtooth, pulse |
 
 ## 2️⃣ convert_hdf5_to_zarr.py
 

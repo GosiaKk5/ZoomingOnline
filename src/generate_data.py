@@ -6,38 +6,117 @@ import h5py
 import numcodecs
 import numpy as np
 import zarr
+from numpy.random import Generator
 
 
-def generate_dummy_data(num_samples: int = int(1e8), num_channels: int = 3) -> np.ndarray:
-    horiz_interval = 2e-9
-    gain = 1e-4
-    offset = -0.2
+def generate_signal(signal_type: str, time_s: np.ndarray, freq_hz: float = 50.0) -> np.ndarray:
+    if signal_type == "sine":
+        return 0.1 * np.sin(2 * np.pi * freq_hz * time_s)
+    if signal_type == "square":
+        return 0.1 * np.sign(np.sin(2 * np.pi * freq_hz * time_s))
+    if signal_type == "sawtooth":
+        return 0.1 * (2 * (time_s * freq_hz - np.floor(0.5 + time_s * freq_hz)))
+    if signal_type == "pulse":
+        period = 1 / freq_hz
+        pulse_width = period / 20
+        phase = time_s % period
+        return np.where(phase < pulse_width, 0.2, 0.0)
+    message = f"Unknown signal type: {signal_type}"
+    raise ValueError(message)
 
-    time_s = np.arange(num_samples) * horiz_interval
-    rng = np.random.default_rng()
-    voltage_v = rng.normal(0, 0.01, size=num_samples)
-    voltage_v += 0.1 * np.sin(2 * np.pi * 5e3 * time_s)
 
+def add_feature(voltage_v: np.ndarray, time_s: np.ndarray) -> np.ndarray:
+    horiz_interval = time_s[1] - time_s[0] if len(time_s) > 1 else 2e-9
     feature_start_idx = int(443.5e-6 / horiz_interval)
     feature_end_idx = int(443.75e-6 / horiz_interval)
+    if feature_end_idx > len(voltage_v):
+        return voltage_v
+
     feature_len = feature_end_idx - feature_start_idx
     feature_time = np.linspace(0, 20, feature_len)
     feature_signal = -0.05 * np.exp(-feature_time) * np.sin(2 * np.pi * 50 * feature_time)
     voltage_v[feature_start_idx:feature_end_idx] += feature_signal
+    return voltage_v
 
-    samples_adc = np.zeros((num_channels, 1, 1, num_samples), dtype="int16")
+
+def add_glitches(voltage_v: np.ndarray, num_glitches: int, rng: Generator) -> np.ndarray:
+    for _ in range(num_glitches):
+        idx = rng.integers(0, len(voltage_v))
+        polarity = rng.choice([-1, 1])
+        amplitude = rng.uniform(0.05, 0.15)
+        voltage_v[idx] += polarity * amplitude
+    return voltage_v
+
+
+def add_dc_drift(voltage_v: np.ndarray, time_s: np.ndarray) -> np.ndarray:
+    drift = 0.01 * np.sin(2 * np.pi * 0.1 * time_s) + 0.005 * np.sin(2 * np.pi * 0.5 * time_s)
+    return voltage_v + drift
+
+
+def generate_realistic_data(
+    num_samples: int = int(1e6),
+    num_channels: int = 3,
+    num_trc_files: int = 2,
+    num_segments: int = 5,
+    signal_type: str = "sine",
+) -> tuple[np.ndarray, float, np.ndarray, np.ndarray]:
+    horiz_interval = 2e-9
+    base_gain = 1e-4
+    base_offset = -0.2
+
+    vertical_gains = np.zeros((num_channels, num_trc_files), dtype="float32")
+    vertical_offsets = np.zeros((num_channels, num_trc_files), dtype="float32")
+
+    samples_adc = np.zeros((num_channels, num_trc_files, num_segments, num_samples), dtype="int16")
+    rng = np.random.default_rng()
+
+    print("Generating data for each Channel, TRC File, and Segment...")
     for ch in range(num_channels):
-        ch_offset = ch * 0.05
-        adc = (voltage_v + ch_offset + offset) / gain
-        samples_adc[ch, 0, 0, :] = adc.astype("int16")
+        for trc in range(num_trc_files):
+            gain = base_gain * rng.uniform(0.98, 1.02)
+            offset = base_offset + rng.uniform(-0.01, 0.01)
+            vertical_gains[ch, trc] = gain
+            vertical_offsets[ch, trc] = offset
 
-    return samples_adc
+            for seg in range(num_segments):
+                time_s = np.arange(num_samples) * horiz_interval
+
+                jitter = rng.normal(0, horiz_interval * 0.05, size=num_samples)
+                time_s_jittered = time_s + jitter
+
+                voltage_v = generate_signal(signal_type, time_s_jittered)
+
+                voltage_v = add_feature(voltage_v, time_s)
+
+                voltage_v = add_dc_drift(voltage_v, time_s)
+
+                noise = rng.normal(0, 0.01, size=num_samples)
+                voltage_v += noise
+
+                voltage_v = add_glitches(voltage_v, num_glitches=3, rng=rng)
+
+                ch_offset = ch * 0.05
+
+                adc = (voltage_v + ch_offset + offset) / gain
+                samples_adc[ch, trc, seg, :] = np.clip(adc, -32768, 32767).astype("int16")
+
+                print(f"  - Generated: Chan {ch + 1}, TRC {trc + 1}, Seg {seg + 1}")
+
+    return samples_adc, horiz_interval, vertical_gains, vertical_offsets
 
 
-def save_zarr(path: Path, data: np.ndarray) -> None:
+def save_zarr(
+    path: Path,
+    data: np.ndarray,
+    horiz_interval: float,
+    vertical_gains: np.ndarray,
+    vertical_offsets: np.ndarray,
+) -> None:
     if path.exists():
+        print(f"Overwriting existing Zarr store: {path}")
         shutil.rmtree(path)
-    compressor = numcodecs.Blosc(cname="zstd", clevel=3, shuffle=2)
+
+    compressor = numcodecs.Blosc(cname="zstd", clevel=3, shuffle=numcodecs.Blosc.BITSHUFFLE)
     store = zarr.open(
         str(path),
         mode="w",
@@ -47,7 +126,12 @@ def save_zarr(path: Path, data: np.ndarray) -> None:
         dtype="int16",
     )
     store[:] = data
-    print(f"Saved Zarr store at: {path}")
+
+    store.attrs["horiz_interval"] = horiz_interval
+    store.attrs["vertical_gains"] = vertical_gains.tolist()
+    store.attrs["vertical_offsets"] = vertical_offsets.tolist()
+
+    print(f"Saved Zarr store with shape {data.shape} at: {path}")
 
 
 def save_hdf5(path: Path, data: np.ndarray) -> None:
@@ -55,12 +139,17 @@ def save_hdf5(path: Path, data: np.ndarray) -> None:
         print(f"Overwriting existing file: {path}")
         path.unlink()
     with h5py.File(path, "w") as f:
-        f.create_dataset("data", data=data, chunks=(1, 1, 1, 100000), compression="gzip", compression_opts=4)
-    print(f"Saved HDF5 file at: {path}")
+        f.create_dataset(
+            "data",
+            data=data,
+            compression="gzip",
+            compression_opts=4,
+        )
+    print(f"Saved HDF5 file with shape {data.shape} at: {path}")
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Generate dummy oscilloscope-like waveform data")
+    parser = argparse.ArgumentParser(description="Generate realistic dummy oscilloscope waveform data")
     parser.add_argument(
         "--output",
         "-o",
@@ -68,18 +157,32 @@ def main() -> None:
         required=True,
         help="Output path (.zarr directory or .h5 file)",
     )
+    parser.add_argument("--samples", type=int, default=int(1e8), help="Number of samples per segment")
+    parser.add_argument("--channels", type=int, default=2, help="Number of channels")
+    parser.add_argument("--trcs", type=int, default=1, help="Number of TRC files")
+    parser.add_argument("--segments", type=int, default=3, help="Number of segments")
     parser.add_argument(
-        "--samples", "-n", type=int, default=int(1e8), help="Number of samples to generate (default: 1e8)"
+        "--signal",
+        type=str,
+        default="sine",
+        choices=["sine", "square", "sawtooth", "pulse"],
+        help="Base signal type",
     )
     args = parser.parse_args()
     output_path = Path(args.output)
     ext = output_path.suffix.lower()
 
-    print(f"Generating dummy data with {args.samples} samples...")
-    data = generate_dummy_data(num_samples=args.samples)
+    print(f"Generating data with shape: ({args.channels}, {args.trcs}, {args.segments}, {args.samples})")
+    data, horiz_interval, vertical_gains, vertical_offsets = generate_realistic_data(
+        num_samples=args.samples,
+        num_channels=args.channels,
+        num_trc_files=args.trcs,
+        num_segments=args.segments,
+        signal_type=args.signal,
+    )
 
     if ext == ".zarr":
-        save_zarr(output_path, data)
+        save_zarr(output_path, data, horiz_interval, vertical_gains, vertical_offsets)
     elif ext in {".h5", ".hdf5"}:
         save_hdf5(output_path, data)
     else:
