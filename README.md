@@ -7,7 +7,6 @@
 
 <h1 align="center">ZoomingOnline</h1>
 
----
 
 ZoomingOnline is a web-based data visualization supporting the efficient and scalable Zarr format.
 
