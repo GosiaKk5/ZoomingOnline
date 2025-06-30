@@ -28,6 +28,7 @@ ZoomingOnline is a web-based data visualization supporting the efficient and sca
    ```
 4. View in browser: http://localhost:8000/website, website/index.html or on online
    at [https://gosiakk5.github.io/ZoomingOnline/](https://gosiakk5.github.io/ZoomingOnline/)
+5. In the input field enter http://localhost:8000/waveform.zarr or any other Zarr URL
 
 ## 📄 License
 

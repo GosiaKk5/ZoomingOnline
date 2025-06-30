@@ -10,14 +10,30 @@ python src/<script>.py --help
 
 ## 1️⃣ generate_data.py
 
-Generate large synthetic int16 waveform signals.
+Generate synthetic oscilloscope-style waveform data (realistic int16 ADC signal) and save as .zarr or .h5.
 
-✅ Supports output to Zarr or HDF5 formats.
+### ▶ Summary
 
-### Example:
+- Simulates 3-channel analog signal
+- Includes sine + noise + synthetic feature (event "blip")
+- Output: int16 array, default size = 3 × 1 × 1 × 100_000_000
+- Time step ≈ 2 ns (500 MHz sampling)
+- Default output: Zarr, chunked along time axis
+
+### 💾 Output Details
+
+| Format | Compression    | Chunks             |
+|--------|----------------|--------------------|
+| Zarr   | Blosc-Zstd     | (1, 1, 1, 100_000) |
+| HDF5   | Gzip (level=4) | (1, 1, 1, 100_000) |
+
+📐 Shape: (channels, files, segments, samples)
+
+### 🛠 Usage
 
 ```bash
-python src/generate_data.py -o synthetic_data.zarr
+python src/generate_data.py -o waveform.zarr
+python src/generate_data.py -n 1000000 -o waveform.h5
 ```
 
 ### Flags:
