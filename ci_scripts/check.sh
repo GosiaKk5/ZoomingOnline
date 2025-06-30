@@ -2,6 +2,6 @@
 set -e
 set -o pipefail
 
-ruff format --check .
-ruff check .
-pytest .
+uv run ruff format --check .
+uv run ruff check .
+uv run pytest .
