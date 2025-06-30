@@ -5,10 +5,14 @@ environment.
 
 ## Prerequisites
 
-- Python 3.10 or newer
+- Python 3.11 or newer
 - Git
 - Web browser
 - (Optional) Access to S3-compatible object storage (e.g., MinIO, Cyfronet S3P)
+
+> 📝 Note for Windows users: the h5py package requires HDF5 pre-installed and discoverable on your system. The build
+> process for h5py will fail if the HDF5 library (e.g. hdf5.dll) is not accessible. Please ensure you have HDF5 installed
+> appropriately (e.g., via conda or from https://www.hdfgroup.org/downloads/hdf5/).
 
 ## Option 1: Setup using uv (Recommended)
 
@@ -16,7 +20,7 @@ uv is a fast Python package manager and dependency resolver.
 
 ### 1. Install uv
 
-Please follow the [uv installation guide](https://docs.astral.sh/uv/getting-started/installation/).
+Please follow the uv installation guide: https://docs.astral.sh/uv/getting-started/installation/
 
 ### 2. Create .venv and install dependencies via uv
 
@@ -69,13 +73,13 @@ echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-Set s3 alias with your credentials.
+Set S3 alias with your credentials:
 
 ```bash
 mc alias set cyf-s3p https://s3p.cloud.cyfronet.pl ACCESS_KEY SECRET_KEY
 ```
 
-Upload data to the bucket.
+Upload data to the bucket:
 
 ```bash
 mc cp --recursive sample_dataset.zarr cyf-s3p/zarr-test-iza/
@@ -109,4 +113,3 @@ Submit the job to the Slurm scheduler:
 ```bash
 sbatch run_importer.slurm
 ```
-
