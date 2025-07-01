@@ -105,6 +105,14 @@ def generate_realistic_data(
     return samples_adc, horiz_interval, vertical_gains, vertical_offsets
 
 
+def create_overview(data_slice: np.ndarray, downsampling_factor: int) -> np.ndarray:
+    num_points_fit = len(data_slice) - (len(data_slice) % downsampling_factor)
+    reshaped = data_slice[:num_points_fit].reshape(-1, downsampling_factor)
+    max_values = np.max(reshaped, axis=1)
+    min_values = np.min(reshaped, axis=1)
+    return np.stack([min_values, max_values])
+
+
 def save_zarr(
     path: Path,
     data: np.ndarray,
@@ -117,21 +125,37 @@ def save_zarr(
         shutil.rmtree(path)
 
     compressor = numcodecs.Blosc(cname="zstd", clevel=3, shuffle=numcodecs.Blosc.BITSHUFFLE)
-    store = zarr.open(
-        str(path),
-        mode="w",
-        shape=data.shape,
-        chunks=(1, 1, 1, 100000),
-        compressor=compressor,
+
+    root = zarr.group(store=str(path))
+    root.attrs["horiz_interval"] = horiz_interval
+    root.attrs["vertical_gains"] = vertical_gains.tolist()
+    root.attrs["vertical_offsets"] = vertical_offsets.tolist()
+
+    print("Saving raw data...")
+    raw = root.create_dataset("raw", shape=data.shape, chunks=(1, 1, 1, 100_000), compressor=compressor, dtype="int16")
+    raw[:] = data
+
+    print("Pre-calculating and saving overviews...")
+    overview_group = root.create_group("overview")
+
+    downsampling_factor = max(1, data.shape[-1] // 4000)
+
+    overview_shape = (*data.shape[:-1], 2, data.shape[-1] // downsampling_factor)
+    overview_data = overview_group.create_dataset(
+        "0",
+        shape=overview_shape,
+        chunks=(1, 1, 1, 2, overview_shape[-1]),
         dtype="int16",
     )
-    store[:] = data
 
-    store.attrs["horiz_interval"] = horiz_interval
-    store.attrs["vertical_gains"] = vertical_gains.tolist()
-    store.attrs["vertical_offsets"] = vertical_offsets.tolist()
+    for ch in range(data.shape[0]):
+        for trc in range(data.shape[1]):
+            for seg in range(data.shape[2]):
+                print(f"  - Calculating overview for: Chan {ch + 1}, TRC {trc + 1}, Seg {seg + 1}")
+                overview_slice = create_overview(data[ch, trc, seg, :], downsampling_factor)
+                overview_data[ch, trc, seg, :, :] = overview_slice
 
-    print(f"Saved Zarr store with shape {data.shape} at: {path}")
+    print(f"Saved Zarr store at: {path}")
 
 
 def save_hdf5(path: Path, data: np.ndarray) -> None:
