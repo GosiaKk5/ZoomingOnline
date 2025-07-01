@@ -161,77 +161,108 @@
 </div>
 
 <script type="module">
-    const { openArray, slice } = await import("https://cdn.skypack.dev/zarr");
+    const { openGroup, openArray, slice, HTTPStore } = await import("https://cdn.skypack.dev/zarr");
 
-    let zarrStore = null;
+    let zarrGroup = null;
+    let rawStore = null;
+    let overviewStore = null;
     let plotConfig = null;
+    let lastChunkCache = { key: null, data: null };
 
     // --- Main Plotting Logic ---
     async function plotData() {
-        if (!zarrStore) return;
+        if (!rawStore || !zarrGroup || !overviewStore) return;
+
+        lastChunkCache = { key: null, data: null };
 
         const channel = +document.getElementById('channel-select').value;
         const trc = +document.getElementById('trc-select').value;
         const segment = +document.getElementById('segment-select').value;
 
-        // Clear previous charts and show controls
         d3.select("#overview-chart").selectAll("*").remove();
         d3.select("#zoom1-chart").selectAll("*").remove();
         d3.select("#zoom2-chart").selectAll("*").remove();
         document.querySelector('.controls').style.display = 'block';
         document.querySelector('.chart-container').style.display = 'block';
 
-        // --- General Config ---
         const margin = { top: 40, right: 40, bottom: 50, left: 60 };
         const fullWidth = 900;
         const chartHeight = 300;
         const width = fullWidth - margin.left - margin.right;
         const height = chartHeight - margin.top - margin.bottom;
 
-        // --- Get Metadata ---
-        const attrs = await zarrStore.attrs.asObject();
+        const attrs = await zarrGroup.attrs.asObject();
         const horiz_interval = attrs.horiz_interval;
         const vertical_gains = attrs.vertical_gains;
         const vertical_offsets = attrs.vertical_offsets;
         const vertical_gain = vertical_gains[channel][trc];
         const vertical_offset = vertical_offsets[channel][trc];
-        const no_of_samples = zarrStore.shape[3];
+        const no_of_samples = rawStore.shape[3];
         const adcToMv = (adc) => 1000 * (adc * vertical_gain - vertical_offset);
         const total_time_us = (no_of_samples - 1) * horiz_interval * 1e6;
 
-        // --- Create Downsampled Overview ---
         const overviewLoadingText = d3.select("#overview-chart").append("svg").attr("viewBox", `0 0 ${fullWidth} ${chartHeight}`).append("g").attr("transform", `translate(${margin.left},${margin.top})`).append("text").attr("class", "loading-text").attr("x", width / 2).attr("y", height / 2).text("Loading overview...");
 
-        const target_overview_points = 4000;
-        const overview_step = Math.max(1, Math.floor(no_of_samples / target_overview_points));
-        const overviewData = [];
-        let globalYMin = Infinity, globalYMax = -Infinity;
+        // Fetch pre-calculated overview data
+        const overviewSlice = await overviewStore.get([channel, trc, segment, null, null]);
+        // Correctly unpack the 2D NestedArray
+        const overviewMin = (await overviewSlice.get(0)).data;
+        const overviewMax = (await overviewSlice.get(1)).data;
+        const downsampling_factor = no_of_samples / overviewMin.length;
 
-        for (let i = 0; i < no_of_samples; i += overview_step) {
-            const chunkSlice = await zarrStore.get([channel, trc, segment, slice(i, i + overview_step)]);
-            const chunkData = chunkSlice.data;
-            let min_mv = Infinity, max_mv = -Infinity;
-            for (const val of chunkData) {
-                const mv = adcToMv(val);
-                if (mv < min_mv) min_mv = mv;
-                if (mv > max_mv) max_mv = mv;
-            }
-            if (min_mv < globalYMin) globalYMin = min_mv;
-            if (max_mv > globalYMax) globalYMax = max_mv;
-            const time_us = (i + overview_step / 2) * horiz_interval * 1e6;
-            overviewData.push({ time_us, min_mv, max_mv });
-        }
+        const overviewData = Array.from(overviewMin).map((min_val, i) => {
+            const time_us = (i + 0.5) * downsampling_factor * horiz_interval * 1e6;
+            return {
+                time_us,
+                min_mv: adcToMv(min_val),
+                max_mv: adcToMv(overviewMax[i])
+            };
+        });
+
+        const globalYMin = d3.min(overviewData, d => d.min_mv);
+        const globalYMax = d3.max(overviewData, d => d.max_mv);
         overviewLoadingText.remove();
 
-        // --- Store config for updates ---
         plotConfig = {
             margin, width, height, fullWidth, chartHeight,
             horiz_interval, no_of_samples, total_time_us,
             adcToMv, overviewData, globalYMin, globalYMax,
-            zarrStore, channel, trc, segment
+            rawStore, overviewStore, channel, trc, segment
         };
 
         await updateAllCharts();
+    }
+
+    async function getRawDataSlice(ch, trc, seg, start, end) {
+        const chunkSize = rawStore.meta.chunks[3];
+        const startChunkIdx = Math.floor(start / chunkSize);
+        const endChunkIdx = Math.floor((end - 1) / chunkSize);
+
+        let finalData = new Int16Array(end - start);
+        let finalDataOffset = 0;
+
+        for (let i = startChunkIdx; i <= endChunkIdx; i++) {
+            const cacheKey = `${ch}-${trc}-${seg}-${i}`;
+            let chunkData;
+
+            if (lastChunkCache.key === cacheKey) {
+                chunkData = lastChunkCache.data;
+            } else {
+                const chunkStart = i * chunkSize;
+                const chunkEnd = Math.min((i + 1) * chunkSize, rawStore.shape[3]);
+                const fetchedSlice = await rawStore.get([ch, trc, seg, slice(chunkStart, chunkEnd)]);
+                chunkData = fetchedSlice.data;
+                lastChunkCache = { key: cacheKey, data: chunkData };
+            }
+
+            const reqStartInChunk = Math.max(0, start - i * chunkSize);
+            const reqEndInChunk = Math.min(chunkSize, end - i * chunkSize);
+
+            const sliced = chunkData.subarray(reqStartInChunk, reqEndInChunk);
+            finalData.set(sliced, finalDataOffset);
+            finalDataOffset += sliced.length;
+        }
+        return finalData;
     }
 
     function getZoomDomains() {
@@ -265,14 +296,10 @@
     async function updateAllCharts() {
         if (!plotConfig) return;
         const { width, height, total_time_us, overviewData, globalYMin, globalYMax } = plotConfig;
-        const { zoom1Domain, zoom2Domain } = getZoomDomains();
+        const { zoom1Domain } = getZoomDomains();
 
-        // --- Render All Charts ---
+        // --- Draw Overview Chart (Chart 0) ---
         d3.select("#overview-chart").selectAll("*").remove();
-        d3.select("#zoom1-chart").selectAll("*").remove();
-        d3.select("#zoom2-chart").selectAll("*").remove();
-
-        // Chart 0: Overview
         const x0 = d3.scaleLinear().domain([0, total_time_us]).range([0, width]);
         const y0 = d3.scaleLinear().domain([globalYMin, globalYMax]).range([height, 0]).nice();
         const svg0 = createChartSVG("#overview-chart", "Overview");
@@ -282,15 +309,12 @@
         zoomRect1.attr("x", x0(zoom1Domain[0])).attr("width", x0(zoom1Domain[1]) - x0(zoom1Domain[0])).attr("y", 0).attr("height", height);
         addDragHandler(zoomRect1, x0, document.getElementById('zoom1-pos'), updateAllCharts);
 
-        // Chart 1: Zoom 1
+        // --- Draw Zoom 1 Chart ---
+        d3.select("#zoom1-chart").selectAll("*").remove();
         const svg1 = createChartSVG("#zoom1-chart", `Zoom 1: ${zoom1Domain[0].toFixed(1)}µs - ${zoom1Domain[1].toFixed(1)}µs`);
         await renderDetail(svg1, zoom1Domain, "Time (µs)");
-        const x1 = d3.scaleLinear().domain(zoom1Domain).range([0, width]);
-        const zoomRect2 = svg1.append("rect").attr("class", "zoom-rect-2");
-        zoomRect2.attr("x", x1(zoom2Domain[0])).attr("width", x1(zoom2Domain[1]) - x1(zoom2Domain[0])).attr("y", 0).attr("height", height);
-        addDragHandler(zoomRect2, x1, document.getElementById('zoom2-pos'), updateZoom2Chart);
 
-        // Chart 2: Zoom 2
+        // --- Draw Zoom 2 Chart and UI ---
         await updateZoom2Chart();
     }
 
@@ -299,19 +323,24 @@
         const { width } = plotConfig;
         const { zoom1Domain, zoom2Domain } = getZoomDomains();
 
+        // --- Draw Zoom 2 Chart ---
         d3.select("#zoom2-chart").selectAll("*").remove();
         const svg2 = createChartSVG("#zoom2-chart", `Zoom 2: ${zoom2Domain[0].toFixed(3)}µs - ${zoom2Domain[1].toFixed(3)}µs`);
         await renderDetail(svg2, zoom2Domain, "Time (µs)");
 
-        // Update indicator on chart 1
+        // --- Update Zoom 2 Rectangle (on Chart 1) ---
         const x1 = d3.scaleLinear().domain(zoom1Domain).range([0, width]);
-        d3.select("#zoom1-chart .zoom-rect-2")
+        const svg1 = d3.select("#zoom1-chart svg g");
+        const zoomRect2 = svg1.selectAll(".zoom-rect-2").data([1]);
+
+        zoomRect2.enter().append("rect").attr("class", "zoom-rect-2")
+          .merge(zoomRect2)
           .attr("x", x1(zoom2Domain[0]))
-          .attr("width", x1(zoom2Domain[1]) - x1(zoom2Domain[0]));
+          .attr("width", x1(zoom2Domain[1]) - x1(zoom2Domain[0]))
+          .attr("y", 0).attr("height", plotConfig.height)
+          .call(addDragHandler, x1, document.getElementById('zoom2-pos'), updateZoom2Chart);
     }
 
-
-    // --- Helper functions ---
     function createChartSVG(selector, title) {
         const { margin, width, height, fullWidth, chartHeight } = plotConfig;
         const svg = d3.select(selector)
@@ -339,7 +368,7 @@
     }
 
     async function renderDetail(svg, domain_us, xLabel) {
-        const { horiz_interval, no_of_samples, adcToMv, zarrStore, channel, trc, segment, width, height } = plotConfig;
+        const { horiz_interval, no_of_samples, adcToMv, channel, trc, segment, width, height } = plotConfig;
 
         const loadingText = svg.append("text").attr("class", "loading-text").attr("x", width / 2).attr("y", height / 2).text("Loading detail...");
 
@@ -360,8 +389,7 @@
             for (let i = startIndex; i < endIndex; i += step) {
                 const chunkStart = i;
                 const chunkEnd = Math.min(i + step, endIndex);
-                const chunkSlice = await zarrStore.get([channel, trc, segment, slice(chunkStart, chunkEnd)]);
-                const chunkData = chunkSlice.data;
+                const chunkData = await getRawDataSlice(channel, trc, segment, chunkStart, chunkEnd);
                 let min_mv = Infinity, max_mv = -Infinity;
                 for (const val of chunkData) {
                     const mv = adcToMv(val);
@@ -378,8 +406,8 @@
             drawArea(svg, detailOverviewData, xScale, yScale, d => d.time_us, d => d.min_mv, d => d.max_mv);
 
         } else {
-            const chunkData = await zarrStore.get([channel, trc, segment, slice(startIndex, endIndex)]);
-            const detailData = Array.from(chunkData.data).map((v, i) => ({
+            const chunkData = await getRawDataSlice(channel, trc, segment, startIndex, endIndex);
+            const detailData = Array.from(chunkData).map((v, i) => ({
                 time_us: (startIndex + i) * horiz_interval * 1e6,
                 voltage_mv: adcToMv(v)
             }));
@@ -392,27 +420,35 @@
 
     function addDragHandler(target, scale, slider, endCallback) {
         const drag = d3.drag()
+            .on("start", function(event) {
+                d3.select(this).raise();
+            })
             .on("drag", function(event) {
                 const [minRange, maxRange] = scale.range();
                 const currentX = parseFloat(d3.select(this).attr("x"));
                 const width = parseFloat(d3.select(this).attr("width"));
-
                 let newX = currentX + event.dx;
                 newX = Math.max(minRange, Math.min(newX, maxRange - width));
-
                 d3.select(this).attr("x", newX);
 
                 const centerPx = newX + width / 2;
-                const newPosPercent = (scale.invert(centerPx) / scale.domain()[1]) * 100;
+                const centerVal = scale.invert(centerPx);
+                const [domainStart, domainEnd] = scale.domain();
+                const domainSpan = domainEnd - domainStart;
+
+                const newPosPercent = ((centerVal - domainStart) / domainSpan) * 100;
 
                 slider.value = Math.round(newPosPercent);
-                document.getElementById(`${slider.id}-val`).textContent = slider.value;
+                const valueSpan = document.getElementById(`${slider.id}-val`);
+                if (valueSpan) {
+                    const suffix = slider.id.includes('power') ? 'x' : '';
+                    valueSpan.textContent = slider.value + suffix;
+                }
             })
             .on("end", endCallback);
         target.call(drag);
     }
 
-    // --- Initialization and Event Handlers ---
     function initialize() {
         const urlParams = new URLSearchParams(window.location.search);
         const zarrUrl = urlParams.get('zarrUrl');
@@ -420,8 +456,11 @@
         const loadData = async (url) => {
             document.getElementById('input-container').style.display = 'none';
             try {
-                zarrStore = await openArray({ store: url, mode: 'r' });
-                populateSelectors(zarrStore);
+                const store = new HTTPStore(url);
+                zarrGroup = await openGroup(store);
+                rawStore = await openArray({ store, path: 'raw' });
+                overviewStore = await openArray({ store, path: 'overview/0' });
+                populateSelectors(rawStore);
             } catch (error) {
                 const container = document.getElementById('selection-container');
                 container.innerHTML = `<div style="color: red; text-align: center; padding: 2rem;"><h3>Error</h3><p>${error.message}</p></div>`;
@@ -429,11 +468,8 @@
             }
         };
 
-        if (zarrUrl) {
-            loadData(zarrUrl);
-        } else {
-            document.getElementById('input-container').style.display = 'block';
-        }
+        if (zarrUrl) loadData(zarrUrl);
+        else document.getElementById('input-container').style.display = 'block';
 
         document.getElementById('load-button').addEventListener('click', () => {
             const zarrUrlInput = document.getElementById('zarr-input').value;
@@ -442,20 +478,32 @@
 
         document.getElementById('plot-button').addEventListener('click', plotData);
 
-        // Slider event listeners
-        document.getElementById('zoom1-pos').addEventListener('change', updateAllCharts);
-        document.getElementById('zoom1-power').addEventListener('change', updateAllCharts);
-        document.getElementById('zoom2-pos').addEventListener('change', updateZoom2Chart);
-        document.getElementById('zoom2-power').addEventListener('change', updateZoom2Chart);
-
-        ['zoom1-pos', 'zoom1-power', 'zoom2-pos', 'zoom2-power'].forEach(id => {
+        const sliders = ['zoom1-pos', 'zoom1-power', 'zoom2-pos', 'zoom2-power'];
+        sliders.forEach(id => {
             const slider = document.getElementById(id);
             const valueSpan = document.getElementById(`${id}-val`);
             const isPowerSlider = id.includes('power');
+
+            const endCallback = id.startsWith('zoom1') ? updateAllCharts : updateZoom2Chart;
+
             slider.addEventListener('input', () => {
-                const suffix = isPowerSlider ? 'x' : '';
-                valueSpan.textContent = slider.value + suffix;
+                valueSpan.textContent = slider.value + (isPowerSlider ? 'x' : '');
+                if (id.startsWith('zoom1')) {
+                    const { width, total_time_us } = plotConfig;
+                    const { zoom1Domain } = getZoomDomains();
+                    const x0 = d3.scaleLinear().domain([0, total_time_us]).range([0, width]);
+                    d3.select("#overview-chart .zoom-rect-1")
+                        .attr("x", x0(zoom1Domain[0]))
+                        .attr("width", x0(zoom1Domain[1]) - x0(zoom1Domain[0]));
+                }
+                const { width } = plotConfig;
+                const { zoom1Domain, zoom2Domain } = getZoomDomains();
+                const x1 = d3.scaleLinear().domain(zoom1Domain).range([0, width]);
+                d3.select("#zoom1-chart .zoom-rect-2")
+                    .attr("x", x1(zoom2Domain[0]))
+                    .attr("width", x1(zoom2Domain[1]) - x1(zoom2Domain[0]));
             });
+            slider.addEventListener('change', endCallback);
         });
     }
 

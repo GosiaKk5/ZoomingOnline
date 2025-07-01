@@ -34,7 +34,7 @@ def test_generate_realistic_data_shape_and_dtype() -> None:
 
 
 def test_signal_value_range() -> None:
-    data, *_ = generate_realistic_data(num_samples=1000)
+    data, _, _, _ = generate_realistic_data(num_samples=1000)
     int16_max = np.iinfo(np.int16).max
     int16_min = np.iinfo(np.int16).min
     assert np.all(data >= int16_min)
@@ -55,16 +55,34 @@ def test_save_zarr_writes_attributes(small_realistic_data: tuple[np.ndarray, flo
     with tempfile.TemporaryDirectory() as tmpdir:
         zarr_path = Path(tmpdir) / "sample.zarr"
         save_zarr(zarr_path, data, horiz_interval, gains, offsets)
-        store = zarr.open(str(zarr_path), "r")
+        store = zarr.open_group(str(zarr_path), "r")
         assert "horiz_interval" in store.attrs
         assert "vertical_gains" in store.attrs
         assert "vertical_offsets" in store.attrs
+        np.testing.assert_array_equal(store["raw"][:], data)
 
-        assert np.array_equal(store[:], data)
+
+def test_save_zarr_creates_overview(small_realistic_data: tuple[np.ndarray, float, np.ndarray, np.ndarray]) -> None:
+    data, horiz_interval, gains, offsets = small_realistic_data
+    with tempfile.TemporaryDirectory() as tmpdir:
+        zarr_path = Path(tmpdir) / "with_overview.zarr"
+        save_zarr(zarr_path, data, horiz_interval, gains, offsets)
+
+        root = zarr.open_group(str(zarr_path), mode="r")
+        assert "overview" in root
+        assert "0" in root["overview"]
+
+        overview = root["overview"]["0"]
+        expected_len = data.shape[-1] // max(1, data.shape[-1] // 4000)
+        assert overview.shape == (2, 1, 1, 2, expected_len)
+
+        min_vals = overview[0, 0, 0, 0, :]
+        max_vals = overview[0, 0, 0, 1, :]
+        assert np.all(min_vals <= max_vals)
 
 
 def test_save_hdf5_creates_file(small_realistic_data: tuple[np.ndarray, float, np.ndarray, np.ndarray]) -> None:
-    data, *_ = small_realistic_data
+    data, _, _, _ = small_realistic_data
     with tempfile.TemporaryDirectory() as tmpdir:
         h5_path = Path(tmpdir) / "sample.h5"
         save_hdf5(h5_path, data)
@@ -73,4 +91,4 @@ def test_save_hdf5_creates_file(small_realistic_data: tuple[np.ndarray, float, n
             dset = f["data"]
             assert dset.shape == data.shape
             assert dset.dtype == data.dtype
-            assert np.array_equal(dset[:], data)
+            np.testing.assert_array_equal(dset[:], data)
