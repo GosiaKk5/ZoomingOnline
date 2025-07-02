@@ -10,24 +10,26 @@
 
 ZoomingOnline is a web-based data visualization supporting the efficient and scalable Zarr format.
 
+<!-- TODO: make new one once ui stabilizes -->
 ![demo](./docs/assets/demo.gif)
 
 🌐 Try it live: [https://gosiakk5.github.io/ZoomingOnline/](https://gosiakk5.github.io/ZoomingOnline/)
 
 ## 🎯 Aim of the Project
 
-The aim of **ZoomingOnline** is to serve as a web-based viewer for interactively exploring large time-series datasets,
-such as those from oscilloscopes. It is designed to render data directly from a Zarr store over HTTP without a
-specialized backend.
+The aim of **ZoomingOnline** is to provide a high-performance web viewer for interactively exploring massive,
+gigabyte-scale time-series datasets directly in a browser.
 
-The project includes:
+Key features include:
 
-- **Core Technology:** The application utilizes the chunked **Zarr** data format and performs on-demand progressive
-  downsampling in the browser. This approach fetches only the data required for the current field of view.
-- **Visualization Interface:** The display consists of a three-level inset zoom. Each zoom level's position and
-  magnification (up to 1000x) can be adjusted with draggable windows and sliders.
-- **Supporting Scripts:** A set of CLI scripts is provided for generating test data, converting from HDF5, and managing
-  uploads to cloud storage.
+- **Instant Overview:** Utilizes pre-computed data pyramids within the Zarr format to load an initial overview of the
+  entire dataset almost instantly.
+- **Efficient Zooming:** Fetches only the required high-resolution data chunks for the selected region, with a
+  memory-efficient cache to prevent redundant downloads during interaction.
+- **Time-Based Controls:** Features a three-level inset zoom interface with draggable windows and sliders that snap to
+  meaningful time units (e.g., 10 µs, 100 ns) for precise analysis.
+- **Data Toolkit:** Includes a suite of CLI scripts for generating test data, converting from HDF5, and managing cloud
+  storage.
 
 ## 🛠 Available CLI Scripts
 
