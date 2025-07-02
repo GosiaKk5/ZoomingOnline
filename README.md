@@ -45,8 +45,11 @@ The project includes:
 1. Clone the repository
 2. Follow [setup.md](./docs/setup.md) to install dependencies and configure
 3. Create or serve a Zarr dataset:
+   <!-- Check: Run -->
    ```bash
    python src/generate_data.py -o waveform.zarr
+   ```
+   ```bash
    python src/cors_server.py
    ```
 4. View in browser: http://localhost:8000/website, website/index.html or on online
