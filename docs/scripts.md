@@ -28,11 +28,17 @@ Simulate realistic oscilloscope waveform data and export to Zarr or HDF5.
 
 ### ⚙️ Example Usage
 
-```bash
-# Generate and save to Zarr
-python src/generate_data.py -o output.zarr --channels 2 --samples 1e8
+Generate and save to Zarr:
+<!-- Check: Run -->
 
-# Generate and save to HDF5
+```bash
+python src/generate_data.py -o output.zarr --channels 2 --samples 100000000
+```
+
+Generate and save to HDF5:
+<!-- Check: Run -->
+
+```bash
 python src/generate_data.py -o output.h5 --signal square --segments 2
 ```
 
@@ -70,7 +76,7 @@ z.attrs["vertical_offsets"]
 
 Zarr includes a downsampled version for quick lookups:
 
-```bash
+```text
 z["overview"]["0"][channel, trc, segment, stat, :]
 
 # where stat = 0 (min), stat = 1 (max)
