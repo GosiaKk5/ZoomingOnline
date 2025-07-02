@@ -16,89 +16,134 @@
             flex-direction: column;
             align-items: center;
         }
+
         .container {
             width: 100%;
             max-width: 900px;
         }
+
         .controls {
             background: white;
             padding: 1.5rem;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             margin-bottom: 2rem;
         }
+
         .control-group {
             margin-bottom: 1rem;
             border-left: 3px solid;
             padding-left: 1rem;
         }
+
         .control-group h4 {
             margin-top: 0;
             margin-bottom: 0.5rem;
         }
-        .control-group-1 { border-color: #dc3545; }
-        .control-group-2 { border-color: #007bff; }
 
-        .slider-container {
+        .control-group-1 {
+            border-color: #dc3545;
+        }
+
+        .control-group-2 {
+            border-color: #007bff;
+        }
+
+        .control-row {
             display: grid;
-            grid-template-columns: 100px 1fr 50px;
+            grid-template-columns: 100px 1fr 70px;
             align-items: center;
             gap: 1rem;
             margin-bottom: 0.5rem;
         }
+
         input[type="range"] {
             width: 100%;
         }
+
         .chart-container {
             background: white;
             padding: 2rem;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
+
         .chart {
             margin-bottom: 2.5rem;
         }
+
         .zoom-rect-1, .zoom-rect-2 {
             cursor: move; /* ew-resize */
         }
+
         .zoom-rect-1 {
             fill: rgba(220, 53, 69, 0.15);
             stroke: #dc3545;
             stroke-width: 1.5px;
             stroke-dasharray: 4, 2;
         }
+
         .zoom-rect-2 {
             fill: rgba(0, 123, 255, 0.15);
             stroke: #007bff;
             stroke-width: 1.5px;
             stroke-dasharray: 4, 2;
         }
+
         .loading-text {
             font-size: 1rem;
             font-style: italic;
             fill: #888;
             text-anchor: middle;
         }
+
         #input-container, #selection-container {
             padding: 2rem;
             background: white;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             text-align: center;
             margin-bottom: 1rem;
         }
+
         #zarr-input {
-            font-size: 1rem; padding: 0.5rem; border: 1px solid #ccc;
-            border-radius: 4px; margin-right: 0.5rem; width: 350px;
+            font-size: 1rem;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 0.5rem;
+            width: 350px;
         }
+
         #load-button, #plot-button {
-            padding: 0.5rem 1rem; font-size: 1rem; color: #fff;
-            background-color: #007bff; border: none; border-radius: 5px;
-            cursor: pointer; transition: background-color 0.2s;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
-        #load-button:hover, #plot-button:hover { background-color: #0056b3; }
-        .selection-controls { display: flex; gap: 1rem; align-items: center; justify-content: center; margin-bottom: 1rem;}
-        select { padding: 0.5rem; font-size: 1rem; border-radius: 5px; border: 1px solid #ccc; }
+
+        #load-button:hover, #plot-button:hover {
+            background-color: #0056b3;
+        }
+
+        .selection-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        select {
+            padding: 0.5rem;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
     </style>
 </head>
 <body>
@@ -127,28 +172,28 @@
     <div class="controls" style="display: none;">
         <div class="control-group control-group-1">
             <h4>Zoom Level 1 (Red)</h4>
-            <div class="slider-container">
+            <div class="control-row">
                 <label for="zoom1-pos">Position (%):</label>
                 <input type="range" id="zoom1-pos" min="0" max="100" value="50">
-                <span id="zoom1-pos-val">50</span>
+                <span id="zoom1-pos-val">50%</span>
             </div>
-            <div class="slider-container">
-                <label for="zoom1-power">Zoom (x):</label>
-                <input type="range" id="zoom1-power" min="2" max="1000" value="10">
-                <span id="zoom1-power-val">10x</span>
+            <div class="control-row">
+                <label for="zoom1-window">Window Size:</label>
+                <input type="range" id="zoom1-window">
+                <span id="zoom1-window-val" style="width: 70px; text-align: right;"></span>
             </div>
         </div>
         <div class="control-group control-group-2">
             <h4>Zoom Level 2 (Blue)</h4>
-            <div class="slider-container">
+            <div class="control-row">
                 <label for="zoom2-pos">Position (%):</label>
                 <input type="range" id="zoom2-pos" min="0" max="100" value="50">
-                <span id="zoom2-pos-val">50</span>
+                <span id="zoom2-pos-val">50%</span>
             </div>
-            <div class="slider-container">
-                <label for="zoom2-power">Zoom (x):</label>
-                <input type="range" id="zoom2-power" min="2" max="1000" value="10">
-                <span id="zoom2-power-val">10x</span>
+            <div class="control-row">
+                <label for="zoom2-window">Window Size:</label>
+                <input type="range" id="zoom2-window">
+                <span id="zoom2-window-val" style="width: 70px; text-align: right;"></span>
             </div>
         </div>
     </div>
@@ -161,19 +206,48 @@
 </div>
 
 <script type="module">
-    const { openGroup, openArray, slice, HTTPStore } = await import("https://cdn.skypack.dev/zarr");
+    const {openGroup, openArray, slice, HTTPStore} = await import("https://cdn.skypack.dev/zarr");
 
     let zarrGroup = null;
     let rawStore = null;
     let overviewStore = null;
     let plotConfig = null;
-    let lastChunkCache = { key: null, data: null };
+    let lastChunkCache = {key: null, data: null};
+    const timeSteps = [];
+
+    function generateTimeSteps() {
+        if (timeSteps.length > 0) return;
+        const units = {'ms': 1e3, 'ns': 1e-3, 'µs': 1,};
+        const bases = [1, 2, 5];
+        const addedValues = new Set();
+
+        for (const unit in units) {
+            for (let mag = 1; mag <= 1000; mag *= 10) {
+                if (unit === 'ns' && mag > 500) continue;
+                if (unit === 'ms' && mag > 5) continue;
+                bases.forEach(base => {
+                    const val = base * mag;
+                    if (unit === 'ms' && val > 5) return;
+
+                    const value_us = val * units[unit];
+                    if (!addedValues.has(value_us)) {
+                        timeSteps.push({
+                            label: `${val} ${unit}`,
+                            value_us: value_us
+                        });
+                        addedValues.add(value_us);
+                    }
+                });
+            }
+        }
+        timeSteps.sort((a, b) => a.value_us - b.value_us);
+    }
 
     // --- Main Plotting Logic ---
     async function plotData() {
         if (!rawStore || !zarrGroup || !overviewStore) return;
 
-        lastChunkCache = { key: null, data: null };
+        lastChunkCache = {key: null, data: null};
 
         const channel = +document.getElementById('channel-select').value;
         const trc = +document.getElementById('trc-select').value;
@@ -185,7 +259,7 @@
         document.querySelector('.controls').style.display = 'block';
         document.querySelector('.chart-container').style.display = 'block';
 
-        const margin = { top: 40, right: 40, bottom: 50, left: 60 };
+        const margin = {top: 40, right: 40, bottom: 50, left: 60};
         const fullWidth = 900;
         const chartHeight = 300;
         const width = fullWidth - margin.left - margin.right;
@@ -201,11 +275,18 @@
         const adcToMv = (adc) => 1000 * (adc * vertical_gain - vertical_offset);
         const total_time_us = (no_of_samples - 1) * horiz_interval * 1e6;
 
+        plotConfig = {
+            margin, width, height, fullWidth, chartHeight,
+            horiz_interval, no_of_samples, total_time_us,
+            adcToMv,
+            rawStore, overviewStore, channel, trc, segment
+        };
+
+        setupTimeSliders(total_time_us);
+
         const overviewLoadingText = d3.select("#overview-chart").append("svg").attr("viewBox", `0 0 ${fullWidth} ${chartHeight}`).append("g").attr("transform", `translate(${margin.left},${margin.top})`).append("text").attr("class", "loading-text").attr("x", width / 2).attr("y", height / 2).text("Loading overview...");
 
-        // Fetch pre-calculated overview data
         const overviewSlice = await overviewStore.get([channel, trc, segment, null, null]);
-        // Correctly unpack the 2D NestedArray
         const overviewMin = (await overviewSlice.get(0)).data;
         const overviewMax = (await overviewSlice.get(1)).data;
         const downsampling_factor = no_of_samples / overviewMin.length;
@@ -219,16 +300,10 @@
             };
         });
 
-        const globalYMin = d3.min(overviewData, d => d.min_mv);
-        const globalYMax = d3.max(overviewData, d => d.max_mv);
+        plotConfig.overviewData = overviewData;
+        plotConfig.globalYMin = d3.min(overviewData, d => d.min_mv);
+        plotConfig.globalYMax = d3.max(overviewData, d => d.max_mv);
         overviewLoadingText.remove();
-
-        plotConfig = {
-            margin, width, height, fullWidth, chartHeight,
-            horiz_interval, no_of_samples, total_time_us,
-            adcToMv, overviewData, globalYMin, globalYMax,
-            rawStore, overviewStore, channel, trc, segment
-        };
 
         await updateAllCharts();
     }
@@ -252,7 +327,7 @@
                 const chunkEnd = Math.min((i + 1) * chunkSize, rawStore.shape[3]);
                 const fetchedSlice = await rawStore.get([ch, trc, seg, slice(chunkStart, chunkEnd)]);
                 chunkData = fetchedSlice.data;
-                lastChunkCache = { key: cacheKey, data: chunkData };
+                lastChunkCache = {key: cacheKey, data: chunkData};
             }
 
             const reqStartInChunk = Math.max(0, start - i * chunkSize);
@@ -266,16 +341,16 @@
     }
 
     function getZoomDomains() {
-        const { total_time_us } = plotConfig;
+        const {total_time_us} = plotConfig;
         const zoom1Pos = +document.getElementById('zoom1-pos').value / 100;
-        const zoom1Power = +document.getElementById('zoom1-power').value;
-        const zoom1Width = 1 / zoom1Power;
+        const zoom1_index = +document.getElementById('zoom1-window').value;
+        const zoom1_window_us = plotConfig.validTimeSteps[zoom1_index].value_us;
 
         const zoom2Pos = +document.getElementById('zoom2-pos').value / 100;
-        const zoom2Power = +document.getElementById('zoom2-power').value;
-        const zoom2Width = 1 / zoom2Power;
+        const zoom2_index = +document.getElementById('zoom2-window').value;
+        const zoom2_window_us = plotConfig.validZoom2Steps[zoom2_index].value_us;
 
-        const zoom1HalfWidth_us = (total_time_us * zoom1Width) / 2;
+        const zoom1HalfWidth_us = zoom1_window_us / 2;
         const zoom1Center_us = total_time_us * zoom1Pos;
         const zoom1Domain = [
             Math.max(0, zoom1Center_us - zoom1HalfWidth_us),
@@ -283,20 +358,20 @@
         ];
 
         const zoom2Range_us = (zoom1Domain[1] - zoom1Domain[0]);
-        const zoom2HalfWidth_us = (zoom2Range_us * zoom2Width) / 2;
+        const zoom2HalfWidth_us = zoom2_window_us / 2;
         const zoom2Center_us = zoom1Domain[0] + (zoom2Range_us * zoom2Pos);
         const zoom2Domain = [
             Math.max(zoom1Domain[0], zoom2Center_us - zoom2HalfWidth_us),
             Math.min(zoom1Domain[1], zoom2Center_us + zoom2HalfWidth_us)
         ];
 
-        return { zoom1Domain, zoom2Domain };
+        return {zoom1Domain, zoom2Domain};
     }
 
     async function updateAllCharts() {
         if (!plotConfig) return;
-        const { width, height, total_time_us, overviewData, globalYMin, globalYMax } = plotConfig;
-        const { zoom1Domain } = getZoomDomains();
+        const {width, height, total_time_us, overviewData, globalYMin, globalYMax} = plotConfig;
+        const {zoom1Domain} = getZoomDomains();
 
         // --- Draw Overview Chart (Chart 0) ---
         d3.select("#overview-chart").selectAll("*").remove();
@@ -320,8 +395,8 @@
 
     async function updateZoom2Chart() {
         if (!plotConfig) return;
-        const { width } = plotConfig;
-        const { zoom1Domain, zoom2Domain } = getZoomDomains();
+        const {width} = plotConfig;
+        const {zoom1Domain, zoom2Domain} = getZoomDomains();
 
         // --- Draw Zoom 2 Chart ---
         d3.select("#zoom2-chart").selectAll("*").remove();
@@ -334,15 +409,15 @@
         const zoomRect2 = svg1.selectAll(".zoom-rect-2").data([1]);
 
         zoomRect2.enter().append("rect").attr("class", "zoom-rect-2")
-          .merge(zoomRect2)
-          .attr("x", x1(zoom2Domain[0]))
-          .attr("width", x1(zoom2Domain[1]) - x1(zoom2Domain[0]))
-          .attr("y", 0).attr("height", plotConfig.height)
-          .call(addDragHandler, x1, document.getElementById('zoom2-pos'), updateZoom2Chart);
+            .merge(zoomRect2)
+            .attr("x", x1(zoom2Domain[0]))
+            .attr("width", x1(zoom2Domain[1]) - x1(zoom2Domain[0]))
+            .attr("y", 0).attr("height", plotConfig.height)
+            .call(addDragHandler, x1, document.getElementById('zoom2-pos'), updateZoom2Chart);
     }
 
     function createChartSVG(selector, title) {
-        const { margin, width, height, fullWidth, chartHeight } = plotConfig;
+        const {margin, width, height, fullWidth, chartHeight} = plotConfig;
         const svg = d3.select(selector)
             .append("svg").attr("viewBox", `0 0 ${fullWidth} ${chartHeight}`)
             .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
@@ -353,7 +428,7 @@
     }
 
     function drawAxes(svg, xScale, yScale, xLabel) {
-        const { height, margin, width } = plotConfig;
+        const {height, margin, width} = plotConfig;
         svg.append("g").attr("transform", `translate(0, ${height})`).call(d3.axisBottom(xScale).ticks(5).tickFormat(d3.format(".3f")));
         svg.append("g").call(d3.axisLeft(yScale).ticks(5));
         svg.append("text").attr("transform", `translate(${width / 2}, ${height + margin.bottom - 10})`).style("text-anchor", "middle").text(xLabel);
@@ -368,7 +443,7 @@
     }
 
     async function renderDetail(svg, domain_us, xLabel) {
-        const { horiz_interval, no_of_samples, adcToMv, channel, trc, segment, width, height } = plotConfig;
+        const {horiz_interval, no_of_samples, adcToMv, channel, trc, segment, width, height} = plotConfig;
 
         const loadingText = svg.append("text").attr("class", "loading-text").attr("x", width / 2).attr("y", height / 2).text("Loading detail...");
 
@@ -399,7 +474,7 @@
                 if (min_mv < yMin) yMin = min_mv;
                 if (max_mv > yMax) yMax = max_mv;
                 const time_us = (chunkStart + (chunkEnd - chunkStart) / 2) * horiz_interval * 1e6;
-                detailOverviewData.push({ time_us, min_mv, max_mv });
+                detailOverviewData.push({time_us, min_mv, max_mv});
             }
             loadingText.remove();
             yScale.domain([yMin, yMax]).nice();
@@ -412,7 +487,7 @@
                 voltage_mv: adcToMv(v)
             }));
             loadingText.remove();
-            yScale.domain(d3.extent(detailData, d => d.voltage_mv) || [0,0]).nice();
+            yScale.domain(d3.extent(detailData, d => d.voltage_mv) || [0, 0]).nice();
             drawLine(svg, detailData, xScale, yScale, d => d.time_us, d => d.voltage_mv);
         }
         drawAxes(svg, xScale, yScale, xLabel);
@@ -420,10 +495,10 @@
 
     function addDragHandler(target, scale, slider, endCallback) {
         const drag = d3.drag()
-            .on("start", function(event) {
+            .on("start", function (event) {
                 d3.select(this).raise();
             })
-            .on("drag", function(event) {
+            .on("drag", function (event) {
                 const [minRange, maxRange] = scale.range();
                 const currentX = parseFloat(d3.select(this).attr("x"));
                 const width = parseFloat(d3.select(this).attr("width"));
@@ -439,17 +514,58 @@
                 const newPosPercent = ((centerVal - domainStart) / domainSpan) * 100;
 
                 slider.value = Math.round(newPosPercent);
-                const valueSpan = document.getElementById(`${slider.id}-val`);
-                if (valueSpan) {
-                    const suffix = slider.id.includes('power') ? 'x' : '';
-                    valueSpan.textContent = slider.value + suffix;
-                }
             })
             .on("end", endCallback);
         target.call(drag);
     }
 
+    function setupTimeSliders(total_time_us) {
+        const slider1 = d3.select("#zoom1-window");
+        const valueSpan1 = d3.select("#zoom1-window-val");
+
+        plotConfig.validTimeSteps = timeSteps.filter(step => step.value_us < total_time_us);
+
+        slider1
+            .attr('min', 0)
+            .attr('max', plotConfig.validTimeSteps.length - 1)
+            .attr('step', 1)
+            .property('value', Math.floor(plotConfig.validTimeSteps.length / 2));
+
+        valueSpan1.text(plotConfig.validTimeSteps[slider1.property('value')].label);
+
+        updateZoom2SliderRange();
+    }
+
+    function updateZoom2SliderRange() {
+        const slider1 = d3.select("#zoom1-window");
+        const slider2 = d3.select("#zoom2-window");
+        const valueSpan2 = d3.select("#zoom2-window-val");
+
+        const currentVal1_us = plotConfig.validTimeSteps[+slider1.property('value')].value_us;
+        plotConfig.validZoom2Steps = plotConfig.validTimeSteps.filter(step => step.value_us < currentVal1_us);
+
+        const currentVal2_idx = +slider2.property('value');
+
+        slider2
+            .attr('min', 0)
+            .attr('max', plotConfig.validZoom2Steps.length - 1)
+            .attr('step', 1);
+
+        let newIndex = currentVal2_idx;
+        if (newIndex >= plotConfig.validZoom2Steps.length) {
+            newIndex = Math.max(0, plotConfig.validZoom2Steps.length - 1);
+            slider2.property('value', newIndex);
+        }
+
+        if (plotConfig.validZoom2Steps.length > 0) {
+            valueSpan2.text(plotConfig.validZoom2Steps[newIndex].label);
+        } else {
+            valueSpan2.text('');
+        }
+    }
+
     function initialize() {
+        generateTimeSteps();
         const urlParams = new URLSearchParams(window.location.search);
         const zarrUrl = urlParams.get('zarrUrl');
 
@@ -458,8 +574,8 @@
             try {
                 const store = new HTTPStore(url);
                 zarrGroup = await openGroup(store);
-                rawStore = await openArray({ store, path: 'raw' });
-                overviewStore = await openArray({ store, path: 'overview/0' });
+                rawStore = await openArray({store, path: 'raw'});
+                overviewStore = await openArray({store, path: 'overview/0'});
                 populateSelectors(rawStore);
             } catch (error) {
                 const container = document.getElementById('selection-container');
@@ -478,33 +594,29 @@
 
         document.getElementById('plot-button').addEventListener('click', plotData);
 
-        const sliders = ['zoom1-pos', 'zoom1-power', 'zoom2-pos', 'zoom2-power'];
-        sliders.forEach(id => {
-            const slider = document.getElementById(id);
-            const valueSpan = document.getElementById(`${id}-val`);
-            const isPowerSlider = id.includes('power');
+        // Position Sliders
+        d3.select('#zoom1-pos').on('change', updateAllCharts);
+        d3.select('#zoom2-pos').on('change', updateZoom2Chart);
 
-            const endCallback = id.startsWith('zoom1') ? updateAllCharts : updateZoom2Chart;
-
-            slider.addEventListener('input', () => {
-                valueSpan.textContent = slider.value + (isPowerSlider ? 'x' : '');
-                if (id.startsWith('zoom1')) {
-                    const { width, total_time_us } = plotConfig;
-                    const { zoom1Domain } = getZoomDomains();
-                    const x0 = d3.scaleLinear().domain([0, total_time_us]).range([0, width]);
-                    d3.select("#overview-chart .zoom-rect-1")
-                        .attr("x", x0(zoom1Domain[0]))
-                        .attr("width", x0(zoom1Domain[1]) - x0(zoom1Domain[0]));
-                }
-                const { width } = plotConfig;
-                const { zoom1Domain, zoom2Domain } = getZoomDomains();
-                const x1 = d3.scaleLinear().domain(zoom1Domain).range([0, width]);
-                d3.select("#zoom1-chart .zoom-rect-2")
-                    .attr("x", x1(zoom2Domain[0]))
-                    .attr("width", x1(zoom2Domain[1]) - x1(zoom2Domain[0]));
-            });
-            slider.addEventListener('change', endCallback);
+        // Window Sliders
+        d3.select('#zoom1-window').on('change', () => {
+            updateZoom2SliderRange();
+            updateAllCharts();
         });
+        d3.select('#zoom2-window').on('change', updateZoom2Chart);
+
+        d3.select('#zoom1-window').on('input', () => {
+            const slider = d3.select('#zoom1-window');
+            d3.select('#zoom1-window-val').text(plotConfig.validTimeSteps[+slider.property('value')].label);
+        });
+        d3.select('#zoom2-window').on('input', () => {
+            const slider = d3.select('#zoom2-window');
+            if (plotConfig.validZoom2Steps.length > 0) {
+                d3.select('#zoom2-window-val').text(plotConfig.validZoom2Steps[+slider.property('value')].label);
+            }
+        });
+        d3.select('#zoom1-pos').on('input', () => d3.select('#zoom1-pos-val').text(d3.select('#zoom1-pos').property('value') + '%'));
+        d3.select('#zoom2-pos').on('input', () => d3.select('#zoom2-pos-val').text(d3.select('#zoom2-pos').property('value') + '%'));
     }
 
     function populateSelectors(store) {
