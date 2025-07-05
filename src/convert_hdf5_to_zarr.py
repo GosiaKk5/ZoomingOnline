@@ -17,25 +17,20 @@ def create_overview(data_slice: np.ndarray, downsampling_factor: int) -> np.ndar
 
 def convert_hdf5_to_zarr(hdf5_file_path: Path, zarr_file_path: Path) -> None:
     if not hdf5_file_path.exists():
-        message = f"HDF5 file not found: {hdf5_file_path}"
-        raise FileNotFoundError(message)
+        raise FileNotFoundError(f"HDF5 file not found: {hdf5_file_path}")
 
     print(f"Opening HDF5 file: {hdf5_file_path}")
     with h5py.File(hdf5_file_path, "r") as hdf5_file:
-        # Assuming the main data is in a dataset named 'data'
-        if "data" not in hdf5_file:
-            message = "HDF5 file must contain a dataset named 'data'"
-            raise KeyError(message)
+        if "samples" not in hdf5_file:
+            raise KeyError("HDF5 file must contain a dataset named 'samples'")
 
-        data = hdf5_file["data"]
+        data = hdf5_file["samples"]
 
         root = zarr.open_group(str(zarr_file_path), mode="w")
 
-        # Copy attributes if they exist
         for key, value in hdf5_file.attrs.items():
             root.attrs[key] = value
 
-        # Optimal chunk size for ~20MB chunks (10M samples * 2 bytes/sample)
         chunk_size = 10_000_000
         compressor = numcodecs.Blosc(cname="zstd", clevel=3, shuffle=numcodecs.Blosc.BITSHUFFLE)
 
@@ -43,13 +38,17 @@ def convert_hdf5_to_zarr(hdf5_file_path: Path, zarr_file_path: Path) -> None:
         raw = root.create_dataset(
             "raw", shape=data.shape, chunks=(1, 1, 1, chunk_size), compressor=compressor, dtype=data.dtype
         )
-        raw[:] = data[:]
+
+        for ch in range(data.shape[0]):
+            for trc in range(data.shape[1]):
+                for seg in range(data.shape[2]):
+                    print(f"  - Copying: ch={ch+1}, trc={trc+1}, seg={seg+1}")
+                    raw[ch, trc, seg, :] = data[ch, trc, seg, :]
 
         print("Pre-calculating and saving overviews...")
         overview_group = root.create_group("overview")
 
         downsampling_factor = max(1, data.shape[-1] // 4000)
-
         overview_shape = (*data.shape[:-1], 2, data.shape[-1] // downsampling_factor)
         overview_data = overview_group.create_dataset(
             "0", shape=overview_shape, chunks=(1, 1, 1, 2, overview_shape[-1]), dtype=data.dtype
@@ -69,10 +68,17 @@ def convert_hdf5_to_zarr(hdf5_file_path: Path, zarr_file_path: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Convert an HDF5 dataset to a multi-resolution Zarr pyramid.")
     parser.add_argument("--input", "-i", required=True, help="Input HDF5 file (e.g. data.h5)")
-    parser.add_argument("--output", "-o", required=True, help="Output Zarr store directory (e.g. data.zarr)")
+    parser.add_argument("--output-dir", "-o", required=True, help="Output directory for Zarr store (e.g. /output/path/)")
 
     args = parser.parse_args()
-    convert_hdf5_to_zarr(Path(args.input), Path(args.output))
+
+    input_path = Path(args.input)
+    output_dir = Path(args.output_dir)
+
+    zarr_filename = input_path.with_suffix(".zarr").name
+    zarr_output_path = output_dir / zarr_filename
+
+    convert_hdf5_to_zarr(input_path, zarr_output_path)
 
 
 if __name__ == "__main__":
