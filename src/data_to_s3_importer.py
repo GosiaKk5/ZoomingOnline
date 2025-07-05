@@ -1,59 +1,105 @@
-import os
-import subprocess
+#!/usr/bin/env python3
+"""
+Konwersja pojedynczego pliku .hdf → .zarr oraz upload na S3 przy użyciu `mc`.
+Po pomyślnym uploadzie domyślnie usuwa lokalny folder .zarr
+(ustaw `--keep-local`, by zachować dane lokalnie).
+"""
+
 import argparse
+import os
+import shutil
+import subprocess
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 from src.convert_hdf5_to_zarr import convert_hdf5_to_zarr
 
+
+# ---------------------------------------------------------------------- #
+#  Helpers
+# ---------------------------------------------------------------------- #
 def load_s3_env() -> dict[str, str]:
+    """Wczytaj zmienne z .env (lub środowiska)."""
     load_dotenv()
     return {
         "access_key": os.getenv("AWS_ACCESS_KEY_ID"),
         "secret_key": os.getenv("AWS_SECRET_ACCESS_KEY"),
-        "endpoint_url": os.getenv("S3_ENDPOINT_URL"),
+        "endpoint_url": os.getenv("S3_ENDPOINT_URL"),  # nieużywane przez mc, ale zostawiamy
         "bucket_name": os.getenv("S3_BUCKET_NAME", "zarr-test-iza"),
     }
 
+
 def convert_and_get_zarr_path(hdf_path: Path, output_dir: Path) -> Path:
-    zarr_name = hdf_path.with_suffix(".zarr").name
-    zarr_path = output_dir / zarr_name
+    """Konwertuj .hdf do .zarr, zwróć ścieżkę do folderu .zarr."""
+    zarr_path = output_dir / hdf_path.with_suffix(".zarr").name
     print(f"\n🔄 Converting {hdf_path} → {zarr_path}")
     convert_hdf5_to_zarr(hdf_path, zarr_path)
     print(f"✅ Conversion complete: {zarr_path}")
     return zarr_path
 
-def upload_zarr_with_mc(local_path: Path, bucket: str, remote_key: str, env: dict) -> None:
-    # Assuming 'mc' is installed and configured to use your S3 endpoint/credentials.
-    # If 'cyf-s3p' is your mc alias, you'd use that.
-    # If not, you might need to dynamically configure mc via environment vars or config file.
-    # This is the simplest form assuming mc is already set up.
-    mc_command = [
-        "mc", "cp", "--recursive",
+
+def upload_zarr_with_mc(
+    local_path: Path,
+    bucket: str,
+    remote_key: str,
+    *,
+    mc_alias: str = "cyf-s3p",
+    keep_local: bool = False,
+) -> None:
+    """Wyślij folder Zarr na S3 przez MinIO Client (`mc`)."""
+    mc_cmd = [
+        "mc",
+        "cp",
+        "--recursive",
         str(local_path),
-        f"cyf-s3p/{bucket}/{remote_key}/"
+        f"{mc_alias}/{bucket}/{remote_key}/",  # trailing slash = folder
     ]
-    print(f"🚀 Executing: {' '.join(mc_command)}")
+    print(f"☁️  Uploading {local_path} → s3://{bucket}/{remote_key} via mc")
     try:
-        result = subprocess.run(mc_command, check=True, capture_output=True, text=True)
+        result = subprocess.run(mc_cmd, check=True, text=True, capture_output=True)
         print(result.stdout)
         if result.stderr:
-            print(f"⚠️  stderr: {result.stderr}")
-        print(f"✅ Uploaded using mc: {local_path} to s3://{bucket}/{remote_key}")
-    except subprocess.CalledProcessError as e:
-        print(f"❌ mc command failed with error: {e}")
-        print(f"Stdout: {e.stdout}")
-        print(f"Stderr: {e.stderr}")
+            print(f"⚠️ stderr: {result.stderr}")
+
+        print("✅ mc upload finished")
+
+        if not keep_local:
+            print(f"🧹 Removing local Zarr: {local_path}")
+            shutil.rmtree(local_path)
+    except subprocess.CalledProcessError as err:
+        print("❌ mc upload failed!")
+        print(f"stdout: {err.stdout}")
+        print(f"stderr: {err.stderr}")
         raise
 
+
+# ---------------------------------------------------------------------- #
+#  Main
+# ---------------------------------------------------------------------- #
 def main() -> None:
     env = load_s3_env()
 
-    parser = argparse.ArgumentParser(description="Convert .hdf to Zarr and upload to S3 via mc.")
-    parser.add_argument("--input", "-i", required=True, help="Path to input .hdf file")
-    parser.add_argument("--output-dir", "-o", required=True, help="Local output dir for Zarr")
-    parser.add_argument("--bucket", help="S3 bucket name (overrides .env)")
-    parser.add_argument("--skip-upload", action="store_true", help="Skip upload step")
+    parser = argparse.ArgumentParser(
+        description="Convert .hdf to .zarr and upload to S3 (via mc)."
+    )
+    parser.add_argument("-i", "--input", required=True, help="Path to .hdf file")
+    parser.add_argument("-o", "--output-dir", required=True, help="Local dir for .zarr")
+    parser.add_argument("--bucket", help="S3 bucket (overrides .env)")
+    parser.add_argument(
+        "--skip-upload", action="store_true", help="Only convert, skip mc upload"
+    )
+    parser.add_argument(
+        "--keep-local",
+        action="store_true",
+        help="Keep local .zarr after successful upload",
+    )
+    parser.add_argument(
+        "--mc-alias",
+        default="cyf-s3p",
+        help="MinIO Client alias pointing at your S3 endpoint (default: cyf-s3p)",
+    )
+
     args = parser.parse_args()
 
     hdf_path = Path(args.input).expanduser().resolve()
@@ -67,10 +113,17 @@ def main() -> None:
 
     zarr_path = convert_and_get_zarr_path(hdf_path, output_dir)
 
-    if not args.skip_upload:
-        upload_zarr_with_mc(zarr_path, bucket_name, zarr_path.name, env)
+    if args.skip_upload:
+        print("⏭️ Upload skipped (flag --skip-upload).")
     else:
-        print("⏭️ Upload skipped.")
+        upload_zarr_with_mc(
+            zarr_path,
+            bucket_name,
+            zarr_path.name,
+            mc_alias=args.mc_alias,
+            keep_local=args.keep_local,
+        )
+
 
 if __name__ == "__main__":
     main()

@@ -3,6 +3,7 @@
 
 # Logs
 /logs/*
+/src/logs/*
 *.log
 *.out
 slurm-*.out
