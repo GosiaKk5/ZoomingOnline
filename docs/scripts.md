@@ -21,14 +21,15 @@ Simulate realistic oscilloscope waveform data and export to Zarr or HDF5.
 - Structured waveform data: shape = (`channels`, `trcs`, `segments`, `samples`)
 - Synthetic waveform types: `sine`, `square`, `sawtooth`, `pulse`
 - Adds:
-    - Random noise, drift, jitter, glitching
-    - Injected synthetic event (pulse spike)
+  - Random noise, drift, jitter, glitching
+  - Injected synthetic event (pulse spike)
 - Saves waveform + metadata to Zarr (or raw HDF5)
 - Automatically builds visualization-ready overviews using min/max downsampling
 
 ### ⚙️ Example Usage
 
 Generate and save to Zarr:
+
 <!-- Check: Run -->
 
 ```bash
@@ -36,6 +37,7 @@ python src/generate_data.py -o output.zarr --channels 2 --samples 100000000
 ```
 
 Generate and save to HDF5:
+
 <!-- Check: Run -->
 
 ```bash
@@ -51,7 +53,7 @@ Default shape:
 ```
 
 | Axis         | Meaning                      |
-|--------------|------------------------------|
+| ------------ | ---------------------------- |
 | 0 (channels) | Oscilloscope input channels  |
 | 1 (trcs)     | "TRC" captures or sessions   |
 | 2 (segments) | Segmented waveform sequences |
@@ -61,10 +63,10 @@ Chunking: (1, 1, 1, 100_000)
 
 ### 💾 Output Structure
 
-| Format | Dataset Name | Compression    | Includes Metadata                      | Overview                     |
-|--------|--------------|----------------|----------------------------------------|------------------------------|
+| Format | Dataset Name | Compression    | Includes Metadata                      | Overview                      |
+| ------ | ------------ | -------------- | -------------------------------------- | ----------------------------- |
 | Zarr   | raw          | Blosc-Zstd     | yes: horizontal interval, gain, offset | ✅ (min/max over sample axis) |
-| HDF5   | data         | Gzip (level 4) | ❌ only raw waveform                    | ❌                            |
+| HDF5   | data         | Gzip (level 4) | ❌ only raw waveform                   | ❌                            |
 
 Zarr metadata saved under root.attrs, e.g.:
 
@@ -87,7 +89,7 @@ z["overview"]["0"][channel, trc, segment, stat, :]
 ### Command-line options:
 
 | Flag             | Description                                         |
-|------------------|-----------------------------------------------------|
+| ---------------- | --------------------------------------------------- |
 | `-o`, `--output` | Output path (`.zarr`, `.h5`)                        |
 | `--samples`      | Samples per segment (default: 100,000,000)          |
 | `--channels`     | Number of channels (default: 2)                     |
@@ -118,7 +120,7 @@ python src/convert_hdf5_to_zarr.py -i input.h5 -o output.zarr
 ### 🧭 Output Structure:
 
 | Zarr Group  | Content                                |
-|-------------|----------------------------------------|
+| ----------- | -------------------------------------- |
 | /raw        | Original waveform samples              |
 | /overview/0 | Downsampled min/max (shape: ..., 2, N) |
 | attrs       | horizontal interval, gains, offsets    |
@@ -126,13 +128,13 @@ python src/convert_hdf5_to_zarr.py -i input.h5 -o output.zarr
 ### ⚠️ HDF5 Requirements
 
 - Must include dataset: `/data`
-    - Expected shape: (channels, trcs, segments, samples)
+  - Expected shape: (channels, trcs, segments, samples)
 - Attributes copied from HDF5 root (if any)
 
 ### Flags
 
 | Flag             | Description                   |
-|------------------|-------------------------------|
+| ---------------- | ----------------------------- |
 | `-i`, `--input`  | Path to input `.h5` file      |
 | `-o`, `--output` | Output path for `.zarr` store |
 
@@ -140,25 +142,47 @@ python src/convert_hdf5_to_zarr.py -i input.h5 -o output.zarr
 
 ## 3️⃣ data_to_s3_importer.py
 
-Batch convert multiple `.h5` waveform files inside a directory to Zarr, and optionally upload to an S3-compatible object
-store.
+Batch convert `.hdf` waveform files to Zarr format and optionally upload them to an S3-compatible object store using
+MinIO Client (`mc`).
 
 ✔️ Good for loading waveform archives into online object stores with conversion + compression support.
 
+### ✅ Key Features
+
+- Converts `.hdf` files to `.zarr` format
+- Uploads `.zarr` folders to S3 bucket using `mc`
+- Supports skipping upload (`--skip-upload`) or keeping local `.zarr` files (`--keep-local`)
+
 ### ⚙️ Example:
 
+Convert and upload:
+
 ```bash
-python src/data_to_s3_importer.py data/
+python src/data_to_s3_importer.py -i input.hdf -o output_dir --bucket my-bucket
+```
+
+Convert only (skip upload):
+
+```bash
+python src/data_to_s3_importer.py -i input.hdf -o output_dir --skip-upload
+```
+
+Batch conversion using Slurm:
+
+```bash
+sbatch src/run_conversion.slurm /path/to/file.hdf
 ```
 
 ### Flags
 
-| Flag          | Description                 |
-|---------------|-----------------------------|
-| --bucket      | Target S3 bucket name       |
-| --skip-upload | Run conversion locally only |
-
-Supports S3 credentials via environment or CLI override.
+| Flag                 | Description                                           |
+| -------------------- | ----------------------------------------------------- |
+| `-i`, `--input`      | Path to `.hdf` file                                   |
+| `-o`, `--output-dir` | Local directory for `.zarr` output                    |
+| `--bucket`           | Target S3 bucket name (overrides `.env`)              |
+| `--skip-upload`      | Run conversion locally only                           |
+| `--keep-local`       | Keep local `.zarr` after successful upload            |
+| `--mc-alias`         | MinIO Client alias for S3 endpoint (default: cyf-s3p) |
 
 ---
 
@@ -177,5 +201,5 @@ Open at: http://localhost:8080
 ### Flags:
 
 | Flag         | Description                   |
-|--------------|-------------------------------|
+| ------------ | ----------------------------- |
 | --port, `-p` | Port to serve (default: 8000) |
