@@ -567,7 +567,7 @@
     function initialize() {
         generateTimeSteps();
         const urlParams = new URLSearchParams(window.location.search);
-        const zarrUrl = urlParams.get('zarrUrl');
+        const dataUrl = urlParams.get('data');
 
         const loadData = async (url) => {
             document.getElementById('input-container').style.display = 'none';
@@ -584,16 +584,16 @@
             }
         };
 
-        if (zarrUrl) loadData(zarrUrl);
+        if (dataUrl) loadData(dataUrl);
         else document.getElementById('input-container').style.display = 'block';
 
         document.getElementById('load-button').addEventListener('click', () => {
-            const zarrUrlInput = document.getElementById('zarr-input').value;
-            if (zarrUrlInput) {
+            const dataUrlInput = document.getElementById('zarr-input').value;
+            if (dataUrlInput) {
                 const newUrl = new URL(window.location);
-                newUrl.searchParams.set('zarrUrl', zarrUrlInput);
+                newUrl.searchParams.set('data', dataUrlInput);
                 window.history.pushState({path: newUrl.href}, '', newUrl.href);
-                loadData(zarrUrlInput);
+                loadData(dataUrlInput);
             }
         });
 
