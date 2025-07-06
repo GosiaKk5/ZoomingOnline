@@ -1,16 +1,15 @@
-from contextlib import suppress
 from pathlib import Path
-from subprocess import CalledProcessError
 from unittest import mock
 
 import h5py
 import numpy as np
+import pytest
 from _pytest.monkeypatch import MonkeyPatch
 
 from src.data_to_s3_importer import (
     convert_and_get_zarr_path,
     load_s3_env,
-    upload_zarr_with_mc,
+    upload_zarr_to_s3,
 )
 
 
@@ -26,6 +25,7 @@ def test_load_s3_env(monkeypatch: MonkeyPatch) -> None:
     monkeypatch.setenv("S3_BUCKET_NAME", "test-bucket")
 
     env = load_s3_env()
+
     assert env["access_key"] == "testing-key"
     assert env["secret_key"] == "testing-secret-key"  # noqa: S105
     assert env["endpoint_url"] == "https://fake.endpoint"
@@ -33,7 +33,10 @@ def test_load_s3_env(monkeypatch: MonkeyPatch) -> None:
 
 
 @mock.patch("src.data_to_s3_importer.convert_hdf5_to_zarr")
-def test_convert_and_get_zarr_path_calls_converter(mock_convert: mock.MagicMock, tmp_path: Path) -> None:
+def test_convert_and_get_zarr_path_calls_converter(
+    mock_convert: mock.MagicMock,
+    tmp_path: Path,
+) -> None:
     hdf_path = tmp_path / "input.hdf"
     hdf_path.touch()
     output_dir = tmp_path / "output"
@@ -47,57 +50,54 @@ def test_convert_and_get_zarr_path_calls_converter(mock_convert: mock.MagicMock,
 
 
 @mock.patch("shutil.rmtree")
-@mock.patch("subprocess.run")
-def test_upload_zarr_with_mc_success(
-    mock_run: mock.MagicMock,
+@mock.patch("zarr.copy_store")
+@mock.patch("s3fs.S3Map")
+def test_upload_zarr_to_s3_success(
+    mock_s3map: mock.MagicMock,
+    mock_copy: mock.MagicMock,
     mock_rmtree: mock.MagicMock,
     tmp_path: Path,
 ) -> None:
     local_path = tmp_path / "converted.zarr"
     local_path.mkdir()
+    (local_path / ".zgroup").touch()
 
-    mock_run.return_value = mock.Mock(
-        returncode=0,
-        stdout="OK\n",
-        stderr="",
-    )
-
-    upload_zarr_with_mc(
+    upload_zarr_to_s3(
         local_path=local_path,
         bucket="test-bucket",
         remote_key="converted.zarr",
-        mc_alias="my-alias",
+        endpoint_url="https://fake.endpoint",
+        access_key="key",
+        secret_key="secret",  # noqa: S106
         keep_local=False,
     )
 
-    expected_cmd = [
-        "mc",
-        "cp",
-        "--recursive",
-        str(local_path),
-        "my-alias/test-bucket/converted.zarr/",
-    ]
-
-    mock_run.assert_called_once_with(expected_cmd, check=True, text=True, capture_output=True)
+    mock_s3map.assert_called_once()
+    mock_copy.assert_called_once()
     mock_rmtree.assert_called_once_with(local_path)
 
 
-@mock.patch("subprocess.run")
-def test_upload_zarr_with_mc_error_handling(
-    mock_run: mock.MagicMock,
+@mock.patch("zarr.copy_store", side_effect=RuntimeError("Zarr failed"))
+@mock.patch("s3fs.S3Map")
+def test_upload_zarr_to_s3_error(
+    mock_s3map: mock.MagicMock,
+    mock_copy: mock.MagicMock,
     tmp_path: Path,
 ) -> None:
-    local_path = tmp_path / "zarr"
+    local_path = tmp_path / "broken.zarr"
     local_path.mkdir()
-    mock_run.side_effect = CalledProcessError(
-        returncode=1,
-        cmd=["mc", "cp", str(local_path)],
-        output="some stdout",
-        stderr="upload error",
-    )
+    (local_path / ".zgroup").touch()
 
-    # ✅ SIM105: Use contextlib.suppress instead of try/except/pass
-    with suppress(CalledProcessError):
-        upload_zarr_with_mc(local_path, bucket="test-bucket", remote_key="zarr")
+    with pytest.raises(RuntimeError, match="Zarr failed"):
+        upload_zarr_to_s3(
+            local_path=local_path,
+            bucket="bucket",
+            remote_key="key",
+            endpoint_url="https://fake",
+            access_key="x",
+            secret_key="x",  # noqa: S106
+            keep_local=True,
+        )
 
-    assert mock_run.called
+    assert mock_s3map.called
+    assert mock_copy.called
