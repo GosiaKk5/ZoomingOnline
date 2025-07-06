@@ -589,7 +589,12 @@
 
         document.getElementById('load-button').addEventListener('click', () => {
             const zarrUrlInput = document.getElementById('zarr-input').value;
-            if (zarrUrlInput) loadData(zarrUrlInput);
+            if (zarrUrlInput) {
+                const newUrl = new URL(window.location);
+                newUrl.searchParams.set('zarrUrl', zarrUrlInput);
+                window.history.pushState({path: newUrl.href}, '', newUrl.href);
+                loadData(zarrUrlInput);
+            }
         });
 
         document.getElementById('plot-button').addEventListener('click', plotData);
