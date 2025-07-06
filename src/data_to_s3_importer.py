@@ -26,7 +26,7 @@ def load_s3_env() -> dict[str, str]:
         "access_key": os.getenv("AWS_ACCESS_KEY_ID"),
         "secret_key": os.getenv("AWS_SECRET_ACCESS_KEY"),
         "endpoint_url": os.getenv("S3_ENDPOINT_URL"),  # nieużywane przez mc, ale zostawiamy
-        "bucket_name": os.getenv("S3_BUCKET_NAME", "zarr-test-iza"),
+        "bucket_name": os.getenv("S3_BUCKET_NAME", "zooming-data"),
     }
 
 
@@ -44,7 +44,7 @@ def upload_zarr_with_mc(
     bucket: str,
     remote_key: str,
     *,
-    mc_alias: str = "cyf-s3p",
+    mc_alias: str = "cyf-public",
     keep_local: bool = False,
 ) -> None:
     """Wyślij folder Zarr na S3 przez MinIO Client (`mc`)."""
@@ -96,8 +96,8 @@ def main() -> None:
     )
     parser.add_argument(
         "--mc-alias",
-        default="cyf-s3p",
-        help="MinIO Client alias pointing at your S3 endpoint (default: cyf-s3p)",
+        default="cyf-public",
+        help="MinIO Client alias pointing at your S3 endpoint (default: cyf-public)",
     )
 
     args = parser.parse_args()
