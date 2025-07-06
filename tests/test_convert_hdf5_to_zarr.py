@@ -11,7 +11,7 @@ def create_dummy_hdf5_file(file_path: Path) -> np.ndarray:
     rng = np.random.default_rng()
     data = rng.integers(0, 255, size=(1, 1, 1, 1000), dtype=np.uint8)
     with h5py.File(file_path, "w") as f:
-        f.create_dataset("data", data=data)
+        f.create_dataset("samples", data=data)
     return data
 
 
