@@ -1,10 +1,3 @@
-#!/usr/bin/env python3
-"""
-Konwersja pojedynczego pliku .hdf → .zarr oraz upload na S3 przy użyciu `mc`.
-Po pomyślnym uploadzie domyślnie usuwa lokalny folder .zarr
-(ustaw `--keep-local`, by zachować dane lokalnie).
-"""
-
 import argparse
 import os
 import shutil
@@ -57,7 +50,7 @@ def upload_zarr_with_mc(
     ]
     print(f"☁️  Uploading {local_path} → s3://{bucket}/{remote_key} via mc")
     try:
-        result = subprocess.run(mc_cmd, check=True, text=True, capture_output=True)
+        result = subprocess.run(mc_cmd, check=True, text=True, capture_output=True)  # noqa: S603
         print(result.stdout)
         if result.stderr:
             print(f"⚠️ stderr: {result.stderr}")
@@ -80,15 +73,11 @@ def upload_zarr_with_mc(
 def main() -> None:
     env = load_s3_env()
 
-    parser = argparse.ArgumentParser(
-        description="Convert .hdf to .zarr and upload to S3 (via mc)."
-    )
+    parser = argparse.ArgumentParser(description="Convert .hdf to .zarr and upload to S3 (via mc).")
     parser.add_argument("-i", "--input", required=True, help="Path to .hdf file")
     parser.add_argument("-o", "--output-dir", required=True, help="Local dir for .zarr")
     parser.add_argument("--bucket", help="S3 bucket (overrides .env)")
-    parser.add_argument(
-        "--skip-upload", action="store_true", help="Only convert, skip mc upload"
-    )
+    parser.add_argument("--skip-upload", action="store_true", help="Only convert, skip mc upload")
     parser.add_argument(
         "--keep-local",
         action="store_true",
@@ -107,7 +96,8 @@ def main() -> None:
     bucket_name = args.bucket or env["bucket_name"]
 
     if not hdf_path.exists() or hdf_path.suffix != ".hdf":
-        raise FileNotFoundError(f"❌ Input file not found or not a .hdf file: {hdf_path}")
+        message = f"❌ Input file not found or not a .hdf file: {hdf_path}"
+        raise FileNotFoundError(message)
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
