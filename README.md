@@ -15,6 +15,8 @@ ZoomingOnline is a web-based data visualization supporting the efficient and sca
 
 🌐 Try it live: [https://gosiakk5.github.io/ZoomingOnline/](https://gosiakk5.github.io/ZoomingOnline/)
 
+Example Zarr file on s3: https://storagegw.cloud.cyfronet.pl/files/zarr-test-iza/20231204m4.zarr/20231204m4.zarr/.
+
 ## 🎯 Aim of the Project
 
 The aim of **ZoomingOnline** is to provide a high-performance web viewer for interactively exploring massive,
@@ -56,7 +58,8 @@ Key features include:
    ```
 4. View in browser: http://localhost:8000/website, website/index.html or on online
    at [https://gosiakk5.github.io/ZoomingOnline/](https://gosiakk5.github.io/ZoomingOnline/)
-5. In the input field enter http://localhost:8000/waveform.zarr or any other Zarr URL
+5. In the input field enter http://localhost:8000/waveform.zarr or any other Zarr URL, you can also set path to
+   the Zarr file in query parameters, e.g. https://gosiakk5.github.io/ZoomingOnline/?zarrUrl=http://localhost:8000/waveform.zarr
 
 ## 📄 License
 
