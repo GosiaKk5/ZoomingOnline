@@ -58,7 +58,8 @@ Key features include:
    ```
 4. View in browser: http://localhost:8000/website, website/index.html or on online
    at [https://gosiakk5.github.io/ZoomingOnline/](https://gosiakk5.github.io/ZoomingOnline/)
-5. In the input field enter http://localhost:8000/waveform.zarr or any other Zarr URL
+5. In the input field enter http://localhost:8000/waveform.zarr or any other Zarr URL, you can also set path to
+   the Zarr file in query parameters, e.g. https://gosiakk5.github.io/ZoomingOnline/?zarrUrl=http://localhost:8000/waveform.zarr
 
 ## 📄 License
 
