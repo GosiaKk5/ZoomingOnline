@@ -4,6 +4,7 @@ import argparse
 import os
 import shutil
 import subprocess
+import time
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -36,14 +37,18 @@ def upload_zarr_with_mc(
     mc_alias: str = "cyf-public",
     keep_local: bool = False,
 ) -> None:
+    mc_bin = str(Path.home() / "minio-mc")
     mc_cmd = [
-        "mc",
+        mc_bin,
         "cp",
         "--recursive",
         str(local_path),
         f"{mc_alias}/{bucket}/{remote_key}/",
     ]
-    print(f"☁️ Uploading {local_path} → s3://{bucket}/{remote_key} via mc")
+
+    print(f"☁️ Uploading {local_path} → s3://{bucket}/{remote_key} via `{mc_bin}`")
+    time.sleep(1)
+
     try:
         result = subprocess.run(mc_cmd, check=True, text=True, capture_output=True)
         print(result.stdout)
@@ -57,6 +62,8 @@ def upload_zarr_with_mc(
 
     except subprocess.CalledProcessError as err:
         print("❌ mc upload failed!")
+        print(f"Command: {' '.join(mc_cmd)}")
+        print(f"Return code: {err.returncode}")
         print(f"stdout:\n{err.stdout}")
         print(f"stderr:\n{err.stderr}")
         raise
