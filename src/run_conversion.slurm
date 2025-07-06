@@ -25,7 +25,7 @@ if [ ! -f "$HDF_FILE" ]; then
 fi
 
 OUTPUT_DIR="/net/people/plgrid/plgizabellarosikon/ZoomingOnline/tests"
-BUCKET_NAME="zarr-test-iza"
+BUCKET_NAME="zooming-online"
 
 python3 -m src.data_to_s3_importer \
   --input "$HDF_FILE" \
