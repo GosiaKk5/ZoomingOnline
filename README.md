@@ -12,7 +12,8 @@ ZoomingOnline is a web-based data visualization supporting the efficient and sca
 
 ![demo](./docs/assets/demo.gif)
 
-🌐 Try it live: [https://gosiakk5.github.io/ZoomingOnline/](https://gosiakk5.github.io/ZoomingOnline/)
+🌐 Try it live:
+[https://gosiakk5.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/20231204m4/20231204m4.zarr](https://gosiakk5.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/20231204m4/20231204m4.zarr)
 
 Example Zarr file on s3: https://s3.cloud.cyfronet.pl/zooming-online/20231204m4/20231204m4.zarr
 
