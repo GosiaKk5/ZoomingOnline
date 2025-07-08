@@ -65,6 +65,11 @@ Key features include:
    the Zarr file in query parameters,
    e.g. https://gosiakk5.github.io/ZoomingOnline/?data=http://localhost:8000/waveform.zarr
 
+## Zarr Version Support
+This project currently supports Zarr v2.
+
+To add support for Zarr v3, migration to [zarrita.js](https://github.com/manzt/zarrita.js) is required.
+
 ## 📄 License
 
 MIT License — see [LICENSE](LICENSE)
