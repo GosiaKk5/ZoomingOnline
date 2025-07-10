@@ -13,7 +13,7 @@ ZoomingOnline is a web-based data visualization supporting the efficient and sca
 ![demo](./docs/assets/demo.gif)
 
 🌐 Try it live:
-[https://gosiakk5.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/20231204m4/20231204m4.zarr](https://gosiakk5.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/20231204m4/20231204m4.zarr)
+[https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/20231204m4/20231204m4.zarr](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/20231204m4/20231204m4.zarr)
 
 Example Zarr files on s3: 
 - https://s3.cloud.cyfronet.pl/zooming-online/20231204m4/20231204m4.zarr
@@ -60,10 +60,10 @@ Key features include:
    python src/cors_server.py
    ```
 4. View in browser: http://localhost:8000/website, website/index.html or on online
-   at [https://gosiakk5.github.io/ZoomingOnline/](https://gosiakk5.github.io/ZoomingOnline/)
+   at [https://datamedsci.github.io/ZoomingOnline/](https://datamedsci.github.io/ZoomingOnline/)
 5. In the input field enter http://localhost:8000/waveform.zarr or any other Zarr URL, you can also set path to
    the Zarr file in query parameters,
-   e.g. https://gosiakk5.github.io/ZoomingOnline/?data=http://localhost:8000/waveform.zarr
+   e.g. https://datamedsci.github.io/ZoomingOnline/?data=http://localhost:8000/waveform.zarr
 
 ## Zarr Version Support
 This project currently supports Zarr v2.
