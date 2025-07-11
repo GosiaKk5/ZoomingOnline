@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 
 from dotenv import load_dotenv
+
 from src.convert_hdf5_to_zarr import convert_hdf5_to_zarr
 
 
@@ -50,7 +51,7 @@ def upload_zarr_with_mc(
     time.sleep(1)
 
     try:
-        result = subprocess.run(mc_cmd, check=True, text=True, capture_output=True)
+        result = subprocess.run(mc_cmd, check=True, text=True, capture_output=True)  # noqa: S603
         print(result.stdout)
         if result.stderr:
             print(f"⚠️ stderr: {result.stderr}")
@@ -86,8 +87,15 @@ def main() -> None:
     output_dir = Path(args.output_dir).expanduser().resolve()
     bucket_name = args.bucket or env["bucket_name"]
 
-    if not hdf_path.exists() or hdf_path.suffix != ".hdf":
-        raise FileNotFoundError(f"❌ Input file not found or not a .hdf file: {hdf_path}")
+    if not hdf_path.exists():
+        error_message = f"❌ Input file not found: {hdf_path}"
+        raise FileNotFoundError(error_message)
+    if not hdf_path.is_file():
+        error_message = f"❌ Input path is a directory, not a file: {hdf_path}"
+        raise IsADirectoryError(error_message)
+    if hdf_path.suffix.lower() != ".hdf":  # Using .lower() for case-insensitivity
+        error_message = f"❌ Input file is not a .hdf file: {hdf_path} (expected .hdf)"
+        raise ValueError(error_message)
 
     output_dir.mkdir(parents=True, exist_ok=True)
     zarr_path = convert_and_get_zarr_path(hdf_path, output_dir)

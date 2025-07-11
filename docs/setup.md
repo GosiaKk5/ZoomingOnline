@@ -8,7 +8,7 @@ environment.
 - Python 3.11 or newer
 - Git
 - Web browser
-- (Optional) Access to S3-compatible object storage (e.g., MinIO, Cyfronet S3P)
+- (Optional) Access to S3-compatible object storage (e.g., MinIO, Cyfronet S3)
 
 > 📝 Note for Windows users: the h5py package requires HDF5 pre-installed and discoverable on your system. The build
 > process for h5py will fail if the HDF5 library (e.g. hdf5.dll) is not accessible. Please ensure you have HDF5 installed
