@@ -51,7 +51,7 @@ def upload_zarr_with_mc(
     time.sleep(1)
 
     try:
-        result = subprocess.run(mc_cmd, check=True, text=True, capture_output=True) # noqa: S603
+        result = subprocess.run(mc_cmd, check=True, text=True, capture_output=True)  # noqa: S603
         print(result.stdout)
         if result.stderr:
             print(f"⚠️ stderr: {result.stderr}")
@@ -93,7 +93,7 @@ def main() -> None:
     if not hdf_path.is_file():
         error_message = f"❌ Input path is a directory, not a file: {hdf_path}"
         raise IsADirectoryError(error_message)
-    if hdf_path.suffix.lower() != ".hdf": # Using .lower() for case-insensitivity
+    if hdf_path.suffix.lower() != ".hdf":  # Using .lower() for case-insensitivity
         error_message = f"❌ Input file is not a .hdf file: {hdf_path} (expected .hdf)"
         raise ValueError(error_message)
 

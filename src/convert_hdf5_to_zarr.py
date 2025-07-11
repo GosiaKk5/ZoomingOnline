@@ -53,15 +53,11 @@ def convert_hdf5_to_zarr(hdf_path: Path, zarr_path: Path) -> None:  # noqa: C901
             root.attrs["vertical_offsets"] = h5["vertical_offset"][:].tolist()
         if "horiz_offset" in h5:
             offset = h5["horiz_offset"][:]
-            root.attrs["horiz_offset"] = (
-                offset.tolist() if offset.ndim > 0 else float(offset)
-            )
+            root.attrs["horiz_offset"] = offset.tolist() if offset.ndim > 0 else float(offset)
 
         ensure_required_attrs(root, n_channels=data.shape[0])
 
-        compressor = numcodecs.Blosc(
-            cname="zstd", clevel=3, shuffle=numcodecs.Blosc.BITSHUFFLE
-        )
+        compressor = numcodecs.Blosc(cname="zstd", clevel=3, shuffle=numcodecs.Blosc.BITSHUFFLE)
         chunk_size = 10_000_000
         print("📦 Creating dataset 'raw'...")
         raw = root.create_dataset(
@@ -75,35 +71,27 @@ def convert_hdf5_to_zarr(hdf_path: Path, zarr_path: Path) -> None:  # noqa: C901
         for ch in range(data.shape[0]):
             for trc in range(data.shape[1]):
                 for seg in range(data.shape[2]):
-                    print(f"  • Coping raw: ch={ch+1}, trc={trc+1}, seg={seg+1}")
+                    print(f"  • Coping raw: ch={ch + 1}, trc={trc + 1}, seg={seg + 1}")
                     raw[ch, trc, seg, :] = data[ch, trc, seg, :]
 
         print("🔍 Generating overview (0)...")
         ov_group = root.create_group("overview")
         downsample = max(1, data.shape[-1] // 4000)
         ov_shape = (*data.shape[:-1], 2, data.shape[-1] // downsample)
-        overview = ov_group.create_dataset(
-            "0", shape=ov_shape, chunks=(1, 1, 1, 2, ov_shape[-1]), dtype=data.dtype
-        )
+        overview = ov_group.create_dataset("0", shape=ov_shape, chunks=(1, 1, 1, 2, ov_shape[-1]), dtype=data.dtype)
 
         for ch in range(data.shape[0]):
             for trc in range(data.shape[1]):
                 for seg in range(data.shape[2]):
-                    overview[ch, trc, seg, :, :] = create_overview(
-                        data[ch, trc, seg, :], downsample
-                    )
+                    overview[ch, trc, seg, :, :] = create_overview(data[ch, trc, seg, :], downsample)
 
     print(f"✅ Done! Saved: {zarr_path}")
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Conversion HDF5 → Zarr (overview + metadata)."
-    )
+    parser = argparse.ArgumentParser(description="Conversion HDF5 → Zarr (overview + metadata).")
     parser.add_argument("-i", "--input", required=True, help="Input file .hdf")
-    parser.add_argument(
-        "-o", "--output-dir", required=True, help="Output dir for .zarr"
-    )
+    parser.add_argument("-o", "--output-dir", required=True, help="Output dir for .zarr")
     args = parser.parse_args()
 
     hdf_path = Path(args.input).expanduser().resolve()
