@@ -20,7 +20,7 @@ jobs:
       - name: Prepare site
         run: |
           mkdir -p site/js
-          cp -R website/ site/
+          cp -R website/. site/
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
