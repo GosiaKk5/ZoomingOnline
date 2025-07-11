@@ -24,17 +24,19 @@ def ensure_required_attrs(root: zarr.Group, n_channels: int) -> None:
     for key, val in defaults.items():
         if key not in root.attrs:
             root.attrs[key] = val
-            print(f"ℹ️  Added missing attr: {key} = {val}")
+            print(f"ℹ️  Added missing attr: {key} = {val}")  # noqa: RUF001
 
 
-def convert_hdf5_to_zarr(hdf_path: Path, zarr_path: Path) -> None:
+def convert_hdf5_to_zarr(hdf_path: Path, zarr_path: Path) -> None:  # noqa: C901, PLR0912
     if not hdf_path.exists():
-        raise FileNotFoundError(f"HDF5 file not found: {hdf_path}")
+        error_message = f"❌ Input file not found: {hdf_path}"
+        raise FileNotFoundError(error_message)
 
-    print(f"📂 OOpening HDF5: {hdf_path}")
+    print(f"📂 Opening HDF5: {hdf_path}")
     with h5py.File(hdf_path, "r") as h5:
         if "samples" not in h5:
-            raise KeyError("No 'samples' dataset in file.")
+            message = f"❌ No 'samples' dataset found in HDF5 file: {hdf_path}."
+            raise KeyError(message)
 
         data = h5["samples"]
         root = zarr.open_group(str(zarr_path), mode="w")
@@ -42,7 +44,7 @@ def convert_hdf5_to_zarr(hdf_path: Path, zarr_path: Path) -> None:
         for k, v in h5.attrs.items():
             try:
                 root.attrs[k] = v.tolist() if hasattr(v, "tolist") else v
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 print(f"⚠️  Skipped attr {k}: {e}")
 
         if "vertical_gain" in h5:
