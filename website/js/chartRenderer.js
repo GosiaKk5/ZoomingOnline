@@ -1,13 +1,11 @@
 import { getRawDataSlice } from './dataLoader.js';
 import { getZoomDomains } from './timeUtils.js';
 
-let plotConfig = null; // This will hold the configuration for the current plot
-
-// Export plotConfig so main.js can access it
-export { plotConfig };
+// plotConfig will be accessed directly from window.appState
+// No need to export/import it directly here.
 
 // --- Main Plotting Logic ---
-export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCache, timeSteps) {
+export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCache) {
     // Update global appState with the latest stores and cache
     window.appState.rawStore = rawStore;
     window.appState.zarrGroup = zarrGroup;
@@ -41,16 +39,16 @@ export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCach
     const adcToMv = (adc) => 1000 * (adc * vertical_gain - vertical_offset);
     const total_time_us = (no_of_samples - 1) * horiz_interval * 1e6;
 
-    plotConfig = { // This is where plotConfig is set for the current plot
+    // Initialize plotConfig within the global appState
+    window.appState.plotConfig = {
         margin, width, height, fullWidth, chartHeight,
         horiz_interval, no_of_samples, total_time_us,
         adcToMv,
         channel, trc, segment,
-        // These will be populated by setupTimeSliders in main.js
+        // These will be populated by setupTimeSliders in timeUtils.js
         validTimeSteps: [],
         validZoom2Steps: []
     };
-    window.appState.plotConfig = plotConfig; // Update global app state
 
     const overviewLoadingText = d3.select("#overview-chart").append("svg").attr("viewBox", `0 0 ${fullWidth} ${chartHeight}`).append("g").attr("transform", `translate(${margin.left},${margin.top})`).append("text").attr("class", "loading-text").attr("x", width / 2).attr("y", height / 2).text("Loading overview...");
 
@@ -68,19 +66,20 @@ export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCach
         };
     });
 
-    plotConfig.overviewData = overviewData;
-    plotConfig.globalYMin = d3.min(overviewData, d => d.min_mv);
-    plotConfig.globalYMax = d3.max(overviewData, d => d.max_mv);
+    window.appState.plotConfig.overviewData = overviewData;
+    window.appState.plotConfig.globalYMin = d3.min(overviewData, d => d.min_mv);
+    window.appState.plotConfig.globalYMax = d3.max(overviewData, d => d.max_mv);
     overviewLoadingText.remove();
 
-    await updateAllCharts();
+    // Do NOT call updateAllCharts here. It will be called from main.js after setupTimeSliders.
 }
 
 
 export async function updateAllCharts() {
-    if (!plotConfig) return; // Ensure plotConfig is initialized
+    const plotConfig = window.appState.plotConfig; // Get current plotConfig from appState
+    if (!plotConfig) return;
     const {width, height, total_time_us, overviewData, globalYMin, globalYMax} = plotConfig;
-    const {zoom1Domain} = getZoomDomains(plotConfig);
+    const {zoom1Domain} = getZoomDomains(); // getZoomDomains now takes no arguments, accesses appState directly
 
     // --- Draw Overview Chart (Chart 0) ---
     d3.select("#overview-chart").selectAll("*").remove();
@@ -103,9 +102,10 @@ export async function updateAllCharts() {
 }
 
 export async function updateZoom2Chart() {
+    const plotConfig = window.appState.plotConfig; // Get current plotConfig from appState
     if (!plotConfig) return;
     const {width} = plotConfig;
-    const {zoom1Domain, zoom2Domain} = getZoomDomains(plotConfig);
+    const {zoom1Domain, zoom2Domain} = getZoomDomains(); // getZoomDomains now takes no arguments, accesses appState directly
 
     // --- Draw Zoom 2 Chart ---
     d3.select("#zoom2-chart").selectAll("*").remove();
@@ -126,6 +126,7 @@ export async function updateZoom2Chart() {
 }
 
 function createChartSVG(selector, title) {
+    const plotConfig = window.appState.plotConfig;
     const {margin, width, height, fullWidth, chartHeight} = plotConfig;
     const svg = d3.select(selector)
         .append("svg").attr("viewBox", `0 0 ${fullWidth} ${chartHeight}`)
@@ -137,6 +138,7 @@ function createChartSVG(selector, title) {
 }
 
 function drawAxes(svg, xScale, yScale, xLabel) {
+    const plotConfig = window.appState.plotConfig;
     const {height, margin, width} = plotConfig;
     svg.append("g").attr("transform", `translate(0, ${height})`).call(d3.axisBottom(xScale).ticks(5).tickFormat(d3.format(".3f")));
     svg.append("g").call(d3.axisLeft(yScale).ticks(5));
@@ -152,6 +154,7 @@ function drawLine(svg, data, xScale, yScale, xAcc, yAcc) {
 }
 
 async function renderDetail(svg, domain_us, xLabel) {
+    const plotConfig = window.appState.plotConfig;
     const {horiz_interval, no_of_samples, adcToMv, channel, trc, segment, width, height} = plotConfig;
 
     const loadingText = svg.append("text").attr("class", "loading-text").attr("x", width / 2).attr("y", height / 2).text("Loading detail...");

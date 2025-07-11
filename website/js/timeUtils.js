@@ -1,7 +1,9 @@
-export const timeSteps = []; // Exported so other modules can access it if needed
+// timeSteps will now be part of window.appState
+// export const timeSteps = []; // No longer directly exported, accessed via window.appState.timeSteps
 
 export function generateTimeSteps() {
-    if (timeSteps.length > 0) return;
+    // Populate window.appState.timeSteps directly
+    if (window.appState.timeSteps.length > 0) return;
     const units = {'ms': 1e3, 'ns': 1e-3, 'µs': 1,};
     const bases = [1, 2, 5];
     const addedValues = new Set();
@@ -16,7 +18,7 @@ export function generateTimeSteps() {
 
                 const value_us = val * units[unit];
                 if (!addedValues.has(value_us)) {
-                    timeSteps.push({
+                    window.appState.timeSteps.push({
                         label: `${val} ${unit}`,
                         value_us: value_us
                     });
@@ -25,17 +27,26 @@ export function generateTimeSteps() {
             });
         }
     }
-    timeSteps.sort((a, b) => a.value_us - b.value_us);
+    window.appState.timeSteps.sort((a, b) => a.value_us - b.value_us);
 }
 
-export function getZoomDomains(plotConfig) {
+export function getZoomDomains() {
+    const plotConfig = window.appState.plotConfig; // Access plotConfig from global state
+    if (!plotConfig) {
+        console.error("getZoomDomains: plotConfig is not defined.");
+        // Return a default or throw an error, depending on desired behavior
+        return { zoom1Domain: [0, 1], zoom2Domain: [0, 1] };
+    }
+
     const {total_time_us} = plotConfig;
     const zoom1Pos = +document.getElementById('zoom1-pos').value / 100;
     const zoom1_index = +document.getElementById('zoom1-window').value;
+    // CRITICAL FIX: Ensure validTimeSteps is populated before access
     const zoom1_window_us = plotConfig.validTimeSteps[zoom1_index].value_us;
 
     const zoom2Pos = +document.getElementById('zoom2-pos').value / 100;
     const zoom2_index = +document.getElementById('zoom2-window').value;
+    // CRITICAL FIX: Ensure validZoom2Steps is populated before access
     const zoom2_window_us = plotConfig.validZoom2Steps[zoom2_index].value_us;
 
     const zoom1HalfWidth_us = zoom1_window_us / 2;
@@ -56,12 +67,15 @@ export function getZoomDomains(plotConfig) {
     return {zoom1Domain, zoom2Domain};
 }
 
-export function setupTimeSliders(total_time_us, validTimeSteps) {
+export function setupTimeSliders() {
+    const plotConfig = window.appState.plotConfig; // Access plotConfig from global state
+    const total_time_us = plotConfig.total_time_us; // Get total_time_us from plotConfig
+
     const slider1 = d3.select("#zoom1-window");
     const valueSpan1 = d3.select("#zoom1-window-val");
 
-    // Ensure plotConfig is accessible and up-to-date
-    window.appState.plotConfig.validTimeSteps = timeSteps.filter(step => step.value_us < total_time_us);
+    // Populate plotConfig.validTimeSteps using the globally available timeSteps
+    window.appState.plotConfig.validTimeSteps = window.appState.timeSteps.filter(step => step.value_us < total_time_us);
 
     slider1
         .attr('min', 0)
@@ -75,28 +89,30 @@ export function setupTimeSliders(total_time_us, validTimeSteps) {
 }
 
 export function updateZoom2SliderRange() {
+    const plotConfig = window.appState.plotConfig; // Access plotConfig from global state
+
     const slider1 = d3.select("#zoom1-window");
     const slider2 = d3.select("#zoom2-window");
     const valueSpan2 = d3.select("#zoom2-window-val");
 
-    const currentVal1_us = window.appState.plotConfig.validTimeSteps[+slider1.property('value')].value_us;
-    window.appState.plotConfig.validZoom2Steps = window.appState.plotConfig.validTimeSteps.filter(step => step.value_us < currentVal1_us);
+    const currentVal1_us = plotConfig.validTimeSteps[+slider1.property('value')].value_us;
+    plotConfig.validZoom2Steps = plotConfig.validTimeSteps.filter(step => step.value_us < currentVal1_us);
 
     const currentVal2_idx = +slider2.property('value');
 
     slider2
         .attr('min', 0)
-        .attr('max', window.appState.plotConfig.validZoom2Steps.length - 1)
+        .attr('max', plotConfig.validZoom2Steps.length - 1)
         .attr('step', 1);
 
     let newIndex = currentVal2_idx;
-    if (newIndex >= window.appState.plotConfig.validZoom2Steps.length) {
-        newIndex = Math.max(0, window.appState.plotConfig.validZoom2Steps.length - 1);
+    if (newIndex >= plotConfig.validZoom2Steps.length) {
+        newIndex = Math.max(0, plotConfig.validZoom2Steps.length - 1);
         slider2.property('value', newIndex);
     }
 
-    if (window.appState.plotConfig.validZoom2Steps.length > 0) {
-        valueSpan2.text(window.appState.plotConfig.validZoom2Steps[newIndex].label);
+    if (plotConfig.validZoom2Steps.length > 0) {
+        valueSpan2.text(plotConfig.validZoom2Steps[newIndex].label);
     } else {
         valueSpan2.text('');
     }

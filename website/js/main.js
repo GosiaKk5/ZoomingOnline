@@ -1,25 +1,21 @@
-import { plotData, updateAllCharts, updateZoom2Chart, plotConfig } from './chartRenderer.js';
-import { loadZarrData, getRawDataSlice, zarrGroup, rawStore, overviewStore } from './dataLoader.js';
-import { generateTimeSteps, setupTimeSliders, updateZoom2SliderRange, timeSteps } from './timeUtils.js';
+import { plotData, updateAllCharts, updateZoom2Chart } from './chartRenderer.js'; // Removed plotConfig import as it's accessed via window.appState
+import { loadZarrData } from './dataLoader.js'; // Removed zarrGroup, rawStore, overviewStore, lastChunkCache imports as they are accessed via window.appState
+import { generateTimeSteps, setupTimeSliders, updateZoom2SliderRange } from './timeUtils.js'; // Removed timeSteps import as it's accessed via window.appState
 import { populateSelectors, setupCopyLinkButton, showCopyLinkContainer } from './uiManager.js';
 
-// Expose plotConfig to other modules if needed (e.g., for direct modification)
-export { plotConfig };
-
-// Global state variables (if truly needed across modules without explicit passing)
-// In a more complex app, consider a state management pattern.
+// Initialize a global app state object
 window.appState = {
     zarrGroup: null,
     rawStore: null,
     overviewStore: null,
-    plotConfig: null,
+    plotConfig: null, // This will be set by plotData
     lastChunkCache: { key: null, data: null },
-    timeSteps: timeSteps // Referencing the array from timeUtils
+    timeSteps: [] // This will be populated by generateTimeSteps
 };
 
-
 async function initialize() {
-    generateTimeSteps();
+    // Generate time steps early, but store them in appState
+    generateTimeSteps(); // This function now populates window.appState.timeSteps
     setupCopyLinkButton();
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -28,7 +24,7 @@ async function initialize() {
     const handleLoadData = async (url) => {
         document.getElementById('input-container').style.display = 'none';
         try {
-            await loadZarrData(url); // This will update appState.zarrGroup, etc.
+            await loadZarrData(url); // This updates appState.zarrGroup, rawStore, etc.
             populateSelectors(window.appState.rawStore);
             showCopyLinkContainer(url);
         } catch (error) {
@@ -53,16 +49,19 @@ async function initialize() {
     });
 
     document.getElementById('plot-button').addEventListener('click', async () => {
-        // Pass necessary data from appState to plotData
+        // Call plotData to initialize plotConfig (including total_time_us)
         await plotData(
             window.appState.rawStore,
             window.appState.zarrGroup,
             window.appState.overviewStore,
-            window.appState.lastChunkCache,
-            window.appState.timeSteps
+            window.appState.lastChunkCache // Still passing directly for now, can be refactored
         );
-        // After plotData sets plotConfig, we can set up sliders
-        setupTimeSliders(window.appState.plotConfig.total_time_us, window.appState.plotConfig.validTimeSteps);
+
+        // NOW that plotConfig and total_time_us are set, setup the time sliders
+        setupTimeSliders(); // This function will now use window.appState.plotConfig and window.appState.timeSteps
+
+        // And then update all charts (which relies on initialized sliders)
+        await updateAllCharts();
     });
 
     document.getElementById('plot-another-btn-header').addEventListener('click', () => {
@@ -75,7 +74,7 @@ async function initialize() {
 
     // Window Sliders
     d3.select('#zoom1-window').on('change', () => {
-        updateZoom2SliderRange(window.appState.plotConfig.validTimeSteps, window.appState.plotConfig.validZoom2Steps);
+        updateZoom2SliderRange(); // Now uses window.appState.plotConfig
         updateAllCharts();
     });
     d3.select('#zoom2-window').on('change', updateZoom2Chart);
@@ -83,11 +82,15 @@ async function initialize() {
     // Input feedback for sliders
     d3.select('#zoom1-window').on('input', () => {
         const slider = d3.select('#zoom1-window');
-        d3.select('#zoom1-window-val').text(window.appState.plotConfig.validTimeSteps[+slider.property('value')].label);
+        // Ensure validTimeSteps is available before trying to access it
+        if (window.appState.plotConfig && window.appState.plotConfig.validTimeSteps) {
+            d3.select('#zoom1-window-val').text(window.appState.plotConfig.validTimeSteps[+slider.property('value')].label);
+        }
     });
     d3.select('#zoom2-window').on('input', () => {
         const slider = d3.select('#zoom2-window');
-        if (window.appState.plotConfig.validZoom2Steps.length > 0) {
+        // Ensure validZoom2Steps is available before trying to access it
+        if (window.appState.plotConfig && window.appState.plotConfig.validZoom2Steps && window.appState.plotConfig.validZoom2Steps.length > 0) {
             d3.select('#zoom2-window-val').text(window.appState.plotConfig.validZoom2Steps[+slider.property('value')].label);
         }
     });
