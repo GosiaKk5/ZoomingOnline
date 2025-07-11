@@ -107,13 +107,15 @@ export function setupTimeSliders() {
     // Populate plotConfig.validTimeSteps using the globally available timeSteps
     // Filter to only include time steps that make sense for this dataset
     window.appState.plotConfig.validTimeSteps = window.appState.timeSteps.filter(step => step.value_us < total_time_us);
+    console.log("Valid time steps for zoom1:", window.appState.plotConfig.validTimeSteps);
+    console.log("Valid time steps for zoom1:", window.appState.plotConfig.validTimeSteps.length);
 
     // Configure zoom1 window slider
     slider1
         .attr('min', 0)
         .attr('max', window.appState.plotConfig.validTimeSteps.length - 1)
         .attr('step', 1)
-        .property('value', Math.floor(window.appState.plotConfig.validTimeSteps.length / 2));
+        .property('value', Math.max(0, window.appState.plotConfig.validTimeSteps.length - 7));
 
     valueSpan1.text(window.appState.plotConfig.validTimeSteps[slider1.property('value')].label);
 
@@ -149,7 +151,7 @@ export function updateZoom2SliderRange() {
     // If current value is out of range, adjust it
     let newIndex = currentVal2_idx;
     if (newIndex >= plotConfig.validZoom2Steps.length) {
-        newIndex = Math.max(0, plotConfig.validZoom2Steps.length - 1);
+        newIndex = Math.max(0, plotConfig.validZoom2Steps.length - 6);
         slider2.property('value', newIndex);
     }
 

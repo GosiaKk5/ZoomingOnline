@@ -119,7 +119,7 @@ export async function updateAllCharts() {
     const y0 = d3.scaleLinear().domain([globalYMin, globalYMax]).range([height, 0]).nice();
     const svg0 = createChartSVG("#overview-chart", "Overview");
     drawArea(svg0, overviewData, x0, y0, d => d.time_us, d => d.min_mv, d => d.max_mv);
-    drawAxes(svg0, x0, y0, "Time (µs)");
+    drawAxes(svg0, x0, y0, "Time [µs]");
     
     // Add draggable zoom rectangle to overview chart
     const zoomRect1 = svg0.append("rect")
@@ -138,7 +138,7 @@ export async function updateAllCharts() {
     // --- Draw Zoom 1 Chart ---
     d3.select("#zoom1-chart").selectAll("*").remove();
     const svg1 = createChartSVG("#zoom1-chart", `Zoom 1: ${zoom1Domain[0].toFixed(1)}µs - ${zoom1Domain[1].toFixed(1)}µs`);
-    await renderDetail(svg1, zoom1Domain, "Time (µs)");
+    await renderDetail(svg1, zoom1Domain, "Time [µs]");
 
     // --- Draw Zoom 2 Chart and UI ---
     await updateZoom2Chart();
@@ -157,7 +157,7 @@ export async function updateZoom2Chart() {
     // --- Draw Zoom 2 Chart ---
     d3.select("#zoom2-chart").selectAll("*").remove();
     const svg2 = createChartSVG("#zoom2-chart", `Zoom 2: ${zoom2Domain[0].toFixed(3)}µs - ${zoom2Domain[1].toFixed(3)}µs`);
-    await renderDetail(svg2, zoom2Domain, "Time (µs)");
+    await renderDetail(svg2, zoom2Domain, "Time [µs]");
 
     // --- Update Zoom 2 Rectangle (on Chart 1) ---
     const x1 = d3.scaleLinear().domain(zoom1Domain).range([0, width]);
@@ -194,7 +194,7 @@ function createChartSVG(selector, title) {
         .append("g").attr("transform", `translate(${margin.left},${margin.top})`);
 
     svg.append("text").attr("x", width / 2).attr("y", -margin.top / 2).attr("text-anchor", "middle").style("font-size", "16px").style("font-weight", "600").text(title);
-    svg.append("text").attr("transform", "rotate(-90)").attr("y", 0 - margin.left + 15).attr("x", 0 - (height / 2)).attr("dy", "1em").style("text-anchor", "middle").text("Voltage (mV)");
+    svg.append("text").attr("transform", "rotate(-90)").attr("y", 0 - margin.left + 15).attr("x", 0 - (height / 2)).attr("dy", "1em").style("text-anchor", "middle").text("Voltage [mV]");
     return svg;
 }
 
