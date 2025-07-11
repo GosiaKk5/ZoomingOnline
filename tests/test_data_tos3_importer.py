@@ -1,6 +1,7 @@
 from pathlib import Path
 
-# Removed unused imports: h5py and numpy
+import h5py
+import numpy as np
 from _pytest.monkeypatch import MonkeyPatch
 
 from src.data_to_s3_importer import (
