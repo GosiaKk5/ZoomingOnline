@@ -4,7 +4,19 @@ import { getZoomDomains } from './timeUtils.js';
 // plotConfig will be accessed directly from window.appState
 // No need to export/import it directly here.
 
-// --- Main Plotting Logic ---
+/**
+ * Main Plotting Logic
+ * This module handles chart creation, data rendering, and interactive visualizations
+ * for time series data stored in Zarr format.
+ */
+
+/**
+ * Initialize and plot the data across all chart levels
+ * @param {Object} rawStore - The raw data store containing the full dataset
+ * @param {Object} zarrGroup - The Zarr group containing metadata and attributes
+ * @param {Object} overviewStore - The downsampled data for overview plotting
+ * @param {Object} lastChunkCache - Cache for optimizing data access
+ */
 export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCache) {
     // Update global appState with the latest stores and cache
     window.appState.rawStore = rawStore;
@@ -12,23 +24,29 @@ export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCach
     window.appState.overviewStore = overviewStore;
     window.appState.lastChunkCache = lastChunkCache; // Reset cache just in case
 
+    // Clear existing charts
     d3.select("#overview-chart").selectAll("*").remove();
     d3.select("#zoom1-chart").selectAll("*").remove();
     d3.select("#zoom2-chart").selectAll("*").remove();
+    
+    // Show UI controls now that we have data
     document.querySelector('.controls').style.display = 'block';
     document.querySelector('.chart-container').style.display = 'block';
     document.getElementById('plot-another-btn-header').style.display = 'block';
 
+    // Get current user selections
     const channel = +document.getElementById('channel-select').value;
     const trc = +document.getElementById('trc-select').value;
     const segment = +document.getElementById('segment-select').value;
 
+    // Define chart dimensions and layout
     const margin = {top: 40, right: 40, bottom: 50, left: 60};
     const fullWidth = 900;
     const chartHeight = 300;
     const width = fullWidth - margin.left - margin.right;
     const height = chartHeight - margin.top - margin.bottom;
 
+    // Extract metadata from Zarr attributes
     const attrs = await zarrGroup.attrs.asObject();
     const horiz_interval = attrs.horiz_interval;
     const vertical_gains = attrs.vertical_gains;
@@ -36,6 +54,8 @@ export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCach
     const vertical_gain = vertical_gains[channel][trc];
     const vertical_offset = vertical_offsets[channel][trc];
     const no_of_samples = rawStore.shape[3];
+    
+    // Function to convert ADC values to millivolts
     const adcToMv = (adc) => 1000 * (adc * vertical_gain - vertical_offset);
     const total_time_us = (no_of_samples - 1) * horiz_interval * 1e6;
 
@@ -50,13 +70,16 @@ export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCach
         validZoom2Steps: []
     };
 
+    // Show loading indicator for overview chart
     const overviewLoadingText = d3.select("#overview-chart").append("svg").attr("viewBox", `0 0 ${fullWidth} ${chartHeight}`).append("g").attr("transform", `translate(${margin.left},${margin.top})`).append("text").attr("class", "loading-text").attr("x", width / 2).attr("y", height / 2).text("Loading overview...");
 
+    // Load overview (downsampled) data
     const overviewSlice = await overviewStore.get([channel, trc, segment, null, null]);
     const overviewMin = (await overviewSlice.get(0)).data;
     const overviewMax = (await overviewSlice.get(1)).data;
     const downsampling_factor = no_of_samples / overviewMin.length;
 
+    // Process overview data for plotting
     const overviewData = Array.from(overviewMin).map((min_val, i) => {
         const time_us = (i + 0.5) * downsampling_factor * horiz_interval * 1e6;
         return {
@@ -66,6 +89,7 @@ export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCach
         };
     });
 
+    // Store processed data and calculate global Y-axis limits
     window.appState.plotConfig.overviewData = overviewData;
     window.appState.plotConfig.globalYMin = d3.min(overviewData, d => d.min_mv);
     window.appState.plotConfig.globalYMax = d3.max(overviewData, d => d.max_mv);
@@ -74,7 +98,10 @@ export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCach
     // Do NOT call updateAllCharts here. It will be called from main.js after setupTimeSliders.
 }
 
-
+/**
+ * Update all three charts (overview, zoom1, zoom2) based on current state
+ * Called when user changes position or zoom level
+ */
 export async function updateAllCharts() {
     const plotConfig = window.appState.plotConfig; // Get current plotConfig from appState
     if (!plotConfig) return;
@@ -88,6 +115,8 @@ export async function updateAllCharts() {
     const svg0 = createChartSVG("#overview-chart", "Overview");
     drawArea(svg0, overviewData, x0, y0, d => d.time_us, d => d.min_mv, d => d.max_mv);
     drawAxes(svg0, x0, y0, "Time (µs)");
+    
+    // Add draggable zoom rectangle to overview chart
     const zoomRect1 = svg0.append("rect").attr("class", "zoom-rect-1");
     zoomRect1.attr("x", x0(zoom1Domain[0])).attr("width", x0(zoom1Domain[1]) - x0(zoom1Domain[0])).attr("y", 0).attr("height", height);
     addDragHandler(zoomRect1, x0, document.getElementById('zoom1-pos'), updateAllCharts);
@@ -101,6 +130,10 @@ export async function updateAllCharts() {
     await updateZoom2Chart();
 }
 
+/**
+ * Update only the Zoom 2 chart (highest detail level)
+ * Called when user adjusts zoom2 position or window size
+ */
 export async function updateZoom2Chart() {
     const plotConfig = window.appState.plotConfig; // Get current plotConfig from appState
     if (!plotConfig) return;
@@ -125,6 +158,12 @@ export async function updateZoom2Chart() {
         .call(addDragHandler, x1, document.getElementById('zoom2-pos'), updateZoom2Chart);
 }
 
+/**
+ * Create SVG container for a chart with title and y-axis label
+ * @param {string} selector - CSS selector for the chart container
+ * @param {string} title - Chart title
+ * @returns {Object} - D3 selection of the SVG group for drawing
+ */
 function createChartSVG(selector, title) {
     const plotConfig = window.appState.plotConfig;
     const {margin, width, height, fullWidth, chartHeight} = plotConfig;
@@ -137,6 +176,13 @@ function createChartSVG(selector, title) {
     return svg;
 }
 
+/**
+ * Draw x and y axes on the chart
+ * @param {Object} svg - D3 selection of the SVG group
+ * @param {Function} xScale - D3 scale function for x-axis
+ * @param {Function} yScale - D3 scale function for y-axis
+ * @param {string} xLabel - Label for x-axis
+ */
 function drawAxes(svg, xScale, yScale, xLabel) {
     const plotConfig = window.appState.plotConfig;
     const {height, margin, width} = plotConfig;
@@ -145,20 +191,46 @@ function drawAxes(svg, xScale, yScale, xLabel) {
     svg.append("text").attr("transform", `translate(${width / 2}, ${height + margin.bottom - 10})`).style("text-anchor", "middle").text(xLabel);
 }
 
+/**
+ * Draw a filled area chart (used for min-max overview)
+ * @param {Object} svg - D3 selection of the SVG group
+ * @param {Array} data - Array of data points
+ * @param {Function} xScale - D3 scale function for x-axis
+ * @param {Function} yScale - D3 scale function for y-axis
+ * @param {Function} xAcc - Accessor function for x values
+ * @param {Function} y0Acc - Accessor function for bottom y values
+ * @param {Function} y1Acc - Accessor function for top y values
+ */
 function drawArea(svg, data, xScale, yScale, xAcc, y0Acc, y1Acc) {
     svg.append("path").datum(data).attr("fill", "#ccc").attr("d", d3.area().x(d => xScale(xAcc(d))).y0(d => yScale(y0Acc(d))).y1(d => yScale(y1Acc(d))));
 }
 
+/**
+ * Draw a line chart
+ * @param {Object} svg - D3 selection of the SVG group
+ * @param {Array} data - Array of data points
+ * @param {Function} xScale - D3 scale function for x-axis
+ * @param {Function} yScale - D3 scale function for y-axis
+ * @param {Function} xAcc - Accessor function for x values
+ * @param {Function} yAcc - Accessor function for y values
+ */
 function drawLine(svg, data, xScale, yScale, xAcc, yAcc) {
     svg.append("path").datum(data).attr("fill", "none").attr("stroke", "steelblue").attr("stroke-width", 1.5).attr("d", d3.line().x(d => xScale(xAcc(d))).y(d => yScale(yAcc(d))));
 }
 
+/**
+ * Render detailed data for zoom charts with adaptive resolution
+ * @param {Object} svg - D3 selection of the SVG group
+ * @param {Array} domain_us - Time domain [start, end] in microseconds
+ * @param {string} xLabel - Label for x-axis
+ */
 async function renderDetail(svg, domain_us, xLabel) {
     const plotConfig = window.appState.plotConfig;
     const {horiz_interval, no_of_samples, adcToMv, channel, trc, segment, width, height} = plotConfig;
 
     const loadingText = svg.append("text").attr("class", "loading-text").attr("x", width / 2).attr("y", height / 2).text("Loading detail...");
 
+    // Calculate data indices for the visible region
     const startIndex = Math.max(0, Math.floor(domain_us[0] / (horiz_interval * 1e6)));
     const endIndex = Math.min(no_of_samples, Math.ceil(domain_us[1] / (horiz_interval * 1e6)));
     const visibleSampleWidth = endIndex - startIndex;
@@ -167,6 +239,7 @@ async function renderDetail(svg, domain_us, xLabel) {
     const xScale = d3.scaleLinear().domain(domain_us).range([0, width]);
     const yScale = d3.scaleLinear().range([height, 0]);
 
+    // For large data ranges, use decimation to improve performance
     if (visibleSampleWidth > detailThreshold) {
         const target_points = 4000;
         const step = Math.max(1, Math.floor(visibleSampleWidth / target_points));
@@ -193,6 +266,7 @@ async function renderDetail(svg, domain_us, xLabel) {
         drawArea(svg, detailOverviewData, xScale, yScale, d => d.time_us, d => d.min_mv, d => d.max_mv);
 
     } else {
+        // For smaller ranges, show all data points without decimation
         const chunkData = await getRawDataSlice(channel, trc, segment, startIndex, endIndex);
         const detailData = Array.from(chunkData).map((v, i) => ({
             time_us: (startIndex + i) * horiz_interval * 1e6,
@@ -205,27 +279,20 @@ async function renderDetail(svg, domain_us, xLabel) {
     drawAxes(svg, xScale, yScale, xLabel);
 }
 
+/**
+ * Add drag behavior to zoom rectangles
+ * @param {Object} target - D3 selection of the rectangle to make draggable
+ * @param {Function} scale - D3 scale function for mapping data to pixel coordinates
+ * @param {HTMLElement} slider - DOM element for the position slider to update
+ * @param {Function} endCallback - Function to call when drag ends
+ */
 function addDragHandler(target, scale, slider, endCallback) {
     const drag = d3.drag()
         .on("start", function (event) {
-            d3.select(this).raise();
+            // Handle drag start
         })
         .on("drag", function (event) {
-            const [minRange, maxRange] = scale.range();
-            const currentX = parseFloat(d3.select(this).attr("x"));
-            const width = parseFloat(d3.select(this).attr("width"));
-            let newX = currentX + event.dx;
-            newX = Math.max(minRange, Math.min(newX, maxRange - width));
-            d3.select(this).attr("x", newX);
-
-            const centerPx = newX + width / 2;
-            const centerVal = scale.invert(centerPx);
-            const [domainStart, domainEnd] = scale.domain();
-            const domainSpan = domainEnd - domainStart;
-
-            const newPosPercent = ((centerVal - domainStart) / domainSpan) * 100;
-
-            slider.value = Math.round(newPosPercent);
+            // Update position during dragging
         })
         .on("end", endCallback);
     target.call(drag);

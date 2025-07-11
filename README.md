@@ -9,6 +9,7 @@
 
 
 ZoomingOnline is a web-based data visualization supporting the efficient and scalable Zarr format.
+Main use case is visualization of the waveform data from oscilloscopes, taken in segment mode.
 
 ![demo](./docs/assets/demo.gif)
 
@@ -27,12 +28,12 @@ gigabyte-scale time-series datasets directly in a browser.
 
 Key features include:
 
-- **Instant Overview:** Utilizes pre-computed data pyramids within the Zarr format to load an initial overview of the
-  entire dataset almost instantly.
 - **Efficient Zooming:** Fetches only the required high-resolution data chunks for the selected region, with a
   memory-efficient cache to prevent redundant downloads during interaction.
 - **Time-Based Controls:** Features a three-level inset zoom interface with draggable windows and sliders that snap to
   meaningful time units (e.g., 10 µs, 100 ns) for precise analysis.
+- **Instant Overview:** Utilizes pre-computed data pyramids within the Zarr format to load an initial overview of the
+  entire dataset almost instantly.
 - **Data Toolkit:** Includes a suite of CLI scripts for generating test data, converting from HDF5, and managing cloud
   storage.
 
@@ -52,7 +53,6 @@ Key features include:
 1. Clone the repository
 2. Follow [setup.md](./docs/setup.md) to install dependencies and configure
 3. Create or serve a Zarr dataset:
-   <!-- Check: Run -->
    ```bash
    python src/generate_data.py -o waveform.zarr
    ```
@@ -73,3 +73,7 @@ To add support for Zarr v3, migration to [zarrita.js](https://github.com/manzt/z
 ## 📄 License
 
 MIT License — see [LICENSE](LICENSE)
+
+## History
+
+The project was originally created as a part of the Large Scale Computing course at the AGH University in Kraków, Poland, by @ksew1, @irosikoni and @GosiaKk5.

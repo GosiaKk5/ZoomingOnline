@@ -1,9 +1,17 @@
+/**
+ * main.js
+ * 
+ * Main application entry point that initializes the ZoomingOnline application.
+ * Coordinates between different modules, sets up the global application state,
+ * and handles event listeners for user interaction.
+ */
+
 import { plotData, updateAllCharts, updateZoom2Chart } from './chartRenderer.js'; // Removed plotConfig import as it's accessed via window.appState
 import { loadZarrData } from './dataLoader.js'; // Removed zarrGroup, rawStore, overviewStore, lastChunkCache imports as they are accessed via window.appState
 import { generateTimeSteps, setupTimeSliders, updateZoom2SliderRange } from './timeUtils.js'; // Removed timeSteps import as it's accessed via window.appState
 import { populateSelectors, setupCopyLinkButton, showCopyLinkContainer } from './uiManager.js';
 
-// Initialize a global app state object
+// Initialize a global app state object for sharing data between modules
 window.appState = {
     zarrGroup: null,
     rawStore: null,
@@ -13,34 +21,48 @@ window.appState = {
     timeSteps: [] // This will be populated by generateTimeSteps
 };
 
+/**
+ * Initialize the application, set up event listeners, and handle URL parameters
+ */
 async function initialize() {
     // Generate time steps early, but store them in appState
     generateTimeSteps(); // This function now populates window.appState.timeSteps
     setupCopyLinkButton();
 
+    // Check if a data URL was provided in the query parameters
     const urlParams = new URLSearchParams(window.location.search);
     const dataUrl = urlParams.get('data');
 
+    /**
+     * Handle data loading process
+     * @param {string} url - URL of the Zarr data to load
+     */
     const handleLoadData = async (url) => {
         document.getElementById('input-container').style.display = 'none';
         try {
+            // Load the data and update global state
             await loadZarrData(url); // This updates appState.zarrGroup, rawStore, etc.
             populateSelectors(window.appState.rawStore);
             showCopyLinkContainer(url);
         } catch (error) {
+            // Display error message if data loading fails
             const container = document.getElementById('selection-container');
             container.innerHTML = `<div style="color: red; text-align: center; padding: 2rem;"><h3>Error</h3><p>${error.message}</p></div>`;
             container.style.display = 'block';
         }
     };
 
+    // If data URL is provided in URL params, load it directly
     if (dataUrl) handleLoadData(dataUrl);
     else document.getElementById('input-container').style.display = 'block';
 
     // Event Listeners
+    
+    // Load button click handler - loads data from user-provided URL
     document.getElementById('load-button').addEventListener('click', () => {
         const dataUrlInput = document.getElementById('zarr-input').value;
         if (dataUrlInput) {
+            // Update URL with the data parameter for shareable links
             const newUrl = new URL(window.location);
             newUrl.searchParams.set('data', dataUrlInput);
             window.history.pushState({ path: newUrl.href }, '', newUrl.href);
@@ -48,6 +70,7 @@ async function initialize() {
         }
     });
 
+    // Plot button click handler - initializes visualization
     document.getElementById('plot-button').addEventListener('click', async () => {
         // Call plotData to initialize plotConfig (including total_time_us)
         await plotData(
@@ -64,22 +87,23 @@ async function initialize() {
         await updateAllCharts();
     });
 
+    // Button to return to landing page for plotting different data
     document.getElementById('plot-another-btn-header').addEventListener('click', () => {
         window.location.href = 'https://datamedsci.github.io/ZoomingOnline';
     });
 
-    // Position Sliders
+    // Position Sliders - handle moving the view within the same zoom level
     d3.select('#zoom1-pos').on('change', updateAllCharts);
     d3.select('#zoom2-pos').on('change', updateZoom2Chart);
 
-    // Window Sliders
+    // Window Sliders - handle changing the zoom level/magnification
     d3.select('#zoom1-window').on('change', () => {
         updateZoom2SliderRange(); // Now uses window.appState.plotConfig
         updateAllCharts();
     });
     d3.select('#zoom2-window').on('change', updateZoom2Chart);
 
-    // Input feedback for sliders
+    // Input feedback for sliders - update the display values as sliders move
     d3.select('#zoom1-window').on('input', () => {
         const slider = d3.select('#zoom1-window');
         // Ensure validTimeSteps is available before trying to access it
@@ -98,4 +122,5 @@ async function initialize() {
     d3.select('#zoom2-pos').on('input', () => d3.select('#zoom2-pos-val').text(d3.select('#zoom2-pos').property('value') + '%'));
 }
 
+// Start the application
 initialize();

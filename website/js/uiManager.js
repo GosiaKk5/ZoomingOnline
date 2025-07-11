@@ -1,5 +1,20 @@
+/**
+ * uiManager.js
+ * 
+ * Manages user interface elements and interactions for the ZoomingOnline application.
+ * Handles populating selectors, managing UI state, and clipboard functionality.
+ */
+
+/**
+ * Populate the dropdown selectors for channel, TRC, and segment
+ * based on the data dimensions from the loaded store
+ * 
+ * @param {Object} store - The Zarr data store containing shape information
+ */
 export function populateSelectors(store) {
     const [channels, trcs, segments] = store.shape;
+    
+    // Helper function to create options for a select element
     const createOptions = (selectId, count, prefix) => {
         const select = d3.select(selectId);
         select.selectAll("option").remove();
@@ -7,21 +22,36 @@ export function populateSelectors(store) {
             select.append("option").attr("value", i).text(`${prefix} ${i + 1}`);
         }
     };
+    
+    // Create options for each selector
     createOptions("#channel-select", channels, "Channel");
     createOptions("#trc-select", trcs, "TRC");
     createOptions("#segment-select", segments, "Segment");
+    
+    // Show the selection container now that options are populated
     document.getElementById('selection-container').style.display = 'block';
 }
 
+/**
+ * Display the shareable link container with the current data URL
+ * 
+ * @param {string} dataUrl - URL of the currently loaded Zarr data
+ */
 export function showCopyLinkContainer(dataUrl) {
+    // Create a shareable URL with the data parameter
     const currentUrl = new URL(window.location);
     currentUrl.searchParams.set('data', dataUrl);
     const linkToShow = currentUrl.toString();
     
+    // Update the UI to show the link
     document.getElementById('copy-link-content').textContent = linkToShow;
     document.getElementById('copy-link-container').style.display = 'block';
 }
 
+/**
+ * Set up the copy link button with clipboard functionality
+ * Includes visual feedback when the link is copied
+ */
 export function setupCopyLinkButton() {
     const copyButton = document.getElementById('copy-link-button');
     const copyIcon = copyButton.querySelector('.copy-icon');
@@ -32,6 +62,7 @@ export function setupCopyLinkButton() {
         const linkContent = document.getElementById('copy-link-content').textContent;
         
         try {
+            // Use the Clipboard API if available
             await navigator.clipboard.writeText(linkContent);
             
             // Show success state
