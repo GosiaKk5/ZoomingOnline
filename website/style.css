@@ -65,21 +65,43 @@ input[type="range"] {
 }
 
 .zoom-rect-1, .zoom-rect-2 {
-    cursor: move; /* ew-resize */
+    cursor: move;
+    pointer-events: all;
+    transition: fill 0.1s, stroke-width 0.1s;
 }
 
 .zoom-rect-1 {
-    fill: rgba(220, 53, 69, 0.15);
+    fill: rgba(220, 53, 69, 0.2);
     stroke: #dc3545;
     stroke-width: 1.5px;
     stroke-dasharray: 4, 2;
 }
 
+.zoom-rect-1:hover {
+    fill: rgba(220, 53, 69, 0.25);
+}
+
+.zoom-rect-1.dragging {
+    fill: rgba(220, 53, 69, 0.35);
+    stroke-width: 2px;
+    stroke-dasharray: none;
+}
+
 .zoom-rect-2 {
-    fill: rgba(0, 123, 255, 0.15);
+    fill: rgba(0, 123, 255, 0.2);
     stroke: #007bff;
     stroke-width: 1.5px;
     stroke-dasharray: 4, 2;
+}
+
+.zoom-rect-2:hover {
+    fill: rgba(0, 123, 255, 0.25);
+}
+
+.zoom-rect-2.dragging {
+    fill: rgba(0, 123, 255, 0.35);
+    stroke-width: 2px;
+    stroke-dasharray: none;
 }
 
 .loading-text {

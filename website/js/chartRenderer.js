@@ -2,9 +2,17 @@ import { getRawDataSlice } from './dataLoader.js';
 import { getZoomDomains } from './timeUtils.js';
 
 /**
+ * chartRenderer.js
+ * 
  * Main Plotting Logic
  * This module handles chart creation, data rendering, and interactive visualizations
- * for time series data stored in Zarr format.
+ * for time series data stored in Zarr format. It implements a three-level zoom system:
+ * - Overview chart: Shows the entire dataset with min/max values
+ * - Zoom1 chart: Shows a user-selected region of the overview at higher detail
+ * - Zoom2 chart: Shows a user-selected region of the zoom1 chart at highest detail
+ * 
+ * The module includes interactive zoom rectangles that can be dragged to reposition
+ * the view at each zoom level, synchronized with position sliders in the UI.
  */
 
 /**
@@ -114,8 +122,19 @@ export async function updateAllCharts() {
     drawAxes(svg0, x0, y0, "Time (µs)");
     
     // Add draggable zoom rectangle to overview chart
-    const zoomRect1 = svg0.append("rect").attr("class", "zoom-rect-1");
-    zoomRect1.attr("x", x0(zoom1Domain[0])).attr("width", x0(zoom1Domain[1]) - x0(zoom1Domain[0])).attr("y", 0).attr("height", height);
+    const zoomRect1 = svg0.append("rect")
+        .attr("class", "zoom-rect-1")
+        .attr("x", x0(zoom1Domain[0]))
+        .attr("width", x0(zoom1Domain[1]) - x0(zoom1Domain[0]))
+        .attr("y", 0)
+        .attr("height", height);
+    
+    // Remove any existing drag behavior before reapplying to avoid duplicate handlers
+    if (zoomRect1.on('.drag')) {
+        zoomRect1.on('.drag', null);
+    }
+        
+    // Apply drag behavior to the zoom1 rectangle
     addDragHandler(zoomRect1, x0, document.getElementById('zoom1-pos'), updateAllCharts);
 
     // --- Draw Zoom 1 Chart ---
@@ -147,12 +166,22 @@ export async function updateZoom2Chart() {
     const svg1 = d3.select("#zoom1-chart svg g");
     const zoomRect2 = svg1.selectAll(".zoom-rect-2").data([1]);
 
-    zoomRect2.enter().append("rect").attr("class", "zoom-rect-2")
+    // Create or update the zoom2 rectangle
+    const mergedRect = zoomRect2.enter().append("rect")
+        .attr("class", "zoom-rect-2")
         .merge(zoomRect2)
         .attr("x", x1(zoom2Domain[0]))
         .attr("width", x1(zoom2Domain[1]) - x1(zoom2Domain[0]))
-        .attr("y", 0).attr("height", plotConfig.height)
-        .call(addDragHandler, x1, document.getElementById('zoom2-pos'), updateZoom2Chart);
+        .attr("y", 0)
+        .attr("height", plotConfig.height);
+        
+    // Remove any existing drag behavior before reapplying to avoid duplicate handlers
+    if (mergedRect.on('.drag')) {
+        mergedRect.on('.drag', null);
+    }
+    
+    // Apply drag behavior to the zoom2 rectangle
+    addDragHandler(mergedRect, x1, document.getElementById('zoom2-pos'), updateZoom2Chart);
 }
 
 /**
@@ -278,19 +307,71 @@ async function renderDetail(svg, domain_us, xLabel) {
 
 /**
  * Add drag behavior to zoom rectangles
+ * This function makes the zoom rectangle draggable and synchronizes its position
+ * with the corresponding position slider. As the rectangle is dragged, the slider
+ * updates, and vice versa. When dragging stops, the charts are redrawn.
+ * 
  * @param {Object} target - D3 selection of the rectangle to make draggable
  * @param {Function} scale - D3 scale function for mapping data to pixel coordinates
  * @param {HTMLElement} slider - DOM element for the position slider to update
  * @param {Function} endCallback - Function to call when drag ends
  */
 function addDragHandler(target, scale, slider, endCallback) {
+    const plotConfig = window.appState.plotConfig;
+    const width = plotConfig.width;
+    let startX;
+    let rectX;
+    let rectWidth;
+    
     const drag = d3.drag()
         .on("start", function (event) {
-            // Handle drag start
+            // Store initial position and dimensions for reference during drag
+            startX = event.x;
+            rectX = parseFloat(target.attr("x"));
+            rectWidth = parseFloat(target.attr("width"));
+            
+            // Add 'dragging' class for visual feedback
+            target.classed("dragging", true);
         })
         .on("drag", function (event) {
-            // Update position during dragging
+            // Calculate new position with bounds checking
+            const dx = event.x - startX;
+            let newX = rectX + dx;
+            
+            // Constrain to chart boundaries to prevent dragging outside
+            newX = Math.max(0, Math.min(width - rectWidth, newX));
+            
+            // Update rectangle position in the chart
+            target.attr("x", newX);
+            
+            // Convert to percentage for slider (0-100%)
+            // Using center point of rectangle for better UX
+            const centerX = newX + (rectWidth / 2);
+            const percentage = Math.round((centerX / width) * 100);
+            
+            // Update slider position value
+            slider.value = percentage;
+            
+            // Update display text associated with the slider
+            const sliderId = slider.id;
+            d3.select(`#${sliderId}-val`).text(`${percentage}%`);
+            
+            // Trigger 'input' event on slider to update UI immediately
+            // This ensures that the slider visually reflects the rectangle position
+            slider.dispatchEvent(new Event('input', { bubbles: true }));
         })
-        .on("end", endCallback);
+        .on("end", function(event) {
+            // Remove dragging class when drag completes
+            target.classed("dragging", false);
+            
+            // Trigger 'change' event on slider to apply the position change
+            // This is important to trigger any event listeners on the slider
+            slider.dispatchEvent(new Event('change', { bubbles: true }));
+            
+            // Call the provided callback function to update all dependent charts
+            // This ensures that zoom levels and visualizations stay synchronized
+            if (endCallback) endCallback();
+        });
+        
     target.call(drag);
 }
