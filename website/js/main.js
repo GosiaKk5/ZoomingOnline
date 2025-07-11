@@ -103,21 +103,8 @@ async function initialize() {
     });
     d3.select('#zoom2-window').on('change', updateZoom2Chart);
 
-    // Input feedback for sliders - update the display values as sliders move
-    d3.select('#zoom1-window').on('input', () => {
-        const slider = d3.select('#zoom1-window');
-        // Ensure validTimeSteps is available before trying to access it
-        if (window.appState.plotConfig && window.appState.plotConfig.validTimeSteps) {
-            d3.select('#zoom1-window-val').text(window.appState.plotConfig.validTimeSteps[+slider.property('value')].label);
-        }
-    });
-    d3.select('#zoom2-window').on('input', () => {
-        const slider = d3.select('#zoom2-window');
-        // Ensure validZoom2Steps is available before trying to access it
-        if (window.appState.plotConfig && window.appState.plotConfig.validZoom2Steps && window.appState.plotConfig.validZoom2Steps.length > 0) {
-            d3.select('#zoom2-window-val').text(window.appState.plotConfig.validZoom2Steps[+slider.property('value')].label);
-        }
-    });
+    // Input feedback for position sliders - update the display values as sliders move
+    // We only need this for position sliders as window sliders use custom bullet points
     d3.select('#zoom1-pos').on('input', () => d3.select('#zoom1-pos-val').text(d3.select('#zoom1-pos').property('value') + '%'));
     d3.select('#zoom2-pos').on('input', () => d3.select('#zoom2-pos-val').text(d3.select('#zoom2-pos').property('value') + '%'));
 }
