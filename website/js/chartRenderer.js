@@ -130,9 +130,7 @@ export async function updateAllCharts() {
         .attr("height", height);
     
     // Remove any existing drag behavior before reapplying to avoid duplicate handlers
-    if (zoomRect1.on('.drag')) {
-        zoomRect1.on('.drag', null);
-    }
+    zoomRect1.on('.drag', null);
         
     // Apply drag behavior to the zoom1 rectangle
     addDragHandler(zoomRect1, x0, document.getElementById('zoom1-pos'), updateAllCharts);
@@ -176,9 +174,7 @@ export async function updateZoom2Chart() {
         .attr("height", plotConfig.height);
         
     // Remove any existing drag behavior before reapplying to avoid duplicate handlers
-    if (mergedRect.on('.drag')) {
-        mergedRect.on('.drag', null);
-    }
+    mergedRect.on('.drag', null);
     
     // Apply drag behavior to the zoom2 rectangle
     addDragHandler(mergedRect, x1, document.getElementById('zoom2-pos'), updateZoom2Chart);
