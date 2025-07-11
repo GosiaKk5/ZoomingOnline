@@ -1,9 +1,6 @@
 import { getRawDataSlice } from './dataLoader.js';
 import { getZoomDomains } from './timeUtils.js';
 
-// plotConfig will be accessed directly from window.appState
-// No need to export/import it directly here.
-
 /**
  * Main Plotting Logic
  * This module handles chart creation, data rendering, and interactive visualizations
@@ -56,14 +53,14 @@ export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCach
     const no_of_samples = rawStore.shape[3];
     
     // Function to convert ADC values to millivolts
-    const adcToMv = (adc) => 1000 * (adc * vertical_gain - vertical_offset);
+    const adcToMiliVolts = (adc) => 1000 * (adc * vertical_gain - vertical_offset);
     const total_time_us = (no_of_samples - 1) * horiz_interval * 1e6;
 
     // Initialize plotConfig within the global appState
     window.appState.plotConfig = {
         margin, width, height, fullWidth, chartHeight,
         horiz_interval, no_of_samples, total_time_us,
-        adcToMv,
+        adcToMv: adcToMiliVolts,
         channel, trc, segment,
         // These will be populated by setupTimeSliders in timeUtils.js
         validTimeSteps: [],
@@ -84,8 +81,8 @@ export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCach
         const time_us = (i + 0.5) * downsampling_factor * horiz_interval * 1e6;
         return {
             time_us,
-            min_mv: adcToMv(min_val),
-            max_mv: adcToMv(overviewMax[i])
+            min_mv: adcToMiliVolts(min_val),
+            max_mv: adcToMiliVolts(overviewMax[i])
         };
     });
 
@@ -103,7 +100,7 @@ export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCach
  * Called when user changes position or zoom level
  */
 export async function updateAllCharts() {
-    const plotConfig = window.appState.plotConfig; // Get current plotConfig from appState
+    const plotConfig = window.appState.plotConfig;
     if (!plotConfig) return;
     const {width, height, total_time_us, overviewData, globalYMin, globalYMax} = plotConfig;
     const {zoom1Domain} = getZoomDomains(); // getZoomDomains now takes no arguments, accesses appState directly
@@ -135,7 +132,7 @@ export async function updateAllCharts() {
  * Called when user adjusts zoom2 position or window size
  */
 export async function updateZoom2Chart() {
-    const plotConfig = window.appState.plotConfig; // Get current plotConfig from appState
+    const plotConfig = window.appState.plotConfig;
     if (!plotConfig) return;
     const {width} = plotConfig;
     const {zoom1Domain, zoom2Domain} = getZoomDomains(); // getZoomDomains now takes no arguments, accesses appState directly
@@ -202,7 +199,7 @@ function drawAxes(svg, xScale, yScale, xLabel) {
  * @param {Function} y1Acc - Accessor function for top y values
  */
 function drawArea(svg, data, xScale, yScale, xAcc, y0Acc, y1Acc) {
-    svg.append("path").datum(data).attr("fill", "#ccc").attr("d", d3.area().x(d => xScale(xAcc(d))).y0(d => yScale(y0Acc(d))).y1(d => yScale(y1Acc(d))));
+    svg.append("path").datum(data).attr("fill", "#000").attr("d", d3.area().x(d => xScale(xAcc(d))).y0(d => yScale(y0Acc(d))).y1(d => yScale(y1Acc(d))));
 }
 
 /**
@@ -215,7 +212,7 @@ function drawArea(svg, data, xScale, yScale, xAcc, y0Acc, y1Acc) {
  * @param {Function} yAcc - Accessor function for y values
  */
 function drawLine(svg, data, xScale, yScale, xAcc, yAcc) {
-    svg.append("path").datum(data).attr("fill", "none").attr("stroke", "steelblue").attr("stroke-width", 1.5).attr("d", d3.line().x(d => xScale(xAcc(d))).y(d => yScale(yAcc(d))));
+    svg.append("path").datum(data).attr("fill", "none").attr("stroke", "black").attr("stroke-width", 1.5).attr("d", d3.line().x(d => xScale(xAcc(d))).y(d => yScale(yAcc(d))));
 }
 
 /**

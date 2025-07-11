@@ -6,9 +6,9 @@
  * and handles event listeners for user interaction.
  */
 
-import { plotData, updateAllCharts, updateZoom2Chart } from './chartRenderer.js'; // Removed plotConfig import as it's accessed via window.appState
-import { loadZarrData } from './dataLoader.js'; // Removed zarrGroup, rawStore, overviewStore, lastChunkCache imports as they are accessed via window.appState
-import { generateTimeSteps, setupTimeSliders, updateZoom2SliderRange } from './timeUtils.js'; // Removed timeSteps import as it's accessed via window.appState
+import { plotData, updateAllCharts, updateZoom2Chart } from './chartRenderer.js'; 
+import { loadZarrData } from './dataLoader.js'; 
+import { generateTimeSteps, setupTimeSliders, updateZoom2SliderRange } from './timeUtils.js'; 
 import { populateSelectors, setupCopyLinkButton, showCopyLinkContainer } from './uiManager.js';
 
 // Initialize a global app state object for sharing data between modules
@@ -25,8 +25,8 @@ window.appState = {
  * Initialize the application, set up event listeners, and handle URL parameters
  */
 async function initialize() {
-    // Generate time steps early, but store them in appState
-    generateTimeSteps(); // This function now populates window.appState.timeSteps
+    // Generate time steps early, but store them in window.appState.timeSteps
+    generateTimeSteps();
     setupCopyLinkButton();
 
     // Check if a data URL was provided in the query parameters
