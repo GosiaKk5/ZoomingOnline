@@ -12,7 +12,6 @@ import { openGroup, openArray, slice, HTTPStore } from "https://cdn.skypack.dev/
 let zarrGroup = null;
 let rawStore = null;
 let overviewStore = null;
-let lastChunkCache = { key: null, data: null };
 
 /**
  * Load Zarr data from a remote URL
@@ -84,4 +83,4 @@ export async function getRawDataSlice(ch, trc, seg, start, end) {
 }
 
 // Export these for direct access if necessary, though `appState` is the preferred way
-export { zarrGroup, rawStore, overviewStore, lastChunkCache };
+export { zarrGroup, rawStore, overviewStore };

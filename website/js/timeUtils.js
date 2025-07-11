@@ -6,9 +6,6 @@
  * for controlling the visualization's time ranges.
  */
 
-// timeSteps will now be part of window.appState
-// export const timeSteps = []; // No longer directly exported, accessed via window.appState.timeSteps
-
 /**
  * Generate a comprehensive set of time step options across different units
  * Creates an array of time steps from nanoseconds to milliseconds

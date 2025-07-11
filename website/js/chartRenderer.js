@@ -61,14 +61,14 @@ export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCach
     const no_of_samples = rawStore.shape[3];
     
     // Function to convert ADC values to millivolts
-    const adcToMiliVolts = (adc) => 1000 * (adc * vertical_gain - vertical_offset);
+    const adcToMilliVolts = (adc) => 1000 * (adc * vertical_gain - vertical_offset);
     const total_time_us = (no_of_samples - 1) * horiz_interval * 1e6;
 
     // Initialize plotConfig within the global appState
     window.appState.plotConfig = {
         margin, width, height, fullWidth, chartHeight,
         horiz_interval, no_of_samples, total_time_us,
-        adcToMv: adcToMiliVolts,
+        adcToMv: adcToMilliVolts,
         channel, trc, segment,
         // These will be populated by setupTimeSliders in timeUtils.js
         validTimeSteps: [],
@@ -89,8 +89,8 @@ export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCach
         const time_us = (i + 0.5) * downsampling_factor * horiz_interval * 1e6;
         return {
             time_us,
-            min_mv: adcToMiliVolts(min_val),
-            max_mv: adcToMiliVolts(overviewMax[i])
+            min_mv: adcToMilliVolts(min_val),
+            max_mv: adcToMilliVolts(overviewMax[i])
         };
     });
 
