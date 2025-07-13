@@ -118,8 +118,10 @@ export async function updateAllCharts() {
     const x0 = d3.scaleLinear().domain([0, total_time_us]).range([0, width]);
     const y0 = d3.scaleLinear().domain([globalYMin, globalYMax]).range([height, 0]).nice();
     const svg0 = createChartSVG("#overview-chart", "Overview");
+    drawGridLines(svg0, x0, y0);
     drawArea(svg0, overviewData, x0, y0, d => d.time_us, d => d.min_mv, d => d.max_mv);
     drawAxes(svg0, x0, y0, "Time [µs]");
+    drawGridLines(svg0, x0, y0); // Draw grid lines on overview chart
     
     // Add draggable zoom rectangle to overview chart
     const zoomRect1 = svg0.append("rect")
@@ -214,6 +216,49 @@ function drawAxes(svg, xScale, yScale, xLabel) {
 }
 
 /**
+ * Draw grid lines on the chart
+ * @param {Object} svg - D3 selection of the SVG group
+ * @param {Function} xScale - D3 scale function for x-axis
+ * @param {Function} yScale - D3 scale function for y-axis
+ */
+function drawGridLines(svg, xScale, yScale) {
+    const plotConfig = window.appState.plotConfig;
+    const { height, width } = plotConfig;
+    
+    // Add horizontal grid lines
+    svg.append("g")
+        .attr("class", "grid-lines")
+        .selectAll("line.horizontal-grid")
+        .data(yScale.ticks(5))
+        .enter()
+        .append("line")
+        .attr("class", "horizontal-grid")
+        .attr("x1", 0)
+        .attr("x2", width)
+        .attr("y1", d => yScale(d))
+        .attr("y2", d => yScale(d))
+        .attr("stroke", "black")
+        .attr("stroke-width", 0.5)
+        .attr("opacity", 0.2);
+
+    // Add vertical grid lines
+    svg.append("g")
+        .attr("class", "grid-lines")
+        .selectAll("line.vertical-grid")
+        .data(xScale.ticks(5))
+        .enter()
+        .append("line")
+        .attr("class", "vertical-grid")
+        .attr("x1", d => xScale(d))
+        .attr("x2", d => xScale(d))
+        .attr("y1", 0)
+        .attr("y2", height)
+        .attr("stroke", "black")
+        .attr("stroke-width", 0.5)
+        .attr("opacity", 0.2);
+}
+
+/**
  * Draw a filled area chart (used for min-max overview)
  * @param {Object} svg - D3 selection of the SVG group
  * @param {Array} data - Array of data points
@@ -285,6 +330,7 @@ async function renderDetail(svg, domain_us, xLabel) {
         }
         loadingText.remove();
         yScale.domain([yMin, yMax]).nice();
+        drawGridLines(svg, xScale, yScale);
         drawArea(svg, detailOverviewData, xScale, yScale, d => d.time_us, d => d.min_mv, d => d.max_mv);
 
     } else {
@@ -296,6 +342,7 @@ async function renderDetail(svg, domain_us, xLabel) {
         }));
         loadingText.remove();
         yScale.domain(d3.extent(detailData, d => d.voltage_mv) || [0, 0]).nice();
+        drawGridLines(svg, xScale, yScale);
         drawLine(svg, detailData, xScale, yScale, d => d.time_us, d => d.voltage_mv);
     }
     drawAxes(svg, xScale, yScale, xLabel);
