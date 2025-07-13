@@ -118,10 +118,9 @@ export async function updateAllCharts() {
     const x0 = d3.scaleLinear().domain([0, total_time_us]).range([0, width]);
     const y0 = d3.scaleLinear().domain([globalYMin, globalYMax]).range([height, 0]).nice();
     const svg0 = createChartSVG("#overview-chart", "Overview");
-    drawGridLines(svg0, x0, y0);
     drawArea(svg0, overviewData, x0, y0, d => d.time_us, d => d.min_mv, d => d.max_mv);
     drawAxes(svg0, x0, y0, "Time [µs]");
-    drawGridLines(svg0, x0, y0); // Draw grid lines on overview chart
+    drawGridLines(svg0, x0, y0);
     
     // Add draggable zoom rectangle to overview chart
     const zoomRect1 = svg0.append("rect")
