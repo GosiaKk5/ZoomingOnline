@@ -13,13 +13,31 @@ Main use case is visualization of the waveform data from oscilloscopes, taken in
 
 ![demo](./docs/assets/demo.gif)
 
-🌐 Try it live:
-[https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr)
+## 🌐 Try it live
 
-Example Zarr files on s3: 
-- https://s3.cloud.cyfronet.pl/zooming-online/20231204m4/20231204m4.zarr
-- https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr
-- https://s3.cloud.cyfronet.pl/zooming-online/64nA/64nA.zarr
+Click on the links below to view the sample datasets, or copy the data file URLs to use in your own instance:
+
+### Sample Dataset 1 (1nA)
+[View 1nA dataset in ZoomingOnline](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr)
+
+Data file URL (copy to use with your own instance):
+```
+https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr
+```
+
+### Sample Dataset 2 (64nA)
+[View 64nA dataset in ZoomingOnline](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/64nA/64nA.zarr)
+
+Data file URL (copy to use with your own instance):
+```
+https://s3.cloud.cyfronet.pl/zooming-online/64nA/64nA.zarr
+```
+
+### Additional Data Files
+Additional file available on S3 (copy to use with [ZoomingOnline](https://datamedsci.github.io/ZoomingOnline/)):
+```
+https://s3.cloud.cyfronet.pl/zooming-online/20231204m4/20231204m4.zarr
+```
 
 ## 🎯 Aim of the Project
 
@@ -59,11 +77,12 @@ Key features include:
    ```bash
    python src/cors_server.py
    ```
-4. View in browser: http://localhost:8000/website, website/index.html or on online
-   at [https://datamedsci.github.io/ZoomingOnline/](https://datamedsci.github.io/ZoomingOnline/)
+4. View in browser: http://localhost:8000/website, website/index.html or online at [ZoomingOnline](https://datamedsci.github.io/ZoomingOnline/)
 5. In the input field enter http://localhost:8000/waveform.zarr or any other Zarr URL, you can also set path to
-   the Zarr file in query parameters,
-   e.g. https://datamedsci.github.io/ZoomingOnline/?data=http://localhost:8000/waveform.zarr
+   the Zarr file in query parameters, for example:
+   ```
+   http://localhost:8000/waveform.zarr
+   ```
 
 ## Zarr Version Support
 This project currently supports Zarr v2.
