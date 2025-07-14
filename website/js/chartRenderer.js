@@ -46,9 +46,9 @@ function getTimeUnitInfo(timeSpanUs) {
 function formatTimeDuration(durationUs, useNanoseconds) {
     if (useNanoseconds) {
         const durationNs = durationUs * US_TO_NS_FACTOR;
-        return `${durationNs.toFixed(1)}ns`;
+        return `${durationNs.toFixed(0)}ns`;
     } else {
-        return `${durationUs.toFixed(useNanoseconds ? 3 : 1)}µs`;
+        return `${durationUs.toFixed(0)}µs`;
     }
 }
 

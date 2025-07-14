@@ -81,7 +81,7 @@ Key features include:
 5. In the input field enter http://localhost:8000/waveform.zarr or any other Zarr URL, you can also set path to
    the Zarr file in query parameters, for example:
    ```
-   http://localhost:8000/waveform.zarr
+   https://datamedsci.github.io/ZoomingOnline/?data=http://localhost:8000/waveform.zarr
    ```
 
 ## Zarr Version Support
