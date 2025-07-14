@@ -15,6 +15,43 @@ import { getZoomDomains } from './timeUtils.js';
  * the view at each zoom level, synchronized with position sliders in the UI.
  */
 
+// Time conversion factors
+const S_TO_US_FACTOR = 1e6;
+const S_TO_NS_FACTOR = 1e9;
+const US_TO_NS_FACTOR = 1000;
+
+// Threshold for switching to nanosecond display (in microseconds)
+const NANOSECOND_THRESHOLD_US = 0.5;
+
+// Detail view threshold for decimation
+const DETAIL_THRESHOLD = 40000;
+
+/**
+ * Helper function to determine appropriate time unit and label
+ * @param {number} timeSpanUs - Time span in microseconds
+ * @returns {Object} Object containing useNanoseconds flag and appropriate label
+ */
+function getTimeUnitInfo(timeSpanUs) {
+    const useNanoseconds = timeSpanUs <= NANOSECOND_THRESHOLD_US;
+    const timeUnitLabel = useNanoseconds ? "Relative Time [ns]" : "Relative Time [µs]";
+    return { useNanoseconds, timeUnitLabel };
+}
+
+/**
+ * Helper function to format time duration with appropriate units
+ * @param {number} durationUs - Duration in microseconds
+ * @param {boolean} useNanoseconds - Whether to use nanoseconds
+ * @returns {string} Formatted duration string with units
+ */
+function formatTimeDuration(durationUs, useNanoseconds) {
+    if (useNanoseconds) {
+        const durationNs = durationUs * US_TO_NS_FACTOR;
+        return `${durationNs.toFixed(1)}ns`;
+    } else {
+        return `${durationUs.toFixed(useNanoseconds ? 3 : 1)}µs`;
+    }
+}
+
 /**
  * Initialize and plot the data across all chart levels
  * @param {Object} rawStore - The raw data store containing the full dataset
@@ -62,7 +99,7 @@ export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCach
     
     // Function to convert ADC values to millivolts
     const adcToMilliVolts = (adc) => 1000 * (adc * vertical_gain - vertical_offset);
-    const total_time_us = (no_of_samples - 1) * horiz_interval * 1e6;
+    const total_time_us = (no_of_samples - 1) * horiz_interval * S_TO_US_FACTOR;
 
     // Initialize plotConfig within the global appState
     window.appState.plotConfig = {
@@ -86,7 +123,7 @@ export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCach
 
     // Process overview data for plotting
     const overviewData = Array.from(overviewMin).map((min_val, i) => {
-        const time_us = (i + 0.5) * downsampling_factor * horiz_interval * 1e6;
+        const time_us = (i + 0.5) * downsampling_factor * horiz_interval * S_TO_US_FACTOR;
         return {
             time_us,
             min_mv: adcToMilliVolts(min_val),
@@ -138,23 +175,18 @@ export async function updateAllCharts() {
 
     // --- Draw Zoom 1 Chart ---
     d3.select("#zoom1-chart").selectAll("*").remove();
+    
     // Calculate the duration of the zoomed region for better context
     const zoom1Duration = zoom1Domain[1] - zoom1Domain[0];
     
-    // Determine if we should use nanoseconds (for zoom levels of 500ns or less)
-    const useNanoseconds = zoom1Duration <= 0.5; // 0.5 μs = 500 ns
+    // Get time unit info based on zoom level
+    const { useNanoseconds, timeUnitLabel } = getTimeUnitInfo(zoom1Duration);
     
     // Format title with appropriate unit
-    let zoom1Title;
-    if (useNanoseconds) {
-        const durationNs = zoom1Duration * 1000; // Convert μs to ns
-        zoom1Title = `Zoom 1: ${durationNs.toFixed(1)}ns window`;
-    } else {
-        zoom1Title = `Zoom 1: ${zoom1Duration.toFixed(1)}µs window`;
-    }
+    const zoom1Title = `Zoom 1: ${formatTimeDuration(zoom1Duration, useNanoseconds)} window`;
     
     const svg1 = createChartSVG("#zoom1-chart", zoom1Title);
-    await renderDetail(svg1, zoom1Domain, useNanoseconds ? "Relative Time [ns]" : "Relative Time [µs]");
+    await renderDetail(svg1, zoom1Domain, timeUnitLabel);
 
     // --- Draw Zoom 2 Chart and UI ---
     await updateZoom2Chart();
@@ -172,23 +204,18 @@ export async function updateZoom2Chart() {
 
     // --- Draw Zoom 2 Chart ---
     d3.select("#zoom2-chart").selectAll("*").remove();
+    
     // Calculate the duration of the zoomed region for better context
     const zoom2Duration = zoom2Domain[1] - zoom2Domain[0];
     
-    // Determine if we should use nanoseconds (for zoom levels of 500ns or less)
-    const useNanoseconds = zoom2Duration <= 0.5; // 0.5 μs = 500 ns
+    // Get time unit info based on zoom level
+    const { useNanoseconds, timeUnitLabel } = getTimeUnitInfo(zoom2Duration);
     
     // Format title with appropriate unit
-    let zoom2Title;
-    if (useNanoseconds) {
-        const durationNs = zoom2Duration * 1000; // Convert μs to ns
-        zoom2Title = `Zoom 2: ${durationNs.toFixed(1)}ns window`;
-    } else {
-        zoom2Title = `Zoom 2: ${zoom2Duration.toFixed(3)}µs window`;
-    }
+    const zoom2Title = `Zoom 2: ${formatTimeDuration(zoom2Duration, useNanoseconds)} window`;
     
     const svg2 = createChartSVG("#zoom2-chart", zoom2Title);
-    await renderDetail(svg2, zoom2Domain, useNanoseconds ? "Relative Time [ns]" : "Relative Time [µs]");
+    await renderDetail(svg2, zoom2Domain, timeUnitLabel);
 
     // --- Update Zoom 2 Rectangle (on Chart 1) ---
     const x1 = d3.scaleLinear().domain(zoom1Domain).range([0, width]);
@@ -327,31 +354,28 @@ async function renderDetail(svg, domain_us, xLabel) {
     const loadingText = svg.append("text").attr("class", "loading-text").attr("x", width / 2).attr("y", height / 2).text("Loading detail...");
 
     // Calculate data indices for the visible region
-    const startIndex = Math.max(0, Math.floor(domain_us[0] / (horiz_interval * 1e6)));
-    const endIndex = Math.min(no_of_samples, Math.ceil(domain_us[1] / (horiz_interval * 1e6)));
+    const startIndex = Math.max(0, Math.floor(domain_us[0] / (horiz_interval * S_TO_US_FACTOR)));
+    const endIndex = Math.min(no_of_samples, Math.ceil(domain_us[1] / (horiz_interval * S_TO_US_FACTOR)));
     const visibleSampleWidth = endIndex - startIndex;
-    const detailThreshold = 40000;
     
     // Calculate time span in microseconds
     const timeSpanUs = domain_us[1] - domain_us[0];
     
     // Determine if we should use nanoseconds (for zoom levels of 500ns or less)
-    const useNanoseconds = timeSpanUs <= 0.5; // 0.5 μs = 500 ns
+    const { useNanoseconds } = getTimeUnitInfo(timeSpanUs);
     
     // Calculate relative time range starting from first visible sample
     const relativeStartTime = 0;
-    const relativeEndTime = (endIndex - startIndex) * horiz_interval * (useNanoseconds ? 1e9 : 1e6);
+    const timeFactor = useNanoseconds ? S_TO_NS_FACTOR : S_TO_US_FACTOR;
+    const relativeEndTime = (endIndex - startIndex) * horiz_interval * timeFactor;
     const relativeTimeRange = [relativeStartTime, relativeEndTime];
 
     // Use relative time domain for x-axis
     const xScale = d3.scaleLinear().domain(relativeTimeRange).range([0, width]);
     const yScale = d3.scaleLinear().range([height, 0]);
-    
-    // Set appropriate time unit for x-axis label
-    const timeUnitLabel = useNanoseconds ? "Relative Time [ns]" : "Relative Time [µs]";
 
     // For large data ranges, use decimation to improve performance
-    if (visibleSampleWidth > detailThreshold) {
+    if (visibleSampleWidth > DETAIL_THRESHOLD) {
         const target_points = 4000;
         const step = Math.max(1, Math.floor(visibleSampleWidth / target_points));
         const detailOverviewData = [];
@@ -370,7 +394,6 @@ async function renderDetail(svg, domain_us, xLabel) {
             if (min_mv < yMin) yMin = min_mv;
             if (max_mv > yMax) yMax = max_mv;
             // Calculate time relative to first visible sample (in μs or ns)
-            const timeFactor = useNanoseconds ? 1e9 : 1e6;
             const relative_time = (chunkStart - startIndex + (chunkEnd - chunkStart) / 2) * horiz_interval * timeFactor;
             detailOverviewData.push({time_us: relative_time, min_mv, max_mv});
         }
@@ -382,7 +405,6 @@ async function renderDetail(svg, domain_us, xLabel) {
     } else {
         // For smaller ranges, show all data points without decimation
         const chunkData = await getRawDataSlice(channel, trc, segment, startIndex, endIndex);
-        const timeFactor = useNanoseconds ? 1e9 : 1e6;
         const detailData = Array.from(chunkData).map((v, i) => ({
             // Calculate time relative to first visible sample (in μs or ns)
             time_us: i * horiz_interval * timeFactor,
@@ -395,7 +417,7 @@ async function renderDetail(svg, domain_us, xLabel) {
     }
     
     // Update the X-axis label with appropriate time unit
-    drawAxes(svg, xScale, yScale, timeUnitLabel);
+    drawAxes(svg, xScale, yScale, xLabel);
 }
 
 /**
