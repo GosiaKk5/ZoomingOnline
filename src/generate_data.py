@@ -148,13 +148,9 @@ def save_zarr(
                 print(f"  - Calculating overview for: Chan {ch + 1}, TRC {trc + 1}, Seg {seg + 1}")
                 overview_slice = create_overview(data[ch, trc, seg, :], downsampling_factor)
                 overview_data[ch, trc, seg, :, :] = overview_slice
-                
+
     # Store the data
-    overview_group.create_array(
-        "0",
-        data=overview_data,
-        chunks=(1, 1, 1, 2, overview_shape[-1])
-    )
+    overview_group.create_array("0", data=overview_data, chunks=(1, 1, 1, 2, overview_shape[-1]))
 
     print(f"Saved Zarr store at: {path}")
 
@@ -201,7 +197,7 @@ def main() -> None:
     args = parser.parse_args()
     output_path = Path(args.output)
     ext = output_path.suffix.lower()
-    
+
     # If minimal flag is set, override with minimal parameters
     if args.minimal:
         args.samples = 1000000  # 1M samples instead of 100M
@@ -209,7 +205,7 @@ def main() -> None:
         args.trcs = 1
         args.segments = 1
         print("Generating minimal dataset for quick testing")
-    
+
     print(f"Generating data with shape: ({args.channels}, {args.trcs}, {args.segments}, {args.samples})")
     data, horiz_interval, vertical_gains, vertical_offsets = generate_realistic_data(
         num_samples=args.samples,
