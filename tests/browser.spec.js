@@ -4,7 +4,7 @@ const { test, expect } = require('@playwright/test');
 const useLocalData = process.env.USE_LOCAL_DATA === 'true';
 const baseUrl = process.env.BASE_URL || 'http://localhost:8000/website';
 const dataUrl = useLocalData 
-  ? 'http://localhost:8000/test_data.zarr' 
+  ? 'http://localhost:8000/output.zarr' 
   : 'https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr';
 
 test.describe('ZoomingOnline Browser Tests', () => {
@@ -24,10 +24,10 @@ test.describe('ZoomingOnline Browser Tests', () => {
     const selectionContainer = await page.locator('#selection-container');
     await expect(selectionContainer).toBeVisible({ timeout: 30000 });
     
-    // Select specific options
+    // Select specific options (for minimal dataset)
     await page.selectOption('#channel-select', '0');
-    await page.selectOption('#trc-select', '1');
-    await page.selectOption('#segment-select', '2');
+    await page.selectOption('#trc-select', '0');
+    await page.selectOption('#segment-select', '0');
     
     // Plot the selected data
     await page.click('#plot-button');
@@ -65,10 +65,10 @@ test.describe('ZoomingOnline Browser Tests', () => {
     const selectionContainer = await page.locator('#selection-container');
     await expect(selectionContainer).toBeVisible({ timeout: 30000 });
     
-    // Select channel, TRC file, and segment
-    await page.selectOption('#channel-select', '1');
-    await page.selectOption('#trc-select', '2');
-    await page.selectOption('#segment-select', '3');
+    // Select channel, TRC file, and segment (for minimal dataset)
+    await page.selectOption('#channel-select', '0');
+    await page.selectOption('#trc-select', '0');
+    await page.selectOption('#segment-select', '0');
     
     // Plot the selected data
     await page.click('#plot-button');

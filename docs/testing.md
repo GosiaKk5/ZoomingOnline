@@ -54,10 +54,11 @@ The tests can use either:
    https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr
    ```
 
-2. **Local data** - Generated test data with reduced parameters:
-   - 2 channels
-   - 3 TRC files
-   - 10,000,000 data samples
+2. **Local data** - Generated test data with minimal parameters:
+   - 1 channel
+   - 1 TRC file
+   - 1 segment
+   - 1,000,000 data samples
 
 ### Configurable Data Source
 
@@ -91,10 +92,11 @@ This script tests:
 The GitHub Actions workflow performs the following steps:
 
 1. **Data Generation**
-   - Generates a reduced test dataset with:
-     - 2 channels
-     - 3 TRC files
-     - 10,000,000 data samples
+   - Generates a minimal test dataset with:
+     - 1 channel
+     - 1 TRC file
+     - 1 segment
+     - 1,000,000 data samples
 
 2. **Local Server Setup**
    - Starts a local web server to serve both the application and the test data

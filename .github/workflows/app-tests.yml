@@ -29,18 +29,19 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v5
-      
-      - name: Install project dependencies
-        run: uv sync --locked --all-extras --dev
-
-      - name: Generate test data with reduced size
+      - name: Install project dependencies directly
         run: |
-          echo "Generating reduced test dataset..."
-          python src/generate_data.py -o test_data.zarr --channels 2 --trcs 3 --samples 10000000
-          echo "Test data generation complete."
+          # Install dependencies directly to ensure they are available in the path
+          pip install h5py zarr boto3 botocore s3fs python-dotenv
+          # Verify installations
+          python -c "import h5py, zarr, boto3; print(f'h5py: {h5py.__version__}, zarr: {zarr.__version__}, boto3: {boto3.__version__}')"
+
+      - name: Generate test data
+        run: |
+          # Generate minimal test data for browser tests
+          python src/generate_data.py --minimal
 
       - name: Install Playwright
         run: |

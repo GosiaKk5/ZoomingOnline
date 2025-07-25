@@ -178,7 +178,7 @@ def main() -> None:
         "--output",
         "-o",
         type=str,
-        required=True,
+        default="output.zarr",
         help="Output path (.zarr directory or .h5 file)",
     )
     parser.add_argument("--samples", type=int, default=int(1e8), help="Number of samples per segment")
@@ -192,10 +192,23 @@ def main() -> None:
         choices=["sine", "square", "sawtooth", "pulse"],
         help="Base signal type",
     )
+    parser.add_argument(
+        "--minimal",
+        action="store_true",
+        help="Generate a minimal dataset for quick testing (overrides other size parameters)",
+    )
     args = parser.parse_args()
     output_path = Path(args.output)
     ext = output_path.suffix.lower()
-
+    
+    # If minimal flag is set, override with minimal parameters
+    if args.minimal:
+        args.samples = 1000000  # 1M samples instead of 100M
+        args.channels = 1
+        args.trcs = 1
+        args.segments = 1
+        print("Generating minimal dataset for quick testing")
+    
     print(f"Generating data with shape: ({args.channels}, {args.trcs}, {args.segments}, {args.samples})")
     data, horiz_interval, vertical_gains, vertical_offsets = generate_realistic_data(
         num_samples=args.samples,
