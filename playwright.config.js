@@ -32,12 +32,5 @@ module.exports = defineConfig({
       },
     },
   ],
-  /* Web server to use for testing */
-  webServer: [
-    {
-      command: 'python src/cors_server.py --port 8000',
-      port: 8000,
-      reuseExistingServer: !process.env.CI,
-    },
-  ],
+  /* No local webserver needed - using remote data only */
 });

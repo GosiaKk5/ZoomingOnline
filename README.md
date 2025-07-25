@@ -91,7 +91,7 @@ To add support for Zarr v3, migration to [zarrita.js](https://github.com/manzt/z
 
 ## 🧪 Testing
 
-The project includes automated browser tests using Playwright. These tests verify that the web application loads correctly, can access data files, and properly renders visualizations.
+The project includes automated browser tests using Playwright. These tests verify that the web application loads correctly, can access remote data files from Cyfronet S3, and properly renders visualizations.
 
 To run the tests locally:
 
@@ -115,7 +115,10 @@ Alternatively, use the provided script:
 ./run_browser_tests.sh
 ```
 
-These tests are also run automatically via GitHub Actions on every push, pull request, and weekly.
+These tests are run automatically via GitHub Actions:
+- On every push to the main branch
+- On every pull request
+- Once per week (scheduled)
 
 📖 See [browser-tests.md](./docs/browser-tests.md) for detailed information about the browser tests.
 
