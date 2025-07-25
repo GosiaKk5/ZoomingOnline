@@ -1,10 +1,23 @@
 const { test, expect } = require('@playwright/test');
 
+// Configure data source based on environment
+const useLocalData = process.env.USE_LOCAL_DATA === 'true';
+const baseUrl = process.env.BASE_URL || 'http://localhost:8000/website';
+const dataUrl = useLocalData 
+  ? 'http://localhost:8000/test_data.zarr' 
+  : 'https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr';
+
 test.describe('ZoomingOnline Browser Tests', () => {
 
-  test('Load remote dataset via URL parameter', async ({ page }) => {
+  test.beforeEach(async () => {
+    // Log data source for debugging
+    console.log(`Using data source: ${dataUrl}`);
+    console.log(`Using base URL: ${baseUrl}`);
+  });
+
+  test('Load dataset via URL parameter', async ({ page }) => {
     // Navigate to the app with data parameter
-    await page.goto('http://localhost:8000/website/?data=https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr');
+    await page.goto(`${baseUrl}/?data=${dataUrl}`);
     await expect(page).toHaveTitle('Interactive Raw Data Analysis Plot');
     
     // Check if the selection container becomes visible (data loaded automatically)
@@ -12,9 +25,9 @@ test.describe('ZoomingOnline Browser Tests', () => {
     await expect(selectionContainer).toBeVisible({ timeout: 30000 });
     
     // Select specific options
-    await page.selectOption('#channel-select', '2');
-    await page.selectOption('#trc-select', '3');
-    await page.selectOption('#segment-select', '4');
+    await page.selectOption('#channel-select', '0');
+    await page.selectOption('#trc-select', '1');
+    await page.selectOption('#segment-select', '2');
     
     // Plot the selected data
     await page.click('#plot-button');
@@ -32,12 +45,12 @@ test.describe('ZoomingOnline Browser Tests', () => {
     await expect(page.locator('.controls')).toBeVisible();
     
     // Take screenshot
-    await page.screenshot({ path: 'remote-data-url-param-test.png' });
+    await page.screenshot({ path: 'data-url-param-test.png' });
   });
 
-  test('Load remote dataset via input field', async ({ page }) => {
+  test('Load dataset via input field', async ({ page }) => {
     // Navigate to the app 
-    await page.goto('http://localhost:8000/website/');
+    await page.goto(baseUrl);
     await expect(page).toHaveTitle('Interactive Raw Data Analysis Plot');
     
     // Check if the input container is visible
@@ -45,7 +58,7 @@ test.describe('ZoomingOnline Browser Tests', () => {
     await expect(inputContainer).toBeVisible();
     
     // Load example data through input field
-    await page.fill('#zarr-input', 'https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr');
+    await page.fill('#zarr-input', dataUrl);
     await page.click('#load-button');
     
     // Wait for data to load
@@ -53,9 +66,9 @@ test.describe('ZoomingOnline Browser Tests', () => {
     await expect(selectionContainer).toBeVisible({ timeout: 30000 });
     
     // Select channel, TRC file, and segment
-    await page.selectOption('#channel-select', '2');
-    await page.selectOption('#trc-select', '3');
-    await page.selectOption('#segment-select', '4');
+    await page.selectOption('#channel-select', '1');
+    await page.selectOption('#trc-select', '2');
+    await page.selectOption('#segment-select', '3');
     
     // Plot the selected data
     await page.click('#plot-button');
@@ -77,6 +90,6 @@ test.describe('ZoomingOnline Browser Tests', () => {
     await page.locator('#zoom2-pos').fill('25');
     
     // Take screenshot
-    await page.screenshot({ path: 'remote-data-input-field-test.png' });
+    await page.screenshot({ path: 'data-input-field-test.png' });
   });
 });

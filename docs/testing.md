@@ -47,14 +47,36 @@ Alternatively, use the provided script that automates these steps:
 
 ### Test Data
 
-The tests exclusively use the 1nA dataset hosted on Cyfronet S3:
-```
-https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr
+The tests can use either:
+
+1. **Remote data** - The 1nA dataset hosted on Cyfronet S3:
+   ```
+   https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr
+   ```
+
+2. **Local data** - Generated test data with reduced parameters:
+   - 2 channels
+   - 3 TRC files
+   - 10,000,000 data samples
+
+### Configurable Data Source
+
+The test suite is configurable to use either remote S3 data or locally generated data:
+
+```bash
+# Use S3 data (default)
+./run_browser_tests.sh
+
+# Use locally generated data
+./run_browser_tests.sh --local
+
+# Generate new test data and use it
+./run_browser_tests.sh --generate
 ```
 
 ### S3 Connectivity Tests
 
-Before running the browser tests, you can verify connectivity to the Cyfronet S3 storage:
+If you're using S3 data, you can verify connectivity to the Cyfronet S3 storage:
 
 ```bash
 ./tests/test_s3_connectivity.sh
@@ -66,17 +88,20 @@ This script tests:
 
 ### Continuous Integration
 
-The testing process in GitHub Actions consists of two jobs:
+The GitHub Actions workflow performs the following steps:
 
-1. **S3 Connectivity Test**
-   - Verifies that GitHub Actions runners can access the Cyfronet S3 storage
-   - Tests downloading a small file from the S3 bucket
-   - Fails fast if connectivity issues are detected
+1. **Data Generation**
+   - Generates a reduced test dataset with:
+     - 2 channels
+     - 3 TRC files
+     - 10,000,000 data samples
 
-2. **Browser Tests**
-   - Runs only if the connectivity test passes
-   - Starts a local web server to serve the application
-   - Runs the Playwright tests against the local server
+2. **Local Server Setup**
+   - Starts a local web server to serve both the application and the test data
+
+3. **Browser Tests**
+   - Runs Playwright tests against the local server
+   - Uses the locally generated data to avoid reliance on external services
 
 These tests run automatically:
 - On every push to the main branch
