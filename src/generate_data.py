@@ -3,7 +3,6 @@ import shutil
 from pathlib import Path
 
 import h5py
-import numcodecs
 import numpy as np
 import zarr
 from numpy.random import Generator
@@ -129,10 +128,6 @@ def save_zarr(
     root.attrs["horiz_interval"] = horiz_interval
     root.attrs["vertical_gains"] = vertical_gains.tolist()
     root.attrs["vertical_offsets"] = vertical_offsets.tolist()
-
-    print("Saving raw data...")
-    # Create array without compression to avoid compatibility issues
-    raw = root.create_array("raw", data=data, chunks=(1, 1, 1, 100_000))
 
     print("Pre-calculating and saving overviews...")
     overview_group = root.create_group("overview")
