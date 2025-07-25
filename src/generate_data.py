@@ -3,6 +3,7 @@ import shutil
 from pathlib import Path
 
 import h5py
+import numcodecs
 import numpy as np
 import zarr
 from numpy.random import Generator
@@ -129,8 +130,16 @@ def save_zarr(
     root.attrs["vertical_gains"] = vertical_gains.tolist()
     root.attrs["vertical_offsets"] = vertical_offsets.tolist()
 
-    # Create raw data array without compression - use create_dataset with explicit shape
-    root.create_dataset("raw", shape=data.shape, dtype=data.dtype, data=data, chunks=(1, 1, 1, 100_000))
+    # Create raw data array with blosc compression - use create_dataset with explicit shape
+    blosc_compressor = numcodecs.Blosc(cname="zstd", clevel=5, shuffle=numcodecs.Blosc.BITSHUFFLE)
+    root.create_dataset(
+        "raw",
+        shape=data.shape,
+        dtype=data.dtype,
+        data=data,
+        chunks=(1, 1, 1, 100_000),
+        compressor=blosc_compressor,  # Using blosc with zstd and bit-shuffle
+    )
 
     print("Pre-calculating and saving overviews...")
     overview_group = root.create_group("overview")
@@ -154,6 +163,7 @@ def save_zarr(
         dtype=overview_data.dtype,
         data=overview_data,
         chunks=(1, 1, 1, 2, overview_shape[-1]),
+        compressor=blosc_compressor,  # Using blosc with zstd and bit-shuffle
     )
 
     print(f"Saved Zarr store at: {path}")
@@ -205,9 +215,9 @@ def main() -> None:
     # If minimal flag is set, override with minimal parameters
     if args.minimal:
         args.samples = 1000000  # 1M samples instead of 100M
-        args.channels = 1
-        args.trcs = 1
-        args.segments = 1
+        args.channels = 2
+        args.trcs = 3
+        args.segments = 5
         print("Generating minimal dataset for quick testing")
 
     print(f"Generating data with shape: ({args.channels}, {args.trcs}, {args.segments}, {args.samples})")
