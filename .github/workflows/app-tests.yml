@@ -1,0 +1,55 @@
+name: Web App Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  schedule:
+    # Run once a week on Monday at 00:00 UTC
+    - cron: '0 0 * * 1'
+
+# Set explicit permissions
+permissions:
+  contents: read
+
+jobs:
+  browser-tests:
+    name: Browser Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install project dependencies directly
+        run: |
+          # Install dependencies directly to ensure they are available in the path
+          pip install h5py zarr boto3 botocore s3fs python-dotenv
+          # Verify installations
+          python -c "import h5py, zarr, boto3; print(f'h5py: {h5py.__version__}, zarr: {zarr.__version__}, boto3: {boto3.__version__}')"
+
+      - name: Run browser tests with local data
+        run: |
+          # Run the browser tests script with local data generation
+          chmod +x run_browser_tests.sh
+          CI=true ./run_browser_tests.sh --generate
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            *.png
+          retention-days: 30

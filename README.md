@@ -89,6 +89,12 @@ This project currently supports Zarr v2.
 
 To add support for Zarr v3, migration to [zarrita.js](https://github.com/manzt/zarrita.js) is required.
 
+## 🧪 Testing
+
+The project includes automated browser tests to verify application functionality.
+
+📖 See [testing.md](./docs/testing.md) for detailed information about testing tools and procedures.
+
 ## 📄 License
 
 MIT License — see [LICENSE](LICENSE)

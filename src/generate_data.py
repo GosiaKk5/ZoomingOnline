@@ -3,7 +3,6 @@ import shutil
 from pathlib import Path
 
 import h5py
-import numcodecs
 import numpy as np
 import zarr
 from numpy.random import Generator
@@ -124,16 +123,14 @@ def save_zarr(
         print(f"Overwriting existing Zarr store: {path}")
         shutil.rmtree(path)
 
-    compressor = numcodecs.Blosc(cname="zstd", clevel=3, shuffle=numcodecs.Blosc.BITSHUFFLE)
-
-    root = zarr.group(store=str(path))
+    # Explicitly specify zarr_version=2 for compatibility with browser client
+    root = zarr.group(store=str(path), zarr_version=2)
     root.attrs["horiz_interval"] = horiz_interval
     root.attrs["vertical_gains"] = vertical_gains.tolist()
     root.attrs["vertical_offsets"] = vertical_offsets.tolist()
 
-    print("Saving raw data...")
-    raw = root.create_dataset("raw", shape=data.shape, chunks=(1, 1, 1, 100_000), compressor=compressor, dtype="int16")
-    raw[:] = data
+    # Create raw data array without compression - use create_dataset with explicit shape
+    root.create_dataset("raw", shape=data.shape, dtype=data.dtype, data=data, chunks=(1, 1, 1, 100_000))
 
     print("Pre-calculating and saving overviews...")
     overview_group = root.create_group("overview")
@@ -141,19 +138,23 @@ def save_zarr(
     downsampling_factor = max(1, data.shape[-1] // 4000)
 
     overview_shape = (*data.shape[:-1], 2, data.shape[-1] // downsampling_factor)
-    overview_data = overview_group.create_dataset(
-        "0",
-        shape=overview_shape,
-        chunks=(1, 1, 1, 2, overview_shape[-1]),
-        dtype="int16",
-    )
-
+    # Create overview array
+    overview_data = np.zeros(overview_shape, dtype="int16")
     for ch in range(data.shape[0]):
         for trc in range(data.shape[1]):
             for seg in range(data.shape[2]):
                 print(f"  - Calculating overview for: Chan {ch + 1}, TRC {trc + 1}, Seg {seg + 1}")
                 overview_slice = create_overview(data[ch, trc, seg, :], downsampling_factor)
                 overview_data[ch, trc, seg, :, :] = overview_slice
+
+    # Store the data - use create_dataset with explicit shape for zarr v2 compatibility
+    overview_group.create_dataset(
+        "0",
+        shape=overview_data.shape,
+        dtype=overview_data.dtype,
+        data=overview_data,
+        chunks=(1, 1, 1, 2, overview_shape[-1]),
+    )
 
     print(f"Saved Zarr store at: {path}")
 
@@ -178,7 +179,7 @@ def main() -> None:
         "--output",
         "-o",
         type=str,
-        required=True,
+        default="output.zarr",
         help="Output path (.zarr directory or .h5 file)",
     )
     parser.add_argument("--samples", type=int, default=int(1e8), help="Number of samples per segment")
@@ -192,9 +193,22 @@ def main() -> None:
         choices=["sine", "square", "sawtooth", "pulse"],
         help="Base signal type",
     )
+    parser.add_argument(
+        "--minimal",
+        action="store_true",
+        help="Generate a minimal dataset for quick testing (overrides other size parameters)",
+    )
     args = parser.parse_args()
     output_path = Path(args.output)
     ext = output_path.suffix.lower()
+
+    # If minimal flag is set, override with minimal parameters
+    if args.minimal:
+        args.samples = 1000000  # 1M samples instead of 100M
+        args.channels = 1
+        args.trcs = 1
+        args.segments = 1
+        print("Generating minimal dataset for quick testing")
 
     print(f"Generating data with shape: ({args.channels}, {args.trcs}, {args.segments}, {args.samples})")
     data, horiz_interval, vertical_gains, vertical_offsets = generate_realistic_data(
