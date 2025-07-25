@@ -78,14 +78,12 @@ def test_save_zarr_creates_overview(small_realistic_data: tuple[np.ndarray, floa
         expected_len = data.shape[-1] // max(1, data.shape[-1] // 4000)
         assert overview.shape == (2, 3, 5, 2, expected_len)
 
-        # Check compression on both raw and overview arrays using updated API
-        assert root["raw"].compressors is not None
-        assert "blosc" in str(root["raw"].compressors).lower()
-
-        assert root["overview"]["0"].compressors is not None
-        assert "blosc" in str(root["overview"]["0"].compressors).lower()
-
-        # Test values from second channel, second TRC, third segment (channels/TRCs/segments are 0-indexed)
+        # Check compression on both raw and overview arrays
+        assert root["raw"].compressor is not None
+        assert "blosc" in str(root["raw"].compressor).lower()
+        
+        assert root["overview"]["0"].compressor is not None
+        assert "blosc" in str(root["overview"]["0"].compressor).lower()        # Test values from second channel, second TRC, third segment (channels/TRCs/segments are 0-indexed)
         min_vals = overview[1, 1, 2, 0, :]
         max_vals = overview[1, 1, 2, 1, :]
         assert np.all(min_vals <= max_vals)
