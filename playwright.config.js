@@ -34,12 +34,12 @@ module.exports = defineConfig({
       },
     },
   ],
-  /* Web server for local testing */
-  webServer: [
+  /* Web server for local testing - disabled for CI to avoid conflicts with run_browser_tests.sh */
+  webServer: process.env.CI ? [] : [
     {
       command: 'python src/cors_server.py --port 8000',
       port: 8000,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: true,
     },
   ],
 });

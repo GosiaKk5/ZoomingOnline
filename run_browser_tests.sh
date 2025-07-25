@@ -85,6 +85,12 @@ fi
 
 # Run the tests
 echo "Running Playwright tests..."
-npx playwright test tests/browser.spec.js
+if [ -n "$CI" ]; then
+  # When running in CI, explicitly set CI=true for Playwright to use our CI-specific config
+  CI=true npx playwright test tests/browser.spec.js
+else
+  # For local runs, use standard configuration
+  npx playwright test tests/browser.spec.js
+fi
 
 echo "All tests completed successfully!"
