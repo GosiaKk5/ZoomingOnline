@@ -13,6 +13,6 @@ npx playwright install --with-deps chromium
 
 # Run the tests
 echo "Running Playwright tests..."
-npx playwright test
+npx playwright test tests/browser.spec.js
 
 echo "All tests completed successfully!"

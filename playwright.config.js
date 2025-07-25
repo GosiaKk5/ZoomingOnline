@@ -6,6 +6,8 @@ const { defineConfig } = require('@playwright/test');
  */
 module.exports = defineConfig({
   testDir: './tests',
+  /* Define test match pattern to include our browser_tests.js file */
+  testMatch: ['**/*.spec.js', '**/*test*.js', '**/browser_tests.js'],
   /* Maximum time one test can run for */
   timeout: 60000,
   /* Fail the build on CI if you accidentally left test.only in the source code. */

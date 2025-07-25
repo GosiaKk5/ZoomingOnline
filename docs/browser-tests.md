@@ -47,7 +47,7 @@ The test:
 1. Ensure you have Node.js installed
 2. Install dependencies with `npm install`
 3. Install Playwright browsers with `npx playwright install`
-4. Run the tests: `npx playwright test`
+4. Run the tests: `npx playwright test tests/browser.spec.js`
 
 ## CI Integration
 

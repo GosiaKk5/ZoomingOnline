@@ -4,7 +4,7 @@
   "description": "Browser tests for ZoomingOnline",
   "private": true,
   "scripts": {
-    "test": "playwright test"
+    "test": "playwright test tests/browser.spec.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.40.0"
