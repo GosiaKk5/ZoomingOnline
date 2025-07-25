@@ -55,7 +55,7 @@ def test_save_zarr_writes_attributes(small_realistic_data: tuple[np.ndarray, flo
     with tempfile.TemporaryDirectory() as tmpdir:
         zarr_path = Path(tmpdir) / "sample.zarr"
         save_zarr(zarr_path, data, horiz_interval, gains, offsets)
-        # Use the updated API for zarr v3
+        # Use zarr v2 format
         store = zarr.open_group(store=str(zarr_path))
         assert "horiz_interval" in store.attrs
         assert "vertical_gains" in store.attrs
@@ -69,7 +69,7 @@ def test_save_zarr_creates_overview(small_realistic_data: tuple[np.ndarray, floa
         zarr_path = Path(tmpdir) / "with_overview.zarr"
         save_zarr(zarr_path, data, horiz_interval, gains, offsets)
 
-        # Use the updated API for zarr v3
+        # Use zarr v2 format
         root = zarr.open_group(store=str(zarr_path))
         assert "overview" in root
         assert "0" in root["overview"]

@@ -9,10 +9,14 @@
  * Populate the dropdown selectors for channel, TRC, and segment
  * based on the data dimensions from the loaded store
  * 
- * @param {Object} store - The Zarr data store containing shape information
+ * @param {Object} store - The Zarr array containing shape information
  */
 export function populateSelectors(store) {
-    const [channels, trcs, segments] = store.shape;
+    // With zarrita.js, the shape is directly available as a property
+    const shape = store.shape;
+    const channels = shape[0];
+    const trcs = shape[1];
+    const segments = shape[2];
     
     // Helper function to create options for a select element
     const createOptions = (selectId, count, prefix) => {

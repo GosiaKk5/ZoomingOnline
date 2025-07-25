@@ -8,6 +8,8 @@ import numcodecs
 import numpy as np
 import zarr
 
+# Using zarr v2 format for compatibility with zarrita.js
+
 
 def create_overview(data_slice: np.ndarray, downsampling_factor: int) -> np.ndarray:
     n_fit = len(data_slice) - (len(data_slice) % downsampling_factor)
@@ -39,7 +41,8 @@ def convert_hdf5_to_zarr(hdf_path: Path, zarr_path: Path) -> None:  # noqa: C901
             raise KeyError(message)
 
         data = h5["samples"]
-        root = zarr.open_group(str(zarr_path), mode="w")
+        # Continue using zarr v2 for compatibility
+        root = zarr.open_group(str(zarr_path), mode="w", zarr_version=2)
 
         for k, v in h5.attrs.items():
             try:
@@ -85,7 +88,7 @@ def convert_hdf5_to_zarr(hdf_path: Path, zarr_path: Path) -> None:  # noqa: C901
                 for seg in range(data.shape[2]):
                     overview[ch, trc, seg, :, :] = create_overview(data[ch, trc, seg, :], downsample)
 
-    print(f"✅ Done! Saved: {zarr_path}")
+    print(f"✅ Done! Saved: {zarr_path} (compatible with zarrita.js)")
 
 
 def main() -> None:

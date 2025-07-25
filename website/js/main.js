@@ -4,6 +4,7 @@
  * Main application entry point that initializes the ZoomingOnline application.
  * Coordinates between different modules, sets up the global application state,
  * and handles event listeners for user interaction.
+ * Updated to work with zarrita.js for zarr data.
  */
 
 import { plotData, updateAllCharts, updateZoom2Chart } from './chartRenderer.js'; 
@@ -14,8 +15,10 @@ import { populateSelectors, setupCopyLinkButton, showCopyLinkContainer } from '.
 // Initialize a global app state object for sharing data between modules
 window.appState = {
     zarrGroup: null,
-    rawStore: null,
-    overviewStore: null,
+    rawArray: null,    // New zarrita.js array instead of rawStore
+    overviewArray: null, // New zarrita.js array instead of overviewStore
+    rawStore: null,     // Keep for compatibility
+    overviewStore: null, // Keep for compatibility
     plotConfig: null, // This will be set by plotData
     lastChunkCache: { key: null, data: null },
     timeSteps: [] // This will be populated by generateTimeSteps

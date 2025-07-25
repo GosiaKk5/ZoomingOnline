@@ -8,6 +8,8 @@ import numpy as np
 import zarr
 from numpy.random import Generator
 
+# Using zarr v2 format for compatibility with zarrita.js
+
 
 def generate_signal(signal_type: str, time_s: np.ndarray, freq_hz: float = 50.0) -> np.ndarray:
     if signal_type == "sine":
@@ -124,7 +126,7 @@ def save_zarr(
         print(f"Overwriting existing Zarr store: {path}")
         shutil.rmtree(path)
 
-    # Explicitly specify zarr_version=2 for compatibility with browser client
+    # Continue using zarr_version=2 for compatibility
     root = zarr.group(store=str(path), zarr_version=2)
     root.attrs["horiz_interval"] = horiz_interval
     root.attrs["vertical_gains"] = vertical_gains.tolist()
@@ -156,7 +158,7 @@ def save_zarr(
                 overview_slice = create_overview(data[ch, trc, seg, :], downsampling_factor)
                 overview_data[ch, trc, seg, :, :] = overview_slice
 
-    # Store the data - use create_dataset with explicit shape for zarr v2 compatibility
+    # Store the data with zarr v2 format but still compatible with zarrita.js
     overview_group.create_dataset(
         "0",
         shape=overview_data.shape,
@@ -166,7 +168,7 @@ def save_zarr(
         compressor=blosc_compressor,  # Using blosc with zstd and bit-shuffle
     )
 
-    print(f"Saved Zarr store at: {path}")
+    print(f"Saved Zarr store at: {path} (compatible with zarrita.js)")
 
 
 def save_hdf5(path: Path, data: np.ndarray) -> None:

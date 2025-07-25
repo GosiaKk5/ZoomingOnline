@@ -1,5 +1,6 @@
 import { getRawDataSlice } from './dataLoader.js';
 import { getZoomDomains } from './timeUtils.js';
+import * as zarr from "https://esm.sh/zarrita";
 
 /**
  * chartRenderer.js
@@ -54,7 +55,7 @@ function formatTimeDuration(durationUs, useNanoseconds) {
 
 /**
  * Initialize and plot the data across all chart levels
- * @param {Object} rawStore - The raw data store containing the full dataset
+ * @param {Object} rawStore - The raw data array containing the full dataset
  * @param {Object} zarrGroup - The Zarr group containing metadata and attributes
  * @param {Object} overviewStore - The downsampled data for overview plotting
  * @param {Object} lastChunkCache - Cache for optimizing data access
@@ -62,8 +63,10 @@ function formatTimeDuration(durationUs, useNanoseconds) {
 export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCache) {
     // Update global appState with the latest stores and cache
     window.appState.rawStore = rawStore;
+    window.appState.rawArray = rawStore;       // For zarrita.js
     window.appState.zarrGroup = zarrGroup;
     window.appState.overviewStore = overviewStore;
+    window.appState.overviewArray = overviewStore; // For zarrita.js
     window.appState.lastChunkCache = lastChunkCache; // Reset cache just in case
 
     // Clear existing charts
@@ -88,8 +91,8 @@ export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCach
     const width = fullWidth - margin.left - margin.right;
     const height = chartHeight - margin.top - margin.bottom;
 
-    // Extract metadata from Zarr attributes
-    const attrs = await zarrGroup.attrs.asObject();
+    // Extract metadata from Zarr attributes - zarrita.js accesses attributes differently
+    const attrs = zarrGroup.attrs;
     const horiz_interval = attrs.horiz_interval;
     const vertical_gains = attrs.vertical_gains;
     const vertical_offsets = attrs.vertical_offsets;
@@ -115,26 +118,36 @@ export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCach
     // Show loading indicator for overview chart
     const overviewLoadingText = d3.select("#overview-chart").append("svg").attr("viewBox", `0 0 ${fullWidth} ${chartHeight}`).append("g").attr("transform", `translate(${margin.left},${margin.top})`).append("text").attr("class", "loading-text").attr("x", width / 2).attr("y", height / 2).text("Loading overview...");
 
-    // Load overview (downsampled) data
-    const overviewSlice = await overviewStore.get([channel, trc, segment, null, null]);
-    const overviewMin = (await overviewSlice.get(0)).data;
-    const overviewMax = (await overviewSlice.get(1)).data;
-    const downsampling_factor = no_of_samples / overviewMin.length;
+    // Load overview (downsampled) data using zarrita.js
+    const overview = await zarr.get(overviewStore, [channel, trc, segment]);
+    
+    // In zarrita.js, the data is organized differently - split into min and max arrays
+    const overviewMinValues = [];
+    const overviewMaxValues = [];
+    
+    // Extract min and max values from the zarrita.js data structure
+    for (let i = 0; i < overview.shape[1]; i++) {
+        overviewMinValues.push(overview.data[i * 2]); // Min values at even indices
+        overviewMaxValues.push(overview.data[i * 2 + 1]); // Max values at odd indices
+    }
+    
+    const downsampling_factor = no_of_samples / overviewMinValues.length;
 
     // Process overview data for plotting
-    const overviewData = Array.from(overviewMin).map((min_val, i) => {
+    const processedOverviewData = [];
+    for (let i = 0; i < overviewMinValues.length; i++) {
         const time_us = (i + 0.5) * downsampling_factor * horiz_interval * S_TO_US_FACTOR;
-        return {
+        processedOverviewData.push({
             time_us,
-            min_mv: adcToMilliVolts(min_val),
-            max_mv: adcToMilliVolts(overviewMax[i])
-        };
-    });
+            min_mv: adcToMilliVolts(overviewMinValues[i]),
+            max_mv: adcToMilliVolts(overviewMaxValues[i])
+        });
+    }
 
     // Store processed data and calculate global Y-axis limits
-    window.appState.plotConfig.overviewData = overviewData;
-    window.appState.plotConfig.globalYMin = d3.min(overviewData, d => d.min_mv);
-    window.appState.plotConfig.globalYMax = d3.max(overviewData, d => d.max_mv);
+    window.appState.plotConfig.overviewData = processedOverviewData;
+    window.appState.plotConfig.globalYMin = d3.min(processedOverviewData, d => d.min_mv);
+    window.appState.plotConfig.globalYMax = d3.max(processedOverviewData, d => d.max_mv);
     overviewLoadingText.remove();
 
     // Do NOT call updateAllCharts here. It will be called from main.js after setupTimeSliders.

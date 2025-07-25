@@ -22,6 +22,7 @@ def test_convert_hdf5_to_zarr(tmp_path: Path) -> None:
     zarr_path = tmp_path / "data.zarr"
     convert_hdf5_to_zarr(hdf5_path, zarr_path)
 
+    # Use zarr v2 format
     z = zarr.open_group(str(zarr_path), mode="r")
 
     assert "raw" in z
