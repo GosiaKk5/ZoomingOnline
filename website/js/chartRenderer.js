@@ -119,16 +119,19 @@ export async function plotData(rawStore, zarrGroup, overviewStore, lastChunkCach
     const overviewLoadingText = d3.select("#overview-chart").append("svg").attr("viewBox", `0 0 ${fullWidth} ${chartHeight}`).append("g").attr("transform", `translate(${margin.left},${margin.top})`).append("text").attr("class", "loading-text").attr("x", width / 2).attr("y", height / 2).text("Loading overview...");
 
     // Load overview (downsampled) data using zarrita.js
-    const overview = await zarr.get(overviewStore, [channel, trc, segment]);
+    // The overview array has shape [channel, trc, segment, min_max(2), time_points]
+    // We need to get the full slice for the selected channel, trc, segment
+    const overviewMinMax = await zarr.get(overviewStore, [channel, trc, segment]);
     
-    // In zarrita.js, the data is organized differently - split into min and max arrays
+    // The data structure is [2, numPoints] where first row is mins, second is maxs
     const overviewMinValues = [];
     const overviewMaxValues = [];
     
     // Extract min and max values from the zarrita.js data structure
-    for (let i = 0; i < overview.shape[1]; i++) {
-        overviewMinValues.push(overview.data[i * 2]); // Min values at even indices
-        overviewMaxValues.push(overview.data[i * 2 + 1]); // Max values at odd indices
+    const numPoints = overviewMinMax.shape[1]; // Number of time points
+    for (let i = 0; i < numPoints; i++) {
+        overviewMinValues.push(overviewMinMax.data[i]); // Min values in first row
+        overviewMaxValues.push(overviewMinMax.data[numPoints + i]); // Max values in second row
     }
     
     const downsampling_factor = no_of_samples / overviewMinValues.length;
