@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 
 import argparse
+import os
 from pathlib import Path
 
 import h5py
-import numcodecs
 import numpy as np
 import zarr
 
-# Using zarr v2 format for compatibility with zarrita.js
+# Set zarr v3 experimental API before any zarr operations
+os.environ["ZARR_V3_EXPERIMENTAL_API"] = "1"
 
 
 def create_overview(data_slice: np.ndarray, downsampling_factor: int) -> np.ndarray:
@@ -41,8 +42,13 @@ def convert_hdf5_to_zarr(hdf_path: Path, zarr_path: Path) -> None:  # noqa: C901
             raise KeyError(message)
 
         data = h5["samples"]
-        # Continue using zarr v2 for compatibility
-        root = zarr.open_group(str(zarr_path), mode="w", zarr_version=2)
+        # Use zarr v3 format if available, otherwise fallback to v2
+        try:
+            # Try zarr v3 format first
+            root = zarr.open_group(str(zarr_path), mode="w", zarr_format=3)
+        except TypeError:
+            # Fallback to zarr v2 format for older zarr versions
+            root = zarr.open_group(str(zarr_path), mode="w")
 
         for k, v in h5.attrs.items():
             try:
@@ -60,16 +66,28 @@ def convert_hdf5_to_zarr(hdf_path: Path, zarr_path: Path) -> None:  # noqa: C901
 
         ensure_required_attrs(root, n_channels=data.shape[0])
 
-        compressor = numcodecs.Blosc(cname="zstd", clevel=3, shuffle=numcodecs.Blosc.BITSHUFFLE)
         chunk_size = 10_000_000
         print("📦 Creating dataset 'raw'...")
-        raw = root.create_dataset(
-            "raw",
-            shape=data.shape,
-            chunks=(1, 1, 1, chunk_size),
-            compressor=compressor,
-            dtype=data.dtype,
-        )
+        try:
+            # Try zarr v3 compression format
+            raw = root.create_array(
+                "raw",
+                shape=data.shape,
+                chunks=(1, 1, 1, chunk_size),
+                compressors=[{"name": "blosc", "configuration": {"cname": "zstd", "clevel": 3, "shuffle": "bitshuffle"}}],
+                dtype=data.dtype,
+            )
+        except (TypeError, ValueError, AttributeError):
+            # Fallback to zarr v2 compression format
+            import numcodecs
+            compressor = numcodecs.Blosc(cname="zstd", clevel=3, shuffle=numcodecs.Blosc.BITSHUFFLE)
+            raw = root.create_dataset(
+                "raw",
+                shape=data.shape,
+                chunks=(1, 1, 1, chunk_size),
+                compressor=compressor,
+                dtype=data.dtype,
+            )
 
         for ch in range(data.shape[0]):
             for trc in range(data.shape[1]):
@@ -81,14 +99,21 @@ def convert_hdf5_to_zarr(hdf_path: Path, zarr_path: Path) -> None:  # noqa: C901
         ov_group = root.create_group("overview")
         downsample = max(1, data.shape[-1] // 4000)
         ov_shape = (*data.shape[:-1], 2, data.shape[-1] // downsample)
-        overview = ov_group.create_dataset("0", shape=ov_shape, chunks=(1, 1, 1, 2, ov_shape[-1]), dtype=data.dtype)
+        try:
+            # Try zarr v3 compression format
+            overview = ov_group.create_array("0", shape=ov_shape, chunks=(1, 1, 1, 2, ov_shape[-1]), dtype=data.dtype, compressors=[{"name": "blosc", "configuration": {"cname": "zstd", "clevel": 3, "shuffle": "bitshuffle"}}])
+        except (TypeError, ValueError, AttributeError):
+            # Fallback to zarr v2 compression format
+            import numcodecs
+            compressor = numcodecs.Blosc(cname="zstd", clevel=3, shuffle=numcodecs.Blosc.BITSHUFFLE)
+            overview = ov_group.create_dataset("0", shape=ov_shape, chunks=(1, 1, 1, 2, ov_shape[-1]), dtype=data.dtype, compressor=compressor)
 
         for ch in range(data.shape[0]):
             for trc in range(data.shape[1]):
                 for seg in range(data.shape[2]):
                     overview[ch, trc, seg, :, :] = create_overview(data[ch, trc, seg, :], downsample)
 
-    print(f"✅ Done! Saved: {zarr_path} (compatible with zarrita.js)")
+    print(f"✅ Done! Saved: {zarr_path} (zarr v3 format, compatible with zarrita.js)")
 
 
 def main() -> None:

@@ -1,3 +1,4 @@
+import os
 import tempfile
 from pathlib import Path
 
@@ -5,6 +6,9 @@ import h5py
 import numpy as np
 import pytest
 import zarr
+
+# Set zarr v3 experimental API before importing the module under test
+os.environ["ZARR_V3_EXPERIMENTAL_API"] = "1"
 
 from src.generate_data import (
     generate_realistic_data,
@@ -55,7 +59,7 @@ def test_save_zarr_writes_attributes(small_realistic_data: tuple[np.ndarray, flo
     with tempfile.TemporaryDirectory() as tmpdir:
         zarr_path = Path(tmpdir) / "sample.zarr"
         save_zarr(zarr_path, data, horiz_interval, gains, offsets)
-        # Use zarr v2 format
+        # Use zarr v3 format
         store = zarr.open_group(store=str(zarr_path))
         assert "horiz_interval" in store.attrs
         assert "vertical_gains" in store.attrs
@@ -69,7 +73,7 @@ def test_save_zarr_creates_overview(small_realistic_data: tuple[np.ndarray, floa
         zarr_path = Path(tmpdir) / "with_overview.zarr"
         save_zarr(zarr_path, data, horiz_interval, gains, offsets)
 
-        # Use zarr v2 format
+        # Use zarr v3 format
         root = zarr.open_group(store=str(zarr_path))
         assert "overview" in root
         assert "0" in root["overview"]
@@ -79,13 +83,28 @@ def test_save_zarr_creates_overview(small_realistic_data: tuple[np.ndarray, floa
         assert overview.shape == (2, 3, 5, 2, expected_len)
 
         # Check compression on both raw and overview arrays
-        assert root["raw"].compressor is not None
-        assert "blosc" in str(root["raw"].compressor).lower()
+        # Handle both zarr v2 (compressor) and v3 (compressors) attributes
+        raw_array = root["raw"]
+        if hasattr(raw_array, "compressors"):
+            # zarr v3
+            assert raw_array.compressors is not None
+            assert len(raw_array.compressors) > 0
+            assert "blosc" in str(raw_array.compressors[0]).lower()
+        else:
+            # zarr v2
+            assert raw_array.compressor is not None
+            assert "blosc" in str(raw_array.compressor).lower()
 
-        assert root["overview"]["0"].compressor is not None
-        assert (
-            "blosc" in str(root["overview"]["0"].compressor).lower()
-        )  # Test values from second channel, second TRC, third segment (channels/TRCs/segments are 0-indexed)
+        overview_array = root["overview"]["0"]
+        if hasattr(overview_array, "compressors"):
+            # zarr v3
+            assert overview_array.compressors is not None
+            assert len(overview_array.compressors) > 0
+            assert "blosc" in str(overview_array.compressors[0]).lower()
+        else:
+            # zarr v2
+            assert overview_array.compressor is not None
+            assert "blosc" in str(overview_array.compressor).lower()  # Test values from second channel, second TRC, third segment (channels/TRCs/segments are 0-indexed)
         min_vals = overview[1, 1, 2, 0, :]
         max_vals = overview[1, 1, 2, 1, :]
         assert np.all(min_vals <= max_vals)

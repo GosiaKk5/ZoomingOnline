@@ -1,8 +1,12 @@
+import os
 from pathlib import Path
 
 import h5py
 import numpy as np
 import zarr
+
+# Set zarr v3 experimental API before importing the module under test
+os.environ["ZARR_V3_EXPERIMENTAL_API"] = "1"
 
 from src.convert_hdf5_to_zarr import convert_hdf5_to_zarr
 
@@ -22,7 +26,7 @@ def test_convert_hdf5_to_zarr(tmp_path: Path) -> None:
     zarr_path = tmp_path / "data.zarr"
     convert_hdf5_to_zarr(hdf5_path, zarr_path)
 
-    # Use zarr v2 format
+    # Use zarr v3 format
     z = zarr.open_group(str(zarr_path), mode="r")
 
     assert "raw" in z

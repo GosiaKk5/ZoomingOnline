@@ -1,14 +1,15 @@
 import argparse
+import os
 import shutil
 from pathlib import Path
 
 import h5py
-import numcodecs
 import numpy as np
 import zarr
 from numpy.random import Generator
 
-# Using zarr v2 format for compatibility with zarrita.js
+# Set zarr v3 experimental API before any zarr operations
+os.environ["ZARR_V3_EXPERIMENTAL_API"] = "1"
 
 
 def generate_signal(signal_type: str, time_s: np.ndarray, freq_hz: float = 50.0) -> np.ndarray:
@@ -126,22 +127,36 @@ def save_zarr(
         print(f"Overwriting existing Zarr store: {path}")
         shutil.rmtree(path)
 
-    # Continue using zarr_version=2 for compatibility
-    root = zarr.group(store=str(path), zarr_version=2)
+    # Use zarr v3 format if available, otherwise fallback to v2
+    try:
+        # Try zarr v3 format first
+        root = zarr.open_group(store=str(path), mode="w", zarr_format=3)
+    except TypeError:
+        # Fallback to zarr v2 format for older zarr versions
+        root = zarr.open_group(store=str(path), mode="w")
     root.attrs["horiz_interval"] = horiz_interval
     root.attrs["vertical_gains"] = vertical_gains.tolist()
     root.attrs["vertical_offsets"] = vertical_offsets.tolist()
 
-    # Create raw data array with blosc compression - use create_dataset with explicit shape
-    blosc_compressor = numcodecs.Blosc(cname="zstd", clevel=5, shuffle=numcodecs.Blosc.BITSHUFFLE)
-    root.create_dataset(
-        "raw",
-        shape=data.shape,
-        dtype=data.dtype,
-        data=data,
-        chunks=(1, 1, 1, 100_000),
-        compressor=blosc_compressor,  # Using blosc with zstd and bit-shuffle
-    )
+    # Create raw data array with compression appropriate for zarr version
+    try:
+        # Try zarr v3 compression format
+        root.create_array(
+            "raw",
+            data=data,
+            chunks=(1, 1, 1, 100_000),
+            compressors=[{"name": "blosc", "configuration": {"cname": "zstd", "clevel": 5, "shuffle": "bitshuffle"}}],
+        )
+    except (TypeError, ValueError, AttributeError):
+        # Fallback to zarr v2 compression format
+        import numcodecs
+        blosc_compressor = numcodecs.Blosc(cname="zstd", clevel=5, shuffle=numcodecs.Blosc.BITSHUFFLE)
+        root.create_dataset(
+            "raw",
+            data=data,
+            chunks=(1, 1, 1, 100_000),
+            compressor=blosc_compressor,
+        )
 
     print("Pre-calculating and saving overviews...")
     overview_group = root.create_group("overview")
@@ -158,17 +173,27 @@ def save_zarr(
                 overview_slice = create_overview(data[ch, trc, seg, :], downsampling_factor)
                 overview_data[ch, trc, seg, :, :] = overview_slice
 
-    # Store the data with zarr v2 format but still compatible with zarrita.js
-    overview_group.create_dataset(
-        "0",
-        shape=overview_data.shape,
-        dtype=overview_data.dtype,
-        data=overview_data,
-        chunks=(1, 1, 1, 2, overview_shape[-1]),
-        compressor=blosc_compressor,  # Using blosc with zstd and bit-shuffle
-    )
+    # Store the data with compression appropriate for zarr version
+    try:
+        # Try zarr v3 compression format
+        overview_group.create_array(
+            "0",
+            data=overview_data,
+            chunks=(1, 1, 1, 2, overview_shape[-1]),
+            compressors=[{"name": "blosc", "configuration": {"cname": "zstd", "clevel": 5, "shuffle": "bitshuffle"}}],
+        )
+    except (TypeError, ValueError, AttributeError):
+        # Fallback to zarr v2 compression format
+        import numcodecs
+        blosc_compressor = numcodecs.Blosc(cname="zstd", clevel=5, shuffle=numcodecs.Blosc.BITSHUFFLE)
+        overview_group.create_dataset(
+            "0",
+            data=overview_data,
+            chunks=(1, 1, 1, 2, overview_shape[-1]),
+            compressor=blosc_compressor,
+        )
 
-    print(f"Saved Zarr store at: {path} (compatible with zarrita.js)")
+    print(f"Saved Zarr v3 store at: {path} (compatible with zarrita.js)")
 
 
 def save_hdf5(path: Path, data: np.ndarray) -> None:
