@@ -334,3 +334,4 @@ pyrightconfig.json
 output.zarr/
 playwright-report/
 test-results/
+*-test.png

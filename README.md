@@ -91,36 +91,9 @@ To add support for Zarr v3, migration to [zarrita.js](https://github.com/manzt/z
 
 ## 🧪 Testing
 
-The project includes automated browser tests using Playwright. These tests verify that the web application loads correctly, can access remote data files from Cyfronet S3, and properly renders visualizations.
+The project includes automated browser tests to verify application functionality.
 
-To run the tests locally:
-
-1. Install Node.js dependencies:
-   ```bash
-   npm install
-   ```
-
-2. Install Playwright browsers:
-   ```bash
-   npx playwright install
-   ```
-
-3. Run the tests:
-   ```bash
-   npm test
-   ```
-
-Alternatively, use the provided script:
-```bash
-./run_browser_tests.sh
-```
-
-These tests are run automatically via GitHub Actions:
-- On every push to the main branch
-- On every pull request
-- Once per week (scheduled)
-
-📖 See [browser-tests.md](./docs/browser-tests.md) for detailed information about the browser tests.
+📖 See [testing.md](./docs/testing.md) for detailed information about testing tools and procedures.
 
 ## 📄 License
 
