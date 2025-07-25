@@ -67,7 +67,17 @@ SERVER_PID=$!
 # Function to clean up server process on exit
 cleanup() {
   echo "Cleaning up server process..."
-  kill $SERVER_PID
+  # First try graceful termination
+  kill -TERM $SERVER_PID 2>/dev/null || true
+  
+  # Wait a moment for the process to terminate
+  sleep 1
+  
+  # If process is still running, force kill it
+  if ps -p $SERVER_PID > /dev/null 2>&1; then
+    echo "Server process didn't terminate gracefully, forcing shutdown..."
+    kill -KILL $SERVER_PID 2>/dev/null || true
+  fi
 }
 trap cleanup EXIT
 

@@ -75,18 +75,6 @@ The test suite is configurable to use either remote S3 data or locally generated
 ./run_browser_tests.sh --generate
 ```
 
-### S3 Connectivity Tests
-
-If you're using S3 data, you can verify connectivity to the Cyfronet S3 storage:
-
-```bash
-./tests/test_s3_connectivity.sh
-```
-
-This script tests:
-1. Basic connectivity to the S3 storage
-2. Ability to download actual files from the storage
-
 ### Continuous Integration
 
 The GitHub Actions workflow performs the following steps:
@@ -122,14 +110,6 @@ npx playwright show-report
 
 In CI, the report and screenshots are uploaded as artifacts for easy access.
 
-## Network Connectivity Tests
-
-The project includes network tests that verify connectivity to required external resources, particularly the S3 storage hosting the datasets.
-
-These tests check that:
-1. The application can access the Cyfronet S3 storage
-2. Required data files are available and accessible
-3. Network conditions allow proper data loading
 
 ## Manual Testing
 
