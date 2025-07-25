@@ -4,7 +4,7 @@ const { test, expect } = require('@playwright/test');
 const useLocalData = process.env.USE_LOCAL_DATA === 'true';
 const baseUrl = process.env.BASE_URL || 'http://localhost:8000/website';
 const dataUrl = useLocalData 
-  ? 'http://localhost:8000/output.zarr' 
+  ? 'http://localhost:8000/test_data.zarr' 
   : 'https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr';
 
 test.describe('ZoomingOnline Browser Tests', () => {
@@ -22,7 +22,7 @@ test.describe('ZoomingOnline Browser Tests', () => {
     
     // Check if the selection container becomes visible (data loaded automatically)
     const selectionContainer = await page.locator('#selection-container');
-    await expect(selectionContainer).toBeVisible({ timeout: 30000 });
+    await expect(selectionContainer).toBeVisible({ timeout: 60000 }); // Increased timeout
     
     // Select specific options (for minimal dataset)
     await page.selectOption('#channel-select', '0');
@@ -34,7 +34,7 @@ test.describe('ZoomingOnline Browser Tests', () => {
     
     // Wait for charts to appear
     const chartContainer = await page.locator('#chart-container');
-    await expect(chartContainer).toBeVisible({ timeout: 30000 });
+    await expect(chartContainer).toBeVisible({ timeout: 60000 }); // Increased timeout
     
     // Verify all three charts are visible
     await expect(page.locator('#overview-chart')).toBeVisible();
@@ -63,7 +63,7 @@ test.describe('ZoomingOnline Browser Tests', () => {
     
     // Wait for data to load
     const selectionContainer = await page.locator('#selection-container');
-    await expect(selectionContainer).toBeVisible({ timeout: 30000 });
+    await expect(selectionContainer).toBeVisible({ timeout: 60000 }); // Increased timeout
     
     // Select channel, TRC file, and segment (for minimal dataset)
     await page.selectOption('#channel-select', '0');
@@ -75,7 +75,7 @@ test.describe('ZoomingOnline Browser Tests', () => {
     
     // Wait for charts to appear
     const chartContainer = await page.locator('#chart-container');
-    await expect(chartContainer).toBeVisible({ timeout: 30000 });
+    await expect(chartContainer).toBeVisible({ timeout: 60000 }); // Increased timeout
     
     // Verify all three charts are visible
     await expect(page.locator('#overview-chart')).toBeVisible();

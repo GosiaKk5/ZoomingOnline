@@ -56,7 +56,7 @@ npx playwright install --with-deps chromium
 # If using local data and need to generate it
 if [ "$GENERATE_DATA" = true ]; then
   echo "Generating minimal test data for quick testing..."
-  python src/generate_data.py --minimal
+  python src/generate_data.py -o test_data.zarr --minimal
 fi
 
 # Start local server

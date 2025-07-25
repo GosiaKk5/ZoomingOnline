@@ -124,7 +124,8 @@ def save_zarr(
         print(f"Overwriting existing Zarr store: {path}")
         shutil.rmtree(path)
 
-    root = zarr.group(store=str(path))
+    # Explicitly specify zarr_version=2 for compatibility with browser client
+    root = zarr.group(store=str(path), zarr_version=2)
     root.attrs["horiz_interval"] = horiz_interval
     root.attrs["vertical_gains"] = vertical_gains.tolist()
     root.attrs["vertical_offsets"] = vertical_offsets.tolist()
