@@ -3,9 +3,9 @@ import shutil
 from pathlib import Path
 
 import h5py
+import numcodecs
 import numpy as np
 import zarr
-import numcodecs
 from numpy.random import Generator
 
 
