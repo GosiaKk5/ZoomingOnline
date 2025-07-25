@@ -38,29 +38,11 @@ jobs:
           # Verify installations
           python -c "import h5py, zarr, boto3; print(f'h5py: {h5py.__version__}, zarr: {zarr.__version__}, boto3: {boto3.__version__}')"
 
-      - name: Generate test data
+      - name: Run browser tests with local data
         run: |
-          # Generate minimal test data for browser tests
-          python src/generate_data.py --minimal
-
-      - name: Install Playwright
-        run: |
-          npm init -y
-          npm install @playwright/test
-          npx playwright install --with-deps chromium
-
-      - name: Start local web server
-        run: |
-          python src/cors_server.py --port 8000 &
-          echo "Web server started on port 8000"
-          sleep 3  # Give the server time to start
-
-      - name: Run browser tests
-        run: npx playwright test tests/browser.spec.js
-        env:
-          CI: 'true'
-          USE_LOCAL_DATA: 'true'
-          BASE_URL: 'http://localhost:8000/website'
+          # Run the browser tests script with local data generation
+          chmod +x run_browser_tests.sh
+          ./run_browser_tests.sh --generate
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
