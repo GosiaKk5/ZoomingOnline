@@ -25,9 +25,9 @@ test.describe('ZoomingOnline Browser Tests', () => {
     await expect(selectionContainer).toBeVisible({ timeout: 60000 }); // Increased timeout
     
     // Select specific options (for minimal dataset)
-    await page.selectOption('#channel-select', '0');
-    await page.selectOption('#trc-select', '0');
-    await page.selectOption('#segment-select', '0');
+    await page.selectOption('#channel-select', '1'); // Second channel (index 1)
+    await page.selectOption('#trc-select', '1'); // Second TRC (index 1)
+    await page.selectOption('#segment-select', '2'); // Third segment (index 2)
     
     // Plot the selected data
     await page.click('#plot-button');
@@ -66,9 +66,9 @@ test.describe('ZoomingOnline Browser Tests', () => {
     await expect(selectionContainer).toBeVisible({ timeout: 60000 }); // Increased timeout
     
     // Select channel, TRC file, and segment (for minimal dataset)
-    await page.selectOption('#channel-select', '0');
-    await page.selectOption('#trc-select', '0');
-    await page.selectOption('#segment-select', '0');
+    await page.selectOption('#channel-select', '1'); // Second channel (index 1)
+    await page.selectOption('#trc-select', '1'); // Second TRC (index 1)
+    await page.selectOption('#segment-select', '2'); // Third segment (index 2)
     
     // Plot the selected data
     await page.click('#plot-button');
