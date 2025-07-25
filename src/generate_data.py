@@ -129,8 +129,8 @@ def save_zarr(
     root.attrs["vertical_gains"] = vertical_gains.tolist()
     root.attrs["vertical_offsets"] = vertical_offsets.tolist()
 
-    # Create raw data array without compression - use create_dataset instead of array
-    root.create_dataset("raw", data=data, chunks=(1, 1, 1, 100_000))
+    # Create raw data array without compression - use create_dataset with explicit shape
+    root.create_dataset("raw", shape=data.shape, dtype=data.dtype, data=data, chunks=(1, 1, 1, 100_000))
 
     print("Pre-calculating and saving overviews...")
     overview_group = root.create_group("overview")
@@ -147,8 +147,14 @@ def save_zarr(
                 overview_slice = create_overview(data[ch, trc, seg, :], downsampling_factor)
                 overview_data[ch, trc, seg, :, :] = overview_slice
 
-    # Store the data - use create_dataset instead of create_array for zarr v2 compatibility
-    overview_group.create_dataset("0", data=overview_data, chunks=(1, 1, 1, 2, overview_shape[-1]))
+    # Store the data - use create_dataset with explicit shape for zarr v2 compatibility
+    overview_group.create_dataset(
+        "0",
+        shape=overview_data.shape,
+        dtype=overview_data.dtype,
+        data=overview_data,
+        chunks=(1, 1, 1, 2, overview_shape[-1]),
+    )
 
     print(f"Saved Zarr store at: {path}")
 
