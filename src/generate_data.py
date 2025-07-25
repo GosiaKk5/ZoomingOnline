@@ -131,14 +131,14 @@ def save_zarr(
     root.attrs["vertical_offsets"] = vertical_offsets.tolist()
 
     # Create raw data array with blosc compression - use create_dataset with explicit shape
-    blosc_compressor = numcodecs.Blosc(cname='zstd', clevel=5, shuffle=numcodecs.Blosc.BITSHUFFLE)
+    blosc_compressor = numcodecs.Blosc(cname="zstd", clevel=5, shuffle=numcodecs.Blosc.BITSHUFFLE)
     root.create_dataset(
-        "raw", 
-        shape=data.shape, 
-        dtype=data.dtype, 
-        data=data, 
+        "raw",
+        shape=data.shape,
+        dtype=data.dtype,
+        data=data,
         chunks=(1, 1, 1, 100_000),
-        compressor=blosc_compressor  # Using blosc with zstd and bit-shuffle
+        compressor=blosc_compressor,  # Using blosc with zstd and bit-shuffle
     )
 
     print("Pre-calculating and saving overviews...")
@@ -163,7 +163,7 @@ def save_zarr(
         dtype=overview_data.dtype,
         data=overview_data,
         chunks=(1, 1, 1, 2, overview_shape[-1]),
-        compressor=blosc_compressor  # Using blosc with zstd and bit-shuffle
+        compressor=blosc_compressor,  # Using blosc with zstd and bit-shuffle
     )
 
     print(f"Saved Zarr store at: {path}")

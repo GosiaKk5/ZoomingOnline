@@ -26,7 +26,7 @@ module.exports = defineConfig({
       use: {
         // Browser options
         headless: true,
-        viewport: { width: 1280, height: 720 },
+        viewport: { width: 1920, height: 1200 },
         ignoreHTTPSErrors: true,
         screenshot: 'only-on-failure',
         // Record trace only on failure

@@ -81,7 +81,7 @@ def test_save_zarr_creates_overview(small_realistic_data: tuple[np.ndarray, floa
         # Check compression on both raw and overview arrays using updated API
         assert root["raw"].compressors is not None
         assert "blosc" in str(root["raw"].compressors).lower()
-        
+
         assert root["overview"]["0"].compressors is not None
         assert "blosc" in str(root["overview"]["0"].compressors).lower()
 
