@@ -1,0 +1,59 @@
+name: Web App Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  schedule:
+    # Run once a week on Monday at 00:00 UTC
+    - cron: '0 0 * * 1'
+
+jobs:
+  browser-tests:
+    name: Browser Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
+
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install @playwright/test
+          npx playwright install --with-deps chromium
+
+      - name: Generate test data
+        run: |
+          python src/generate_data.py -o waveform.zarr
+          sleep 2
+
+      - name: Run browser tests
+        run: npx playwright test
+        env:
+          CI: 'true'
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            *.png
+          retention-days: 30

@@ -1,0 +1,12 @@
+{
+  "name": "zooming-online-tests",
+  "version": "1.0.0",
+  "description": "Browser tests for ZoomingOnline",
+  "private": true,
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  }
+}

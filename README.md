@@ -89,6 +89,36 @@ This project currently supports Zarr v2.
 
 To add support for Zarr v3, migration to [zarrita.js](https://github.com/manzt/zarrita.js) is required.
 
+## 🧪 Testing
+
+The project includes automated browser tests using Playwright. These tests verify that the web application loads correctly, can access data files, and properly renders visualizations.
+
+To run the tests locally:
+
+1. Install Node.js dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Install Playwright browsers:
+   ```bash
+   npx playwright install
+   ```
+
+3. Run the tests:
+   ```bash
+   npm test
+   ```
+
+Alternatively, use the provided script:
+```bash
+./run_browser_tests.sh
+```
+
+These tests are also run automatically via GitHub Actions on every push, pull request, and weekly.
+
+📖 See [browser-tests.md](./docs/browser-tests.md) for detailed information about the browser tests.
+
 ## 📄 License
 
 MIT License — see [LICENSE](LICENSE)
