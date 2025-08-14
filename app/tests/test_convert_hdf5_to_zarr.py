@@ -1,8 +1,14 @@
+import sys
+import os
 from pathlib import Path
 
 import h5py
 import numpy as np
 import zarr
+
+# Add project root to the Python path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+sys.path.insert(0, project_root)
 
 from src.convert_hdf5_to_zarr import convert_hdf5_to_zarr
 
