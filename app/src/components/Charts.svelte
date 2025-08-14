@@ -1,5 +1,5 @@
 <script>
-    import { onMount, afterUpdate } from 'svelte';
+    import { onMount, afterUpdate, createEventDispatcher } from 'svelte';
     import { 
         plotConfig, 
         rawStore, 
@@ -30,23 +30,84 @@
     let zoom1Container;
     let zoom2Container;
 
-    // Chart update parameters from parent
+    // Chart update parameters from parent - initialize with smart defaults based on dataset size
     export let zoom1Position = 50;
     export let zoom2Position = 50;
-    export let zoom1WindowIndex = 0;
-    export let zoom2WindowIndex = 0;
+    export let zoom1WindowIndex = 0;  // Will be adjusted based on dataset
+    export let zoom2WindowIndex = 0;  // Will be adjusted based on dataset
 
-    // Ensure default values are properly set
+    // Ensure defaults are set
     $: if (zoom1Position === undefined) zoom1Position = 50;
     $: if (zoom2Position === undefined) zoom2Position = 50;
     $: if (zoom1WindowIndex === undefined) zoom1WindowIndex = 0;
     $: if (zoom2WindowIndex === undefined) zoom2WindowIndex = 0;
 
-    // Event dispatchers for position changes from drag
-    import { createEventDispatcher } from 'svelte';
+    // Smart default selection for small datasets
+    $: if ($plotConfig && $plotConfig.validTimeSteps && $plotConfig.validTimeSteps.length > 0) {
+        const validSteps = $plotConfig.validTimeSteps;
+        const totalTime = $plotConfig.total_time_us;
+        
+        console.log('🎯 Smart default selection reactive statement triggered:');
+        console.log('  - totalTime:', totalTime, 'µs');
+        console.log('  - validSteps count:', validSteps.length);
+        console.log('  - validSteps values:', validSteps.map(s => s.value_us + 'µs'));
+        console.log('  - Current zoom1WindowIndex:', zoom1WindowIndex);
+        
+        // For very small datasets (< 100µs), choose a larger window index
+        // For datasets < 50µs, use the largest available step
+        // For datasets < 20µs, use the largest step (most zoomed out)
+        let smartIndex;
+        if (totalTime < 20) {
+            // Very small dataset - use largest available window (most zoomed out)
+            smartIndex = Math.max(0, validSteps.length - 1);
+            console.log('  - Very small dataset (<20µs) - using largest window, index:', smartIndex);
+        } else if (totalTime < 50) {
+            // Small dataset - use 75% of the way to largest window
+            smartIndex = Math.max(0, Math.floor(validSteps.length * 0.75));
+            console.log('  - Small dataset (<50µs) - using 75% window, index:', smartIndex);
+        } else if (totalTime < 100) {
+            // Medium dataset - use 60% of the way to largest window
+            smartIndex = Math.max(0, Math.floor(validSteps.length * 0.6));
+            console.log('  - Medium dataset (<100µs) - using 60% window, index:', smartIndex);
+        } else {
+            // Larger dataset - use original 60% default
+            smartIndex = Math.max(0, Math.floor(validSteps.length * 0.6));
+            console.log('  - Large dataset (>=100µs) - using 60% window, index:', smartIndex);
+        }
+        
+        console.log('  - Calculated smartIndex:', smartIndex);
+        console.log('  - Selected step would be:', validSteps[smartIndex]);
+        
+        // Only update if we haven't set a custom value yet
+        if (zoom1WindowIndex === 0 && smartIndex !== 0) {
+            console.log('  - ✅ Updating zoom1WindowIndex from 0 to smart default:', smartIndex);
+            console.log('  - Selected step:', validSteps[smartIndex]);
+            zoom1WindowIndex = smartIndex;
+        } else {
+            console.log('  - ❌ Not updating zoom1WindowIndex:');
+            console.log('    - Current zoom1WindowIndex:', zoom1WindowIndex);
+            console.log('    - Calculated smartIndex:', smartIndex);
+            console.log('    - Condition (zoom1WindowIndex === 0 && smartIndex !== 0):', 
+                       (zoom1WindowIndex === 0 && smartIndex !== 0));
+        }
+    }
+
     const dispatch = createEventDispatcher();
 
     let isInitialized = false;
+
+    // Component mount logging
+    onMount(() => {
+        console.log('🎬 Charts component mounted');
+        console.log('  - rawStore exists:', !!$rawStore);
+        console.log('  - zarrGroup exists:', !!$zarrGroup);
+        console.log('  - overviewStore exists:', !!$overviewStore);
+        console.log('  - selectedChannel:', $selectedChannel);
+        console.log('  - selectedTrc:', $selectedTrc);
+        console.log('  - selectedSegment:', $selectedSegment);
+        console.log('  - plotConfig exists:', !!$plotConfig);
+        console.log('  - isInitialized:', isInitialized);
+    });
 
     // Initialize plot when data is ready
     $: if ($rawStore && $zarrGroup && $overviewStore && 
@@ -64,10 +125,52 @@
     }
 
     // Update charts when position or window changes
-    $: if (isInitialized && $plotConfig.total_time_us > 0) {
-        updateAllCharts();
-    }
+    $: if ($plotConfig && zoom1Position !== undefined && zoom1WindowIndex !== undefined && isInitialized) {
+        console.log('🔄 Charts reactive update triggered:');
+        console.log('  - plotConfig exists:', !!$plotConfig);
+        console.log('  - plotConfig.validTimeSteps length:', $plotConfig.validTimeSteps?.length);
+        console.log('  - zoom1Position:', zoom1Position, 'type:', typeof zoom1Position);
+        console.log('  - zoom1WindowIndex:', zoom1WindowIndex, 'type:', typeof zoom1WindowIndex);
+        console.log('  - zoom2Position:', zoom2Position, 'type:', typeof zoom2Position);
+        console.log('  - zoom2WindowIndex:', zoom2WindowIndex, 'type:', typeof zoom2WindowIndex);
+        console.log('  - isInitialized:', isInitialized);
+        console.log('  - DOM elements exist check:');
+        console.log('    - overviewContainer:', !!overviewContainer);
+        console.log('    - zoom1Container:', !!zoom1Container);
+        console.log('    - zoom2Container:', !!zoom2Container);
+        
+        // Only update charts if DOM elements are ready
+        if (overviewContainer && zoom1Container && zoom2Container) {
+            console.log('  - ✅ All DOM elements ready, calling updateAllCharts...');
+            updateAllCharts(
+                zoom1Position, 
+                zoom1WindowIndex, 
+                zoom2Position, 
+                zoom2WindowIndex
+            );
+        } else {
+            console.log('  - ⏳ DOM elements not ready yet, skipping chart update');
+            console.log('    - Will retry when DOM elements are bound');
+        }
+    }    
 
+    // Trigger chart update when DOM elements become available
+    $: if (overviewContainer && zoom1Container && zoom2Container && $plotConfig && isInitialized) {
+        console.log('🎯 DOM elements now available, triggering chart update:');
+        console.log('  - overviewContainer ready:', !!overviewContainer);
+        console.log('  - zoom1Container ready:', !!zoom1Container);
+        console.log('  - zoom2Container ready:', !!zoom2Container);
+        console.log('  - plotConfig ready:', !!$plotConfig);
+        console.log('  - isInitialized:', isInitialized);
+        
+        updateAllCharts(
+            zoom1Position, 
+            zoom1WindowIndex, 
+            zoom2Position, 
+            zoom2WindowIndex
+        );
+    }
+    
     async function initializePlot() {
         try {
             console.log('🎯 Charts: initializePlot() called');
@@ -199,44 +302,79 @@
         console.log('  - width:', width, 'height:', height);
         console.log('  - total_time_us:', total_time_us);
         console.log('  - overviewData length:', overviewData?.length);
+        console.log('  - overviewData first point:', overviewData?.[0]);
+        console.log('  - overviewData last point:', overviewData?.[overviewData?.length - 1]);
         console.log('  - globalYMin:', globalYMin, 'globalYMax:', globalYMax);
         console.log('  - margin:', margin);
         console.log('  - fullWidth:', fullWidth, 'chartHeight:', chartHeight);
 
+        // Validate that we have overview data
+        if (!overviewData || overviewData.length === 0) {
+            console.error('❌ No overview data available for rendering');
+            return;
+        }
+
         try {
-            // Create scales
-            console.log('📏 Creating scales...');
+            // CRITICAL FIX: Overview chart should ALWAYS show the full data range
+            // The x-axis domain should be from 0 to total_time_us, NOT the zoom domain
+            console.log('📏 Creating scales for overview chart...');
+            console.log('  - OVERVIEW X-AXIS DOMAIN: [0, ' + total_time_us + '] (FULL RANGE)');
             const x0 = d3.scaleLinear().domain([0, total_time_us]).range([0, width]);
             const y0 = d3.scaleLinear().domain([globalYMin, globalYMax]).range([height, 0]).nice();
-            console.log('  - x0 domain:', x0.domain(), 'range:', x0.range());
+            console.log('  - x0 domain (OVERVIEW FULL RANGE):', x0.domain(), 'range:', x0.range());
             console.log('  - y0 domain:', y0.domain(), 'range:', y0.range());
+            console.log('  - Scale test - time 0 maps to x:', x0(0));
+            console.log('  - Scale test - time', total_time_us, 'maps to x:', x0(total_time_us));
 
             // Create SVG
-            console.log('🎯 Creating SVG...');
+            console.log('🎯 Creating overview SVG...');
             const svg0 = createChartSVG(overviewContainer, "Overview", margin, width, height, fullWidth, chartHeight);
-            console.log('  - SVG created successfully');
+            console.log('  - Overview SVG created successfully');
             
             // Draw chart elements
-            console.log('🎨 Drawing chart elements...');
+            console.log('🎨 Drawing overview chart elements...');
+            console.log('  - Drawing area chart with', overviewData.length, 'data points');
+            console.log('  - Data time range:', overviewData[0]?.time_us, 'to', overviewData[overviewData.length - 1]?.time_us);
+            console.log('  - Expected to cover full range: 0 to', total_time_us);
+            
+            // Ensure the overview data covers the full range
+            const dataTimeRange = [
+                Math.min(...overviewData.map(d => d.time_us)),
+                Math.max(...overviewData.map(d => d.time_us))
+            ];
+            console.log('  - Actual data time range:', dataTimeRange);
+            console.log('  - Data covers', ((dataTimeRange[1] - dataTimeRange[0]) / total_time_us * 100).toFixed(1), '% of total range');
+            
             drawArea(svg0, overviewData, x0, y0, d => d.time_us, d => d.min_mv, d => d.max_mv);
-            console.log('  - Area drawn');
+            console.log('  - Area chart drawn successfully');
             
             // Draw axes and grid
+            console.log('🎨 Drawing overview axes and grid...');
             drawAxes(svg0, x0, y0, "Time [µs]", height, margin, width);
             drawGridLines(svg0, x0, y0, width, height);
+            console.log('  - Axes and grid drawn successfully');
             
-            // Add draggable zoom rectangle
+            // Add draggable zoom rectangle - this shows the zoom1 window within the full overview
+            console.log('🎨 Adding zoom1 rectangle to overview...');
+            console.log('  - zoom1Domain for rectangle:', zoom1Domain);
+            console.log('  - Rectangle x position:', x0(zoom1Domain[0]), 'width:', x0(zoom1Domain[1]) - x0(zoom1Domain[0]));
+            console.log('  - Rectangle covers', ((zoom1Domain[1] - zoom1Domain[0]) / total_time_us * 100).toFixed(1), '% of overview');
+            
             const zoomRect1 = svg0.append("rect")
                 .attr("class", "zoom-rect-1")
                 .attr("x", x0(zoom1Domain[0]))
-                .attr("width", x0(zoom1Domain[1]) - x0(zoom1Domain[0]))
+                .attr("width", Math.max(1, x0(zoom1Domain[1]) - x0(zoom1Domain[0]))) // Ensure minimum width
                 .attr("y", 0)
                 .attr("height", height);
+            
+            console.log('  - Zoom1 rectangle added successfully');
             
             // Add drag behavior
             addDragHandler(zoomRect1, x0, width, (newPosition) => {
                 dispatch('zoom1PositionDrag', { position: newPosition });
             });
+            
+            console.log('✅ Overview chart rendering completed successfully');
             
         } catch (error) {
             console.error('❌ Error in drawOverviewChart:', error);

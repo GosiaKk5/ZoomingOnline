@@ -105,6 +105,8 @@ export async function initializePlotData(rawStore, zarrGroup, overviewStore, cha
         console.log('  - overviewMin length:', overviewMin.length);
         console.log('  - overviewMax length:', overviewMax.length);
         console.log('  - downsampling_factor:', downsampling_factor);
+        console.log('  - no_of_samples (raw):', no_of_samples);
+        console.log('  - horiz_interval:', horiz_interval);
 
         // Process overview data for plotting
         console.log('🔄 Processing overview data...');
@@ -121,10 +123,15 @@ export async function initializePlotData(rawStore, zarrGroup, overviewStore, cha
         const globalYMin = d3.min(overviewData, d => d.min_mv);
         const globalYMax = d3.max(overviewData, d => d.max_mv);
         
-        console.log('📈 Y-axis limits:');
-        console.log('  - globalYMin:', globalYMin);
-        console.log('  - globalYMax:', globalYMax);
-        console.log('  - overviewData sample:', overviewData.slice(0, 3));
+        console.log('📈 Overview data processing complete:');
+        console.log('  - overviewData length:', overviewData.length);
+        console.log('  - First data point time_us:', overviewData[0]?.time_us);
+        console.log('  - Last data point time_us:', overviewData[overviewData.length - 1]?.time_us);
+        console.log('  - Expected total_time_us:', total_time_us);
+        console.log('  - Time range coverage:', `${overviewData[0]?.time_us} - ${overviewData[overviewData.length - 1]?.time_us}`);
+        console.log('  - globalYMin:', globalYMin, 'globalYMax:', globalYMax);
+        console.log('  - overviewData sample (first 3):', overviewData.slice(0, 3));
+        console.log('  - overviewData sample (last 3):', overviewData.slice(-3));
 
         const result = {
             margin, width, height, fullWidth, chartHeight,

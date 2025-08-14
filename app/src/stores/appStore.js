@@ -45,7 +45,7 @@ export const timeSteps = writable([]);
 export const isDataReadyForPlot = derived(
     [selectedChannel, selectedTrc, selectedSegment, isDataLoaded],
     ([$selectedChannel, $selectedTrc, $selectedSegment, $isDataLoaded]) => 
-        $isDataLoaded && $selectedChannel && $selectedTrc && $selectedSegment
+        Boolean($isDataLoaded && $selectedChannel && $selectedTrc && $selectedSegment)
 );
 
 export const currentDataUrl = derived(

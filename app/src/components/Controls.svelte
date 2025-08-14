@@ -23,16 +23,30 @@
 
     // Reactive statements
     $: if ($plotConfig.validTimeSteps) {
+        console.log('🎛️ Controls: validTimeSteps updated');
+        console.log('  - validTimeSteps length:', $plotConfig.validTimeSteps.length);
+        console.log('  - validTimeSteps sample:', $plotConfig.validTimeSteps.slice(0, 5));
+        console.log('  - validTimeSteps (all labels):', $plotConfig.validTimeSteps.map(s => s.label));
         validTimeSteps = $plotConfig.validTimeSteps;
         if (zoom1WindowIndex >= validTimeSteps.length) {
-            zoom1WindowIndex = Math.max(0, validTimeSteps.length - 7);
+            // Use reasonable default instead of near the end
+            const reasonableIndex = Math.max(0, Math.min(Math.floor(validTimeSteps.length * 0.6), validTimeSteps.length - 1));
+            console.log('  - Adjusting zoom1WindowIndex from', zoom1WindowIndex, 'to reasonable default:', reasonableIndex);
+            zoom1WindowIndex = reasonableIndex;
         }
     }
 
     $: if ($plotConfig.validZoom2Steps) {
+        console.log('🎛️ Controls: validZoom2Steps updated');
+        console.log('  - validZoom2Steps length:', $plotConfig.validZoom2Steps.length);
+        console.log('  - validZoom2Steps sample:', $plotConfig.validZoom2Steps.slice(0, 5));
+        console.log('  - validZoom2Steps (all labels):', $plotConfig.validZoom2Steps.map(s => s.label));
         validZoom2Steps = $plotConfig.validZoom2Steps;
         if (zoom2WindowIndex >= validZoom2Steps.length) {
-            zoom2WindowIndex = Math.max(0, validZoom2Steps.length - 6);
+            // Use reasonable default for zoom2
+            const reasonableIndex = Math.max(0, Math.min(Math.floor(validZoom2Steps.length * 0.3), validZoom2Steps.length - 1));
+            console.log('  - Adjusting zoom2WindowIndex from', zoom2WindowIndex, 'to reasonable default:', reasonableIndex);
+            zoom2WindowIndex = reasonableIndex;
         }
     }
 
@@ -52,8 +66,13 @@
     }
 
     function handleZoom1WindowChange() {
+        console.log('🎛️ Controls: Zoom1 window changed');
+        console.log('  - New zoom1WindowIndex:', zoom1WindowIndex);
+        console.log('  - Selected zoom1 step:', validTimeSteps[zoom1WindowIndex]);
+        
         // Update zoom2 slider range when zoom1 window changes
         validZoom2Steps = updateZoom2SliderRange(zoom1WindowIndex);
+        console.log('  - Updated validZoom2Steps count:', validZoom2Steps.length);
         
         dispatch('zoom1WindowChange', { 
             position: zoom1Position,
@@ -62,6 +81,10 @@
     }
 
     function handleZoom2WindowChange() {
+        console.log('🎛️ Controls: Zoom2 window changed');
+        console.log('  - New zoom2WindowIndex:', zoom2WindowIndex);
+        console.log('  - Selected zoom2 step:', validZoom2Steps[zoom2WindowIndex]);
+        
         dispatch('zoom2WindowChange', { 
             position: zoom2Position,
             windowIndex: zoom2WindowIndex
@@ -70,11 +93,24 @@
 
     // Initialize default values when component mounts
     onMount(() => {
+        console.log('🎛️ Controls: Component mounted');
+        console.log('  - validTimeSteps.length:', validTimeSteps.length);
+        console.log('  - validZoom2Steps.length:', validZoom2Steps.length);
+        
         if (validTimeSteps.length > 0) {
-            zoom1WindowIndex = Math.max(0, validTimeSteps.length - 7);
+            // Use a more reasonable default - choose a window that's about 1/10 of the total time
+            // Start with index in the middle range rather than near the end
+            const reasonableIndex = Math.max(0, Math.min(Math.floor(validTimeSteps.length * 0.6), validTimeSteps.length - 1));
+            console.log('  - Setting zoom1WindowIndex to reasonable default:', reasonableIndex);
+            console.log('  - This corresponds to window:', validTimeSteps[reasonableIndex]);
+            zoom1WindowIndex = reasonableIndex;
         }
         if (validZoom2Steps.length > 0) {
-            zoom2WindowIndex = Math.max(0, validZoom2Steps.length - 6);
+            // For zoom2, choose a smaller window (earlier in the array)
+            const reasonableIndex = Math.max(0, Math.min(Math.floor(validZoom2Steps.length * 0.3), validZoom2Steps.length - 1));
+            console.log('  - Setting zoom2WindowIndex to reasonable default:', reasonableIndex);
+            console.log('  - This corresponds to window:', validZoom2Steps[reasonableIndex]);
+            zoom2WindowIndex = reasonableIndex;
         }
     });
 </script>
