@@ -27,19 +27,19 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'app/package-lock.json'
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          cache: 'pip'
+      # - name: Set up Python
+      #   uses: actions/setup-python@v5
+      #   with:
+      #     python-version: '3.12'
+      #     cache: 'pip'
 
-      - name: Install project dependencies directly
-        working-directory: ./python
-        run: |
-          # Install dependencies directly to ensure they are available in the path
-          pip install h5py zarr boto3 botocore s3fs python-dotenv
-          # Verify installations
-          python -c "import h5py, zarr, boto3; print(f'h5py: {h5py.__version__}, zarr: {zarr.__version__}, boto3: {boto3.__version__}')"
+      # - name: Install project dependencies directly
+      #   working-directory: ./python
+      #   run: |
+      #     # Install dependencies directly to ensure they are available in the path
+      #     pip install h5py zarr boto3 botocore s3fs python-dotenv
+      #     # Verify installations
+      #     python -c "import h5py, zarr, boto3; print(f'h5py: {h5py.__version__}, zarr: {zarr.__version__}, boto3: {boto3.__version__}')"
 
       - name: Install Node.js dependencies
         working-directory: ./app
@@ -51,10 +51,7 @@ jobs:
 
       - name: Run browser tests with local data
         working-directory: ./app
-        run: |
-          # Run the browser tests script with local data using static files
-          chmod +x ./run_browser_tests.sh
-          CI=true ./run_browser_tests.sh --local
+        run: CI=true npm test
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
