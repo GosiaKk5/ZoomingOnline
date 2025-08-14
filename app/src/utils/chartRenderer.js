@@ -6,6 +6,9 @@
  */
 
 import * as d3 from 'd3';
+import { formatTimeFromMicroseconds } from './siFormat.js';
+
+// Constants for time conversions
 import { getRawDataSlice } from './dataLoader.js';
 import { getZoomDomains } from './timeUtils.js';
 import { get } from 'svelte/store';
@@ -31,15 +34,11 @@ function getTimeUnitInfo(timeSpanUs) {
 }
 
 /**
- * Helper function to format time duration with appropriate units
+ * Helper function to format time duration with appropriate SI units
  */
-function formatTimeDuration(durationUs, useNanoseconds) {
-    if (useNanoseconds) {
-        const durationNs = durationUs * US_TO_NS_FACTOR;
-        return `${durationNs.toFixed(0)}ns`;
-    } else {
-        return `${durationUs.toFixed(0)}µs`;
-    }
+function formatTimeDuration(durationUs, useNanoseconds = false) {
+    // Use the new SI formatting utility for better readability
+    return formatTimeFromMicroseconds(durationUs);
 }
 
 /**

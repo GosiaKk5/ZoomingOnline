@@ -8,6 +8,7 @@
  */
 
 import { timeSteps, plotConfig } from '../stores/appStore.js';
+import { formatTimeFromMicroseconds } from './siFormat.js';
 import { get } from 'svelte/store';
 
 /**
@@ -240,12 +241,10 @@ export function updateZoom2SliderRange(zoom1WindowIndex) {
 }
 
 /**
- * Get formatted time label for a time step value
+ * Get formatted time label for a time step value using SI formatting
  * @param {number} valueUs - Time value in microseconds
- * @returns {string} - Formatted label (e.g., "10 µs", "1 ms")
+ * @returns {string} - Formatted label with appropriate SI prefix
  */
 export function formatTimeLabel(valueUs) {
-    const currentTimeSteps = get(timeSteps);
-    const step = currentTimeSteps.find(s => s.value_us === valueUs);
-    return step ? step.label : `${valueUs} µs`;
+    return formatTimeFromMicroseconds(valueUs);
 }
