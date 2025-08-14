@@ -1,5 +1,3 @@
-import sys
-import os
 import tempfile
 from pathlib import Path
 
@@ -7,10 +5,6 @@ import h5py
 import numpy as np
 import pytest
 import zarr
-
-# Add project root to the Python path
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-sys.path.insert(0, project_root)
 
 from src.generate_data import (
     generate_realistic_data,

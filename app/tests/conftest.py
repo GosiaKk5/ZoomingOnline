@@ -1,5 +1,5 @@
-import sys
 import os
+import sys
 
 # Add the project root directory to the Python path
 # This allows tests to import modules from the 'src' directory
