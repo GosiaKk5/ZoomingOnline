@@ -51,7 +51,7 @@ jobs:
 
       - name: Run browser tests with local data
         working-directory: ./app
-        run: CI=true npm test
+        run: USE_LOCAL_DATA=true npx playwright test --reporter=line
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
