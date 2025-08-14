@@ -5,7 +5,7 @@ import { defineConfig } from '@playwright/test';
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-  testDir: '../tests',
+  testDir: './tests',
   /* Define test match pattern to include our browser_tests.js file */
   testMatch: ['**/*.spec.js', '**/*test*.js', '**/browser_tests.js'],
   /* Maximum time one test can run for - increased for CI environments */
@@ -38,11 +38,11 @@ export default defineConfig({
   webServer: process.env.CI ? [] : [
     {
       command: 'npm run dev',
-      port: 5173,
+      url: 'http://localhost:5173/ZoomingOnline/',
       reuseExistingServer: true,
     },
   ],
   use: {
-    baseURL: process.env.BASE_URL || 'http://localhost:5173/ZoomingOnline',
+    baseURL: 'http://localhost:5173/ZoomingOnline/',
   },
 });
