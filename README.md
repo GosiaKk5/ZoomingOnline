@@ -17,11 +17,11 @@ Experience ZoomingOnline with our sample datasets. Click the links below or copy
 
 ### Sample Datasets
 
-| Dataset | Description | Try it Now |
-|---------|-------------|------------|
-| **1nA** | Low current oscilloscope data | [🔗 View Dataset](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr) |
-| **64nA** | Higher current oscilloscope data | [🔗 View Dataset](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/64nA/64nA.zarr) |
-| **20231204m4** | Additional experimental data | [🔗 View Dataset](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/20231204m4/20231204m4.zarr) |
+| Dataset | Description | Try it Now | Copy Dataset URL |
+|---------|-------------|------------|------------------|
+| **1nA** | Low current oscilloscope data | [🔗 View Dataset](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr) | `https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr` |
+| **64nA** | Higher current oscilloscope data | [🔗 View Dataset](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/64nA/64nA.zarr) | `https://s3.cloud.cyfronet.pl/zooming-online/64nA/64nA.zarr` |
+| **20231204m4** | Additional experimental data | [🔗 View Dataset](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/20231204m4/20231204m4.zarr) | `https://s3.cloud.cyfronet.pl/zooming-online/20231204m4/20231204m4.zarr` |
 
 ### Using Your Own Data
 
@@ -54,23 +54,18 @@ https://datamedsci.github.io/ZoomingOnline/?data=YOUR_ZARR_URL_HERE
 2. Enter your Zarr dataset URL or try our sample data
 3. Start exploring your data immediately
 
-### Option 2: Run Locally
+### Option 2: Local Development
+For developers who want to run locally or contribute:
+
 ```bash
-# Clone the repository
 git clone https://github.com/DataMedSci/ZoomingOnline.git
-cd ZoomingOnline
-
-# Start the frontend
-cd app
-npm install
-npm run dev
-
-# In another terminal, serve your data (optional)
-cd ../python
-python src/cors_server.py --port 8000
 ```
 
-Visit `http://localhost:5173` and load your data!
+```bash
+cd ZoomingOnline
+```
+
+See the [App Development Guide](app/) for detailed local setup instructions.
 
 ## 📁 Project Structure
 
@@ -82,16 +77,13 @@ ZoomingOnline/
 └── .github/          # CI/CD workflows
 ```
 
-## 🛠️ Data Tools
+## � Documentation
 
-ZoomingOnline includes powerful CLI tools for data management:
-
-- **`generate_data.py`** - Create synthetic oscilloscope datasets for testing
-- **`convert_hdf5_to_zarr.py`** - Convert HDF5 files to efficient Zarr format  
-- **`data_to_s3_importer.py`** - Batch convert and upload to cloud storage
-- **`cors_server.py`** - Local development server with CORS support
-
-See the [`python/`](python/) directory for detailed tool documentation.
+- **[Setup Guide](docs/setup.md)** - Detailed installation and configuration
+- **[Testing Guide](docs/testing.md)** - Running and writing tests
+- **[CLI Scripts](docs/scripts.md)** - Complete tool reference
+- **[App Development](app/)** - Frontend development guide
+- **[Python Tools](python/)** - Backend development guide
 
 ## � Documentation
 
@@ -110,18 +102,7 @@ Traditional data visualization tools struggle with gigabyte-scale datasets. Zoom
 3. **Smart caching strategies** to minimize network requests
 4. **Modern web architecture** for responsive, interactive experiences
 
-## 🔧 Technology Stack
-
-- **Frontend**: Svelte, D3.js, Zarr.js
-- **Backend**: Python, Zarr, HDF5
-- **Build**: Vite, npm
-- **Deployment**: GitHub Pages, GitHub Actions
-
-## 🤝 Contributing
-
-We welcome contributions! Whether it's bug reports, feature requests, or code contributions, please check our documentation for developers in the [`app/`](app/) and [`python/`](python/) directories.
-
-## 📄 License
+##  License
 
 MIT License - see [LICENSE](LICENSE) for details.
 
