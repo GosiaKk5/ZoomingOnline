@@ -1,14 +1,14 @@
 name: Web App Tests
 
+# Trigger the workflow on:
 on:
   push:
-    branches: [ main ]
-  pull_request:
+    branches: [ main ]           # Every push to main branch
+  pull_request:                  # Every pull request
   schedule:
-    # Run once a week on Monday at 00:00 UTC
-    - cron: '0 0 * * 1'
+    - cron: '0 0 * * 1'         # Weekly on Monday at 00:00 UTC
 
-# Set explicit permissions
+# Security: Limit permissions to read-only
 permissions:
   contents: read
 
@@ -16,10 +16,13 @@ jobs:
   browser-tests:
     name: Browser Tests
     runs-on: ubuntu-latest
+    
     steps:
+      # Step 1: Get the code
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Step 2: Setup Node.js environment
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -27,44 +30,53 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'app/package-lock.json'
 
+      # Step 3: Install project dependencies
       - name: Install Node.js dependencies
         working-directory: ./app
         run: npm ci
 
+      # Step 4: Cache Playwright browsers to speed up CI
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      # Step 5: Install Playwright browser binaries
       - name: Install Playwright browsers
         working-directory: ./app
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install chromium
 
-      - run: npm run build
+      # Step 6: Build the application for production-like testing
+      - name: Build application
         working-directory: ./app
+        run: npm run build
 
-      - run: npm install -g serve # or use vite preview
-        working-directory: ./app
+      # Step 7: Install serve globally for serving the built app
+      - name: Install serve
+        run: npm install -g serve
 
+      # Step 8: Start the preview server in background
       - name: Start preview server
+        working-directory: ./app
         run: npm run preview -- --port 5173 --strictPort &
-        working-directory: ./app
       
-      - name: Wait for server
-        run: npx wait-on http://localhost:5173/ZoomingOnline/
+      # Step 9: Wait for server to be ready before running tests
+      - name: Wait for server to be ready
         working-directory: ./app
+        run: npx wait-on http://localhost:5173/ZoomingOnline/
 
-      # - name: Run Playwright tests
-      #   run: npx playwright test --reporter=line
-      #   working-directory: ./app
-
-
-      # - name: Build app
-      #   run: npm run build
-      #   working-directory: ./app
-
+      # Step 10: Run the actual browser tests
       - name: Run browser tests with local data
         working-directory: ./app
         run: USE_LOCAL_DATA=true npx playwright test --reporter=line
 
+      # Step 11: Upload test artifacts (reports, screenshots) if tests fail
       - name: Upload test results
         uses: actions/upload-artifact@v4
-        if: always()
+        if: always()  # Upload even if tests fail
         with:
           name: playwright-report
           path: |

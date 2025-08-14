@@ -34,7 +34,11 @@ export default defineConfig({
       },
     },
   ],
-  /* Web server for local testing - disabled for CI to avoid conflicts with run_browser_tests.sh */
+  /**
+   * Web server configuration for local testing
+   * - Uses dev server locally for hot reload during development
+   * - Uses preview server in CI for production-like testing
+   */
   webServer: process.env.CI ? [] : [
     {
       command: process.env.CI ? 'npm run preview' : 'npm run dev',
