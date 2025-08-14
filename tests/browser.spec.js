@@ -1,8 +1,7 @@
-const { test, expect } = require('@playwright/test');
+import { test, expect } from '@playwright/test';
 
 // Configure data source based on environment
 const useLocalData = process.env.USE_LOCAL_DATA === 'true';
-const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
 const dataUrl = useLocalData 
   ? 'http://localhost:8000/test_data.zarr' 
   : 'https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr';
@@ -12,12 +11,11 @@ test.describe('ZoomingOnline Browser Tests', () => {
   test.beforeEach(async () => {
     // Log data source for debugging
     console.log(`Using data source: ${dataUrl}`);
-    console.log(`Using base URL: ${baseUrl}`);
   });
 
   test('Load dataset via URL parameter', async ({ page }) => {
     // Navigate to the app with data parameter
-    await page.goto(`${baseUrl}/?data=${dataUrl}`);
+    await page.goto(`/?data=${dataUrl}`);
     await expect(page).toHaveTitle('ZoomingOnline - Interactive Raw Data Analysis');
     
     // Check if the selection container becomes visible (data loaded automatically)
@@ -50,7 +48,7 @@ test.describe('ZoomingOnline Browser Tests', () => {
 
   test('Load dataset via input field', async ({ page }) => {
     // Navigate to the app 
-    await page.goto(baseUrl);
+    await page.goto('/');
     await expect(page).toHaveTitle('ZoomingOnline - Interactive Raw Data Analysis');
     
     // Check if the input container is visible

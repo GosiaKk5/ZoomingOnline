@@ -11,13 +11,17 @@
     "check": "svelte-check --tsconfig ./jsconfig.json",
     "check:watch": "svelte-check --tsconfig ./jsconfig.json --watch",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug"
   },
   "dependencies": {
     "d3": "^7.8.5",
     "zarr": "^0.6.3"
   },
   "devDependencies": {
+    "@playwright/test": "^1.54.2",
     "@sveltejs/vite-plugin-svelte": "^3.0.1",
     "@types/d3": "^7.4.3",
     "eslint": "^8.56.0",

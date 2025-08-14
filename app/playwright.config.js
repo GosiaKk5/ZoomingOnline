@@ -1,11 +1,11 @@
 // @ts-check
-const { defineConfig } = require('@playwright/test');
+import { defineConfig } from '@playwright/test';
 
 /**
  * @see https://playwright.dev/docs/test-configuration
  */
-module.exports = defineConfig({
-  testDir: './tests',
+export default defineConfig({
+  testDir: '../tests',
   /* Define test match pattern to include our browser_tests.js file */
   testMatch: ['**/*.spec.js', '**/*test*.js', '**/browser_tests.js'],
   /* Maximum time one test can run for - increased for CI environments */
@@ -37,9 +37,12 @@ module.exports = defineConfig({
   /* Web server for local testing - disabled for CI to avoid conflicts with run_browser_tests.sh */
   webServer: process.env.CI ? [] : [
     {
-      command: 'python src/cors_server.py --port 8000',
-      port: 8000,
+      command: 'npm run dev',
+      port: 5173,
       reuseExistingServer: true,
     },
   ],
+  use: {
+    baseURL: process.env.BASE_URL || 'http://localhost:5173/ZoomingOnline',
+  },
 });
