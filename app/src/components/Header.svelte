@@ -4,6 +4,12 @@
 
     function handlePlotAnother() {
         resetAppState();
+        
+        // Clear data parameter from URL
+        const url = new URL(window.location);
+        url.searchParams.delete('data');
+        window.history.replaceState(null, '', url.toString());
+        
         // Navigate to home route
         push('/');
     }

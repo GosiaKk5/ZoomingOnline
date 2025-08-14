@@ -13,42 +13,71 @@
 
     let inputUrl = '';
 
-    // Construct the full example URL that works both locally and on GitHub Pages
-    $: exampleUrl = `${window.location.origin}${import.meta.env.BASE_URL}example.zarr`;
+    // Construct the full example URL using the dedicated static route
+    $: exampleUrl = `${window.location.origin}${import.meta.env.BASE_URL}static/example.zarr`;
 
     onMount(() => {
+        console.log('🏠 Home component mounted');
+        
         // Check if a data URL was provided in the query parameters
         const urlParams = new URLSearchParams(window.location.search);
         const urlDataParam = urlParams.get('data');
         
+        console.log('🔍 Checking URL parameters:');
+        console.log('  - Full URL:', window.location.href);
+        console.log('  - Search params:', window.location.search);
+        console.log('  - Data param:', urlDataParam);
+        console.log('  - Is data loaded:', $isDataLoaded);
+        
         if (urlDataParam && !$isDataLoaded) {
+            console.log('🚀 Auto-loading data from URL parameter:', urlDataParam);
             inputUrl = urlDataParam;
             handleLoadData();
+        } else if (urlDataParam && $isDataLoaded) {
+            console.log('⚠️ Data param found but data already loaded, skipping auto-load');
+        } else {
+            console.log('ℹ️ No data param found or no auto-load needed');
         }
     });
 
     async function handleLoadData() {
-        if (!inputUrl.trim()) return;
+        if (!inputUrl.trim()) {
+            console.log('❌ No input URL provided');
+            return;
+        }
+        
+        console.log('📊 Starting data load process...');
+        console.log('  - Input URL:', inputUrl);
+        console.log('  - Current loading state:', $isLoading);
+        console.log('  - Current data loaded state:', $isDataLoaded);
         
         setLoadingState(true);
+        console.log('  - Loading state set to true');
         
         try {
+            console.log('🔄 Calling loadZarrData...');
             await loadZarrData(inputUrl);
+            console.log('✅ loadZarrData completed successfully');
+            
+            console.log('💾 Updating stores...');
             dataUrl.set(inputUrl);
             isDataLoaded.set(true);
             setError(null);
+            console.log('  - dataUrl store updated to:', inputUrl);
+            console.log('  - isDataLoaded set to true');
+            console.log('  - error cleared');
             
-            // Update URL with data parameter for shareable links
-            const newUrl = new URL(window.location);
-            newUrl.searchParams.set('data', inputUrl);
-            window.history.replaceState({ path: newUrl.href }, '', newUrl.href);
-            
-            // Navigate to selection route
+            console.log('🧭 Navigating to selection route...');
             push('/selection');
+            console.log('  - Navigation push() called');
             
         } catch (err) {
+            console.error('❌ Error during data loading:', err);
+            console.error('  - Error message:', err.message);
+            console.error('  - Error stack:', err.stack);
             setError(err.message);
         } finally {
+            console.log('🏁 Setting loading state to false');
             setLoadingState(false);
         }
     }
@@ -61,7 +90,10 @@
     }
 
     function loadExample() {
+        console.log('🎯 Example button clicked');
+        console.log('  - Example URL:', exampleUrl);
         inputUrl = exampleUrl;
+        console.log('  - Input URL set to example URL');
         handleLoadData();
     }
 </script>

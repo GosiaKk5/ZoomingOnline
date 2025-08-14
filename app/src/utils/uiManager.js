@@ -14,18 +14,49 @@
  * @returns {Object} - Object containing arrays of options for each selector
  */
 export async function populateSelectors(store) {
-    if (!store || !store.shape) {
+    console.log('🎯 populateSelectors() called');
+    console.log('  - store parameter:', store);
+    console.log('  - store type:', typeof store);
+    console.log('  - store exists:', !!store);
+    
+    if (!store) {
+        console.warn('⚠️ populateSelectors: No store provided');
         return { channels: [], trcFiles: [], segments: [] };
     }
     
+    if (!store.shape) {
+        console.warn('⚠️ populateSelectors: Store has no shape property');
+        console.log('  - Available store properties:', Object.keys(store));
+        console.log('  - Store structure:', store);
+        return { channels: [], trcFiles: [], segments: [] };
+    }
+    
+    console.log('📐 Store shape analysis:');
+    console.log('  - store.shape:', store.shape);
+    console.log('  - shape type:', typeof store.shape);
+    console.log('  - shape length:', store.shape?.length);
+    
     const [channelCount, trcCount, segmentCount] = store.shape;
+    console.log('📊 Extracted dimensions:');
+    console.log('  - channelCount:', channelCount);
+    console.log('  - trcCount:', trcCount); 
+    console.log('  - segmentCount:', segmentCount);
     
     // Create arrays of options
+    console.log('🔨 Creating selector arrays...');
     const channels = Array.from({ length: channelCount }, (_, i) => `Channel ${i + 1}`);
     const trcFiles = Array.from({ length: trcCount }, (_, i) => `TRC ${i + 1}`);
     const segments = Array.from({ length: segmentCount }, (_, i) => `Segment ${i + 1}`);
     
-    return { channels, trcFiles, segments };
+    console.log('✅ Generated selectors:');
+    console.log('  - channels:', channels);
+    console.log('  - trcFiles:', trcFiles);
+    console.log('  - segments:', segments);
+    
+    const result = { channels, trcFiles, segments };
+    console.log('📤 Returning result:', result);
+    
+    return result;
 }
 
 /**

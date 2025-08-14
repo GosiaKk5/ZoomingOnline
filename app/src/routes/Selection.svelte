@@ -1,4 +1,5 @@
 <script>
+    import { onMount } from 'svelte';
     import { 
         isLoading, 
         error, 
@@ -16,28 +17,100 @@
     let channels = [];
     let trcFiles = [];
     let segments = [];
+    let selectorsPopulated = false; // Flag to prevent infinite loop
 
-    // Reactive statements
-    $: if ($rawStore) {
+    onMount(() => {
+        console.log('🎯 Selection component mounted');
+        console.log('  - isDataLoaded:', $isDataLoaded);
+        console.log('  - rawStore exists:', !!$rawStore);
+        console.log('  - rawStore:', $rawStore);
+        console.log('  - isLoading:', $isLoading);
+        console.log('  - error:', $error);
+        
+        // Reset the flag on mount to ensure fresh state
+        selectorsPopulated = false;
+    });
+
+    // Reactive statements - only populate once when rawStore becomes available
+    $: if ($rawStore && !selectorsPopulated) {
+        console.log('📊 rawStore changed, populating selectors...');
+        console.log('  - rawStore shape:', $rawStore?.shape);
+        console.log('  - rawStore meta:', $rawStore?.meta);
+        console.log('  - rawStore attrs:', $rawStore?.attrs);
+        console.log('  - selectorsPopulated flag:', selectorsPopulated);
+        
+        selectorsPopulated = true; // Set flag to prevent re-population
+        
         populateSelectors($rawStore).then(data => {
+            console.log('✅ populateSelectors completed:');
+            console.log('  - channels:', data.channels);
+            console.log('  - trcFiles:', data.trcFiles);
+            console.log('  - segments:', data.segments);
+            
             channels = data.channels;
             trcFiles = data.trcFiles;
             segments = data.segments;
+            
+            console.log('🔧 Setting default values...');
+            
+            // Set default values to first available option if not already set
+            if (channels.length > 0 && (!$selectedChannel || $selectedChannel === '')) {
+                console.log('  - Setting default channel to:', channels[0]);
+                selectedChannel.set(channels[0]);
+            }
+            if (trcFiles.length > 0 && (!$selectedTrc || $selectedTrc === '')) {
+                console.log('  - Setting default trcFile to:', trcFiles[0]);
+                selectedTrc.set(trcFiles[0]);
+            }
+            if (segments.length > 0 && (!$selectedSegment || $selectedSegment === '')) {
+                console.log('  - Setting default segment to:', segments[0]);
+                selectedSegment.set(segments[0]);
+            }
+            
+            console.log('📋 Final selected values:');
+            console.log('  - selectedChannel:', $selectedChannel);
+            console.log('  - selectedTrc:', $selectedTrc);
+            console.log('  - selectedSegment:', $selectedSegment);
+            console.log('  - isDataReadyForPlot after setting defaults:', $isDataReadyForPlot);
+        }).catch(err => {
+            console.error('❌ Error in populateSelectors:');
+            console.error('  - Error:', err);
+            console.error('  - rawStore that failed:', $rawStore);
+            selectorsPopulated = false; // Reset flag on error so user can retry
         });
     }
 
     // Show copy link when data is loaded
     $: if ($isDataLoaded) {
+        console.log('🔗 Data loaded, showing copy link');
         showCopyLink.set(true);
     }
 
+    // Monitor isDataReadyForPlot changes (only log when it becomes true)
+    $: if ($isDataReadyForPlot) {
+        console.log('✅ Data is ready for plot!');
+        console.log('  - selectedChannel:', $selectedChannel);
+        console.log('  - selectedTrc:', $selectedTrc);
+        console.log('  - selectedSegment:', $selectedSegment);
+    }
+
     function handlePlotData() {
+        console.log('📈 Plot data button clicked');
+        console.log('  - isDataReadyForPlot:', $isDataReadyForPlot);
+        console.log('  - selectedChannel:', $selectedChannel);
+        console.log('  - selectedTrc:', $selectedTrc);
+        console.log('  - selectedSegment:', $selectedSegment);
+        
         if ($isDataReadyForPlot) {
+            console.log('🧭 Navigating to visualization...');
             push('/visualization');
+        } else {
+            console.log('⚠️ Data not ready for plot');
         }
     }
 
     function handleGoBack() {
+        console.log('⬅️ Going back to home page');
         push('/');
     }
 </script>
@@ -68,7 +141,6 @@
             <div class="control">
                 <label for="channel-select">Channel:</label>
                 <select id="channel-select" bind:value={$selectedChannel}>
-                    <option value="">Select Channel</option>
                     {#each channels as channel}
                         <option value={channel}>{channel}</option>
                     {/each}
@@ -78,7 +150,6 @@
             <div class="control">
                 <label for="trc-select">TRC File:</label>
                 <select id="trc-select" bind:value={$selectedTrc}>
-                    <option value="">Select TRC File</option>
                     {#each trcFiles as trc}
                         <option value={trc}>{trc}</option>
                     {/each}
@@ -88,7 +159,6 @@
             <div class="control">
                 <label for="segment-select">Segment:</label>
                 <select id="segment-select" bind:value={$selectedSegment}>
-                    <option value="">Select Segment</option>
                     {#each segments as segment}
                         <option value={segment}>{segment}</option>
                     {/each}

@@ -1,6 +1,8 @@
 <script>
     import { onMount } from 'svelte';
     import Router from 'svelte-spa-router';
+    import { location } from 'svelte-spa-router';
+    import { dataUrl } from './stores/appStore.js';
     import { generateTimeSteps } from './utils/timeUtils.js';
     
     // Import components
@@ -12,12 +14,21 @@
     import Selection from './routes/Selection.svelte';
     import Visualization from './routes/Visualization.svelte';
 
-    // Define routes
+    // Define routes - only for our app routes, not static files
     const routes = {
         '/': Home,
         '/selection': Selection,
         '/visualization': Visualization
     };
+
+    // Update URL with data parameter when route changes and data is loaded
+    $: if ($location && $dataUrl) {
+        const url = new URL(window.location);
+        if (!url.searchParams.has('data')) {
+            url.searchParams.set('data', $dataUrl);
+            window.history.replaceState(null, '', url.toString());
+        }
+    }
 
     onMount(() => {
         // Generate time steps early
