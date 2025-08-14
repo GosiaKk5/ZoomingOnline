@@ -27,20 +27,6 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'app/package-lock.json'
 
-      # - name: Set up Python
-      #   uses: actions/setup-python@v5
-      #   with:
-      #     python-version: '3.12'
-      #     cache: 'pip'
-
-      # - name: Install project dependencies directly
-      #   working-directory: ./python
-      #   run: |
-      #     # Install dependencies directly to ensure they are available in the path
-      #     pip install h5py zarr boto3 botocore s3fs python-dotenv
-      #     # Verify installations
-      #     python -c "import h5py, zarr, boto3; print(f'h5py: {h5py.__version__}, zarr: {zarr.__version__}, boto3: {boto3.__version__}')"
-
       - name: Install Node.js dependencies
         working-directory: ./app
         run: npm ci
@@ -48,6 +34,9 @@ jobs:
       - name: Install Playwright browsers
         working-directory: ./app
         run: npx playwright install --with-deps chromium
+
+      - name: Build app
+        run: npm run build
 
       - name: Run browser tests with local data
         working-directory: ./app

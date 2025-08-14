@@ -9,7 +9,7 @@ export default defineConfig({
   /* Define test match pattern to include our browser_tests.js file */
   testMatch: ['**/*.spec.js', '**/*test*.js', '**/browser_tests.js'],
   /* Maximum time one test can run for - increased for CI environments */
-  timeout: process.env.CI ? 300000 : 120000, // 5 minutes in CI, 2 minutes locally
+  timeout: 60000, // 60 seconds for tests that load data and render charts
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
@@ -39,7 +39,7 @@ export default defineConfig({
     {
       command: 'npm run dev',
       url: 'http://localhost:5173/ZoomingOnline/',
-      reuseExistingServer: true,
+      reuseExistingServer: true, // Reuse existing server if running
     },
   ],
   use: {
