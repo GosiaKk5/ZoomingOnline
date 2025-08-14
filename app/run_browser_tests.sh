@@ -58,7 +58,7 @@ npx playwright install --with-deps chromium
 # If using local data and need to generate it
 if [ "$GENERATE_DATA" = true ]; then
   echo "Generating minimal test data for quick testing..."
-  python ../src/generate_data.py -o ../test_data.zarr --minimal
+  python ../python/src/generate_data.py -o ../test_data.zarr --minimal
 fi
 
 # Start local server for the Svelte app
@@ -68,7 +68,7 @@ SVELTE_SERVER_PID=$!
 
 # Start CORS server for serving test data
 echo "Starting CORS server for test data..."
-python ../src/cors_server.py --port 8000 &
+python ../python/src/cors_server.py --port 8000 &
 CORS_SERVER_PID=$!
 
 # Function to clean up server processes on exit

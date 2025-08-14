@@ -34,6 +34,7 @@ jobs:
           cache: 'pip'
 
       - name: Install project dependencies directly
+        working-directory: ./python
         run: |
           # Install dependencies directly to ensure they are available in the path
           pip install h5py zarr boto3 botocore s3fs python-dotenv
