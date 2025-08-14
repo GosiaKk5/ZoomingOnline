@@ -5,11 +5,17 @@
 
     const dispatch = createEventDispatcher();
 
-    // Control values
-    let zoom1Position = 50;
-    let zoom2Position = 50;
-    let zoom1WindowIndex = 0;
-    let zoom2WindowIndex = 0;
+    // Control values - these should be props from parent
+    export let zoom1Position = 50;
+    export let zoom2Position = 50;
+    export let zoom1WindowIndex = 0;
+    export let zoom2WindowIndex = 0;
+
+    console.log('🎛️ Controls component props received:');
+    console.log('  - zoom1Position:', zoom1Position);
+    console.log('  - zoom2Position:', zoom2Position);
+    console.log('  - zoom1WindowIndex:', zoom1WindowIndex);
+    console.log('  - zoom2WindowIndex:', zoom2WindowIndex);
 
     // Time step arrays
     let validTimeSteps = [];

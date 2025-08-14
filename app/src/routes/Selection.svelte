@@ -26,9 +26,7 @@
         console.log('  - rawStore:', $rawStore);
         console.log('  - isLoading:', $isLoading);
         console.log('  - error:', $error);
-        
-        // Reset the flag on mount to ensure fresh state
-        selectorsPopulated = false;
+        console.log('  - selectorsPopulated on mount:', selectorsPopulated);
     });
 
     // Reactive statements - only populate once when rawStore becomes available

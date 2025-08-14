@@ -46,70 +46,142 @@ function formatTimeDuration(durationUs, useNanoseconds) {
  * Initialize plot configuration and process overview data
  */
 export async function initializePlotData(rawStore, zarrGroup, overviewStore, channel, trc, segment) {
-    // Extract metadata from Zarr attributes
-    const attrs = await zarrGroup.attrs.asObject();
-    const horiz_interval = attrs.horiz_interval;
-    const vertical_gains = attrs.vertical_gains;
-    const vertical_offsets = attrs.vertical_offsets;
-    const vertical_gain = vertical_gains[channel][trc];
-    const vertical_offset = vertical_offsets[channel][trc];
-    const no_of_samples = rawStore.shape[3];
+    console.log('🏗️ initializePlotData() called');
+    console.log('  - channel:', channel, 'trc:', trc, 'segment:', segment);
+    console.log('  - rawStore shape:', rawStore?.shape);
+    console.log('  - zarrGroup exists:', !!zarrGroup);
+    console.log('  - overviewStore exists:', !!overviewStore);
     
-    // Function to convert ADC values to millivolts
-    const adcToMilliVolts = (adc) => 1000 * (adc * vertical_gain - vertical_offset);
-    const total_time_us = (no_of_samples - 1) * horiz_interval * S_TO_US_FACTOR;
+    try {
+        // Extract metadata from Zarr attributes
+        console.log('📝 Extracting Zarr attributes...');
+        const attrs = await zarrGroup.attrs.asObject();
+        console.log('  - attrs:', attrs);
+        
+        const horiz_interval = attrs.horiz_interval;
+        const vertical_gains = attrs.vertical_gains;
+        const vertical_offsets = attrs.vertical_offsets;
+        
+        console.log('📊 Metadata extracted:');
+        console.log('  - horiz_interval:', horiz_interval);
+        console.log('  - vertical_gains:', vertical_gains);
+        console.log('  - vertical_offsets:', vertical_offsets);
+        
+        const vertical_gain = vertical_gains[channel][trc];
+        const vertical_offset = vertical_offsets[channel][trc];
+        const no_of_samples = rawStore.shape[3];
+        
+        console.log('📈 Calculated values:');
+        console.log('  - vertical_gain:', vertical_gain);
+        console.log('  - vertical_offset:', vertical_offset);
+        console.log('  - no_of_samples:', no_of_samples);
+        
+        // Function to convert ADC values to millivolts
+        const adcToMilliVolts = (adc) => 1000 * (adc * vertical_gain - vertical_offset);
+        const total_time_us = (no_of_samples - 1) * horiz_interval * S_TO_US_FACTOR;
+        
+        console.log('⏰ Time calculation:');
+        console.log('  - S_TO_US_FACTOR:', S_TO_US_FACTOR);
+        console.log('  - total_time_us calculation:', `(${no_of_samples} - 1) * ${horiz_interval} * ${S_TO_US_FACTOR}`);
+        console.log('  - total_time_us result:', total_time_us);
+        console.log('  - total_time_us is valid:', !isNaN(total_time_us) && isFinite(total_time_us));
 
-    // Chart dimensions
-    const margin = {top: 40, right: 40, bottom: 50, left: 60};
-    const fullWidth = 900;
-    const chartHeight = 300;
-    const width = fullWidth - margin.left - margin.right;
-    const height = chartHeight - margin.top - margin.bottom;
+        // Chart dimensions
+        const margin = {top: 40, right: 40, bottom: 50, left: 60};
+        const fullWidth = 900;
+        const chartHeight = 300;
+        const width = fullWidth - margin.left - margin.right;
+        const height = chartHeight - margin.top - margin.bottom;
 
-    // Load overview (downsampled) data
-    const overviewSlice = await overviewStore.get([channel, trc, segment, null, null]);
-    const overviewMin = (await overviewSlice.get(0)).data;
-    const overviewMax = (await overviewSlice.get(1)).data;
-    const downsampling_factor = no_of_samples / overviewMin.length;
+        console.log('📏 Chart dimensions:', { margin, fullWidth, chartHeight, width, height });
 
-    // Process overview data for plotting
-    const overviewData = Array.from(overviewMin).map((min_val, i) => {
-        const time_us = (i + 0.5) * downsampling_factor * horiz_interval * S_TO_US_FACTOR;
-        return {
-            time_us,
-            min_mv: adcToMilliVolts(min_val),
-            max_mv: adcToMilliVolts(overviewMax[i])
+        // Load overview (downsampled) data
+        console.log('🔍 Loading overview data...');
+        const overviewSlice = await overviewStore.get([channel, trc, segment, null, null]);
+        const overviewMin = (await overviewSlice.get(0)).data;
+        const overviewMax = (await overviewSlice.get(1)).data;
+        const downsampling_factor = no_of_samples / overviewMin.length;
+        
+        console.log('📊 Overview data loaded:');
+        console.log('  - overviewMin length:', overviewMin.length);
+        console.log('  - overviewMax length:', overviewMax.length);
+        console.log('  - downsampling_factor:', downsampling_factor);
+
+        // Process overview data for plotting
+        console.log('🔄 Processing overview data...');
+        const overviewData = Array.from(overviewMin).map((min_val, i) => {
+            const time_us = (i + 0.5) * downsampling_factor * horiz_interval * S_TO_US_FACTOR;
+            return {
+                time_us,
+                min_mv: adcToMilliVolts(min_val),
+                max_mv: adcToMilliVolts(overviewMax[i])
+            };
+        });
+
+        // Calculate global Y-axis limits
+        const globalYMin = d3.min(overviewData, d => d.min_mv);
+        const globalYMax = d3.max(overviewData, d => d.max_mv);
+        
+        console.log('📈 Y-axis limits:');
+        console.log('  - globalYMin:', globalYMin);
+        console.log('  - globalYMax:', globalYMax);
+        console.log('  - overviewData sample:', overviewData.slice(0, 3));
+
+        const result = {
+            margin, width, height, fullWidth, chartHeight,
+            horiz_interval, no_of_samples, total_time_us,
+            adcToMv: adcToMilliVolts,
+            channel, trc, segment,
+            overviewData, globalYMin, globalYMax,
+            validTimeSteps: [],
+            validZoom2Steps: []
         };
-    });
-
-    // Calculate global Y-axis limits
-    const globalYMin = d3.min(overviewData, d => d.min_mv);
-    const globalYMax = d3.max(overviewData, d => d.max_mv);
-
-    return {
-        margin, width, height, fullWidth, chartHeight,
-        horiz_interval, no_of_samples, total_time_us,
-        adcToMv: adcToMilliVolts,
-        channel, trc, segment,
-        overviewData, globalYMin, globalYMax,
-        validTimeSteps: [],
-        validZoom2Steps: []
-    };
+        
+        console.log('✅ initializePlotData completed successfully');
+        return result;
+        
+    } catch (error) {
+        console.error('❌ Error in initializePlotData:');
+        console.error('  - Error:', error);
+        console.error('  - Error stack:', error.stack);
+        throw error;
+    }
 }
 
 /**
  * Create SVG container for a chart with title and y-axis label
  */
 export function createChartSVG(containerElement, title, margin, width, height, fullWidth, chartHeight) {
+    console.log('🎨 createChartSVG() called');
+    console.log('  - title:', title);
+    console.log('  - containerElement exists:', !!containerElement);
+    console.log('  - margin:', margin);
+    console.log('  - width:', width, 'type:', typeof width, 'isValid:', !isNaN(width) && isFinite(width));
+    console.log('  - height:', height, 'type:', typeof height, 'isValid:', !isNaN(height) && isFinite(height));
+    console.log('  - fullWidth:', fullWidth, 'type:', typeof fullWidth, 'isValid:', !isNaN(fullWidth) && isFinite(fullWidth));
+    console.log('  - chartHeight:', chartHeight, 'type:', typeof chartHeight, 'isValid:', !isNaN(chartHeight) && isFinite(chartHeight));
+    
+    // Validate parameters
+    if (isNaN(width) || isNaN(height) || isNaN(fullWidth) || isNaN(chartHeight) ||
+        !isFinite(width) || !isFinite(height) || !isFinite(fullWidth) || !isFinite(chartHeight)) {
+        console.error('❌ Invalid dimensions passed to createChartSVG');
+        console.error('  - width:', width, 'height:', height, 'fullWidth:', fullWidth, 'chartHeight:', chartHeight);
+        throw new Error('Invalid dimensions passed to createChartSVG');
+    }
+    
     // Clear existing content
+    console.log('🧹 Clearing existing content...');
     d3.select(containerElement).selectAll("*").remove();
     
+    console.log('📐 Creating SVG with viewBox:', `0 0 ${fullWidth} ${chartHeight}`);
     const svg = d3.select(containerElement)
         .append("svg")
         .attr("viewBox", `0 0 ${fullWidth} ${chartHeight}`)
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
+    console.log('📝 Adding title and labels...');
+    
     // Add title
     svg.append("text")
         .attr("x", width / 2)
@@ -128,6 +200,7 @@ export function createChartSVG(containerElement, title, margin, width, height, f
         .style("text-anchor", "middle")
         .text("Voltage [mV]");
 
+    console.log('✅ SVG created successfully');
     return svg;
 }
 
