@@ -113,7 +113,7 @@ src/                    # Python CLI tools
 ## 🚀 Development Setup
 
 ### Prerequisites
-- Node.js 18+ and npm
+- Node.js 24+ and npm
 - Python 3.8+ (for CLI tools)
 
 ### Frontend Development

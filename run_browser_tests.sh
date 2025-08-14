@@ -44,14 +44,18 @@ if [ "$USE_LOCAL_DATA" = false ]; then
 fi
 
 # Install Node.js dependencies if needed
-if [ ! -d "node_modules" ]; then
+if [ ! -d "app/node_modules" ]; then
   echo "Installing Node.js dependencies..."
+  cd app
   npm install
+  cd ..
 fi
 
 # Install Playwright browsers if needed
 echo "Installing Playwright browsers..."
+cd app
 npx playwright install --with-deps chromium
+cd ..
 
 # If using local data and need to generate it
 if [ "$GENERATE_DATA" = true ]; then
@@ -59,10 +63,12 @@ if [ "$GENERATE_DATA" = true ]; then
   python src/generate_data.py -o test_data.zarr --minimal
 fi
 
-# Start local server
-echo "Starting local server..."
-python src/cors_server.py --port 8000 &
+# Start local server for the Svelte app
+echo "Starting local development server..."
+cd app
+npm run dev &
 SERVER_PID=$!
+cd ..
 
 # Function to clean up server process on exit
 cleanup() {
@@ -95,12 +101,14 @@ fi
 
 # Run the tests
 echo "Running Playwright tests..."
+cd app
 if [ -n "$CI" ]; then
   # When running in CI, explicitly set CI=true for Playwright to use our CI-specific config
-  CI=true npx playwright test tests/browser.spec.js
+  CI=true npx playwright test ../tests/browser.spec.js
 else
   # For local runs, use standard configuration
-  npx playwright test tests/browser.spec.js
+  npx playwright test ../tests/browser.spec.js
 fi
+cd ..
 
 echo "All tests completed successfully!"

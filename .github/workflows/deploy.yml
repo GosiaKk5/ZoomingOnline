@@ -20,19 +20,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
           cache-dependency-path: 'app/package-lock.json'
 
       - name: Install dependencies
-        run: |
-          cd app
-          npm ci
+        working-directory: ./app
+        run: npm ci
 
       - name: Build Svelte app
-        run: |
-          cd app
-          npm run build
+        working-directory: ./app
+        run: npm run build
 
       - name: Prepare site
         run: |

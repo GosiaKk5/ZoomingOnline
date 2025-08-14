@@ -22,11 +22,13 @@ To run the browser tests locally:
 
 1. Install Node.js dependencies:
    ```bash
+   cd app
    npm install
    ```
 
 2. Install Playwright browsers:
    ```bash
+   cd app
    npx playwright install
    ```
 
@@ -37,6 +39,7 @@ To run the browser tests locally:
 
 4. Run the tests:
    ```bash
+   cd app
    npm test
    ```
 
@@ -105,6 +108,7 @@ The workflow is defined in `.github/workflows/app-tests.yml`.
 After running the tests either locally or in CI, you can view the HTML report:
 
 ```bash
+cd app
 npx playwright show-report
 ```
 
