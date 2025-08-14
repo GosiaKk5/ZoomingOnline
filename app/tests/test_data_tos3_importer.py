@@ -7,7 +7,7 @@ import numpy as np
 from _pytest.monkeypatch import MonkeyPatch
 
 # Add project root to the Python path
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 sys.path.insert(0, project_root)
 
 from src.data_to_s3_importer import (
