@@ -59,6 +59,9 @@ npx playwright install --with-deps chromium
 if [ "$GENERATE_DATA" = true ]; then
   echo "Generating minimal test data for quick testing..."
   python ../python/src/generate_data.py -o ../test_data.zarr --minimal
+  # Copy to app/public so it's served as a static file
+  echo "Copying test data to app/public as example.zarr..."
+  cp -r ../test_data.zarr ./public/example.zarr
 fi
 
 # Start local server for the Svelte app
@@ -66,17 +69,21 @@ echo "Starting local development server..."
 npm run dev &
 SVELTE_SERVER_PID=$!
 
-# Start CORS server for serving test data
-echo "Starting CORS server for test data..."
-python ../python/src/cors_server.py --port 8000 &
-CORS_SERVER_PID=$!
+# Only start CORS server for non-local data testing
+if [ "$USE_LOCAL_DATA" = false ]; then
+  echo "Starting CORS server for remote data testing..."
+  python ../python/src/cors_server.py --port 8000 &
+  CORS_SERVER_PID=$!
+fi
 
 # Function to clean up server processes on exit
 cleanup() {
   echo "Cleaning up server processes..."
   # First try graceful termination
   kill -TERM $SVELTE_SERVER_PID 2>/dev/null || true
-  kill -TERM $CORS_SERVER_PID 2>/dev/null || true
+  if [ -n "$CORS_SERVER_PID" ]; then
+    kill -TERM $CORS_SERVER_PID 2>/dev/null || true
+  fi
   
   # Wait a moment for the processes to terminate
   sleep 1
@@ -87,7 +94,7 @@ cleanup() {
     kill -KILL $SVELTE_SERVER_PID 2>/dev/null || true
   fi
   
-  if ps -p $CORS_SERVER_PID > /dev/null 2>&1; then
+  if [ -n "$CORS_SERVER_PID" ] && ps -p $CORS_SERVER_PID > /dev/null 2>&1; then
     echo "CORS server process didn't terminate gracefully, forcing shutdown..."
     kill -KILL $CORS_SERVER_PID 2>/dev/null || true
   fi

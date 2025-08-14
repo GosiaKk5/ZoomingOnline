@@ -140,8 +140,8 @@ The frontend integrates with the Python backend through:
 ### Data Loading
 
 ```javascript
-// Load local data during development
-const dataUrl = 'http://localhost:8000/test_data.zarr';
+// Load example data (included as static file)
+const dataUrl = `${window.location.origin}${import.meta.env.BASE_URL}example.zarr`;
 
 // Load remote data in production
 const dataUrl = 'https://your-domain.com/dataset.zarr';
@@ -152,16 +152,20 @@ const dataUrl = 'https://your-domain.com/dataset.zarr';
 The app supports loading datasets via URL parameters:
 
 ```
+# Load example dataset (included as static file)
+http://localhost:5173/ZoomingOnline/?data=http://localhost:5173/ZoomingOnline/example.zarr
+
 # Direct dataset loading
 http://localhost:5173/?data=http://example.com/dataset.zarr
-
-# Development with local server
-http://localhost:5173/?data=http://localhost:8000/test_data.zarr
 ```
+
+### Development with Static Files
+
+The app includes a small example.zarr file (288KB) for testing and development. No additional CORS server is needed for the example data.
 
 ### CORS Configuration
 
-During development, ensure the Python CORS server is running:
+For custom datasets during development, ensure the Python CORS server is running:
 
 ```bash
 cd ../python

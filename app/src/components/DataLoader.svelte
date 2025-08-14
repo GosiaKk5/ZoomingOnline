@@ -22,6 +22,9 @@
     let trcFiles = [];
     let segments = [];
 
+    // Construct the full example URL that works both locally and on GitHub Pages
+    $: exampleUrl = `${window.location.origin}${import.meta.env.BASE_URL}example.zarr`;
+
     // Reactive statements
     $: if ($rawStore) {
         populateSelectors($rawStore).then(data => {
@@ -75,11 +78,22 @@
     <div class="input-container">
         <h3>Load Zarr Data</h3>
         <p>Please enter the full URL to your .zarr file.</p>
+        <div class="example-hint">
+            <p>For testing, try the example dataset: 
+                <button 
+                    class="link-button" 
+                    on:click={() => { inputUrl = exampleUrl; handleLoadData(); }}
+                    disabled={$isLoading}
+                >
+                    {exampleUrl}
+                </button>
+            </p>
+        </div>
         <div class="input-group">
             <input 
                 type="text" 
                 bind:value={inputUrl}
-                placeholder="https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr"
+                placeholder={exampleUrl}
                 on:keypress={handleKeyPress}
                 disabled={$isLoading}
             />
@@ -181,6 +195,42 @@
     input:disabled {
         background-color: #f5f5f5;
         cursor: not-allowed;
+    }
+
+    .example-hint {
+        margin: 0.5rem 0;
+        padding: 0.75rem;
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 4px;
+        font-size: 0.875rem;
+        color: #495057;
+    }
+
+    .example-hint p {
+        margin: 0;
+    }
+
+    .link-button {
+        background: none;
+        border: none;
+        color: #007bff;
+        text-decoration: underline;
+        cursor: pointer;
+        font-size: inherit;
+        padding: 0;
+        margin: 0;
+    }
+
+    .link-button:hover:not(:disabled) {
+        color: #0056b3;
+        background: none;
+    }
+
+    .link-button:disabled {
+        color: #6c757d;
+        cursor: not-allowed;
+        text-decoration: none;
     }
 
     button {

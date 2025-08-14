@@ -2,20 +2,29 @@ import { test, expect } from '@playwright/test';
 
 // Configure data source based on environment
 const useLocalData = process.env.USE_LOCAL_DATA === 'true';
-const dataUrl = useLocalData 
-  ? 'http://localhost:8000/test_data.zarr' 
-  : 'https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr';
+const getDataUrl = (baseURL) => {
+  if (useLocalData) {
+    // Construct full URL for the static example file
+    return `${baseURL}example.zarr`;
+  } else {
+    return 'https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr';
+  }
+};
 
 test.describe('ZoomingOnline Browser Tests', () => {
 
-  test.beforeEach(async () => {
+  test.beforeEach(async ({ page }) => {
     // Log data source for debugging
+    const dataUrl = getDataUrl(page.url());
     console.log(`Using data source: ${dataUrl}`);
   });
 
   test('Load dataset via URL parameter', async ({ page }) => {
+    const baseURL = 'http://localhost:5173/ZoomingOnline/';
+    const dataUrl = getDataUrl(baseURL);
+    
     // Navigate to the app with data parameter
-    await page.goto(`/?data=${dataUrl}`);
+    await page.goto(`${baseURL}?data=${dataUrl}`);
     await expect(page).toHaveTitle('ZoomingOnline - Interactive Raw Data Analysis');
     
     // Check if the selection container becomes visible (data loaded automatically)
@@ -47,8 +56,11 @@ test.describe('ZoomingOnline Browser Tests', () => {
   });
 
   test('Load dataset via input field', async ({ page }) => {
+    const baseURL = 'http://localhost:5173/ZoomingOnline/';
+    const dataUrl = getDataUrl(baseURL);
+    
     // Navigate to the app 
-    await page.goto('/');
+    await page.goto(baseURL);
     await expect(page).toHaveTitle('ZoomingOnline - Interactive Raw Data Analysis');
     
     // Check if the input container is visible
@@ -56,8 +68,8 @@ test.describe('ZoomingOnline Browser Tests', () => {
     await expect(inputContainer).toBeVisible();
     
     // Load example data through input field
-    await page.fill('#zarr-input', dataUrl);
-    await page.click('#load-button');
+    await page.fill('input[type="text"]', dataUrl);
+    await page.click('button:has-text("Load Data")');
     
     // Wait for data to load
     const selectionContainer = await page.locator('.selection-container');

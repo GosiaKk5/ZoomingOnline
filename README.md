@@ -35,6 +35,14 @@ https://s3.cloud.cyfronet.pl/zooming-online/64nA/64nA.zarr
 https://s3.cloud.cyfronet.pl/zooming-online/20231204m4/20231204m4.zarr
 ```
 
+### Quick Start with Example Data
+
+The application includes a small example dataset for testing:
+
+```
+https://datamedsci.github.io/ZoomingOnline/?data=https://datamedsci.github.io/ZoomingOnline/example.zarr
+```
+
 ### Using Your Own Data
 
 To visualize your own Zarr datasets, simply append the data URL as a parameter:

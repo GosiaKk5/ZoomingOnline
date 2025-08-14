@@ -52,9 +52,9 @@ jobs:
       - name: Run browser tests with local data
         working-directory: ./app
         run: |
-          # Run the browser tests script with local data generation
+          # Run the browser tests script with local data using static files
           chmod +x ./run_browser_tests.sh
-          CI=true ./run_browser_tests.sh --generate
+          CI=true ./run_browser_tests.sh --local
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
