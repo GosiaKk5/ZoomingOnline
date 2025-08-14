@@ -28,19 +28,29 @@ python/
 ### Setup Development Environment
 
 ```bash
-# Navigate to python directory
 cd python
+```
 
-# Install dependencies
+```bash
 uv sync
+```
 
-# Run all checks (formatting, linting, tests)
+```bash
 ./check.sh
+```
 
-# Or run individually
-uv run ruff format --check .    # Check formatting
-uv run ruff check .            # Run linting
-uv run pytest                 # Run tests
+Or run individually:
+
+```bash
+uv run ruff format --check .
+```
+
+```bash
+uv run ruff check .
+```
+
+```bash
+uv run pytest
 ```
 
 ## 📦 Core Modules (`src/`)
@@ -62,13 +72,14 @@ uv run pytest                 # Run tests
 ### Usage Examples
 
 ```bash
-# Generate test data
 uv run python src/generate_data.py -o test_data.zarr --minimal
+```
 
-# Convert HDF5 to Zarr
+```bash
 uv run python src/convert_hdf5_to_zarr.py input.h5 output.zarr
+```
 
-# Start local server
+```bash
 uv run python src/cors_server.py --port 8000
 ```
 
@@ -77,13 +88,14 @@ uv run python src/cors_server.py --port 8000
 The test suite uses `pytest` and is located in the `tests/` directory:
 
 ```bash
-# Run all tests
 uv run pytest
+```
 
-# Run specific test file
+```bash
 uv run pytest tests/test_generate_data.py
+```
 
-# Run with coverage
+```bash
 uv run pytest --cov=src
 ```
 
@@ -98,15 +110,21 @@ uv run pytest --cov=src
 ### Code Quality
 
 ```bash
-# Check formatting and run linting
 ./check.sh
+```
 
-# Auto-fix issues
+```bash
 ./fix.sh
+```
 
-# Manual operations
-uv run ruff format .           # Format code
-uv run ruff check --fix .      # Fix linting issues
+Manual operations:
+
+```bash
+uv run ruff format .
+```
+
+```bash
+uv run ruff check --fix .
 ```
 
 ### Configuration
@@ -137,18 +155,26 @@ The Python backend integrates with the Svelte frontend through:
 
 ### Development Workflow
 
+Terminal 1: Start Python development server
 ```bash
-# Terminal 1: Start Python development server
 cd python
-uv run python src/cors_server.py --port 8000
-
-# Terminal 2: Start frontend development server
-cd app
-npm run dev
-
-# Access app at http://localhost:5173
-# Load local data: http://localhost:5173/?data=http://localhost:8000/your_data.zarr
 ```
+
+```bash
+uv run python src/cors_server.py --port 8000
+```
+
+Terminal 2: Start frontend development server
+```bash
+cd app
+```
+
+```bash
+npm run dev
+```
+
+Access app at http://localhost:5173  
+Load local data: http://localhost:5173/?data=http://localhost:8000/your_data.zarr
 
 ## 📊 Data Format Specifications
 

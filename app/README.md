@@ -27,17 +27,18 @@ app/
 ### Setup Development Environment
 
 ```bash
-# Navigate to app directory
 cd app
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-
-# Open browser to http://localhost:5173
 ```
+
+```bash
+npm install
+```
+
+```bash
+npm run dev
+```
+
+Open browser to http://localhost:5173
 
 ## 📦 Available Scripts
 
@@ -65,10 +66,10 @@ npm run dev
 ### Development Server
 
 ```bash
-# Start with specific port
 npm run dev -- --port 3000
+```
 
-# Start with host binding
+```bash
 npm run dev -- --host 0.0.0.0
 ```
 
@@ -77,16 +78,18 @@ npm run dev -- --host 0.0.0.0
 ### E2E Tests with Playwright
 
 ```bash
-# Run all tests
 npm test
+```
 
-# Run tests in headed mode (visible browser)
+```bash
 npx playwright test --headed
+```
 
-# Run specific test
+```bash
 npx playwright test tests/browser.spec.js
+```
 
-# Debug tests
+```bash
 npx playwright test --debug
 ```
 
@@ -161,7 +164,10 @@ http://localhost:5173/?data=http://localhost:8000/test_data.zarr
 During development, ensure the Python CORS server is running:
 
 ```bash
-# In python/ directory
+cd ../python
+```
+
+```bash
 uv run python src/cors_server.py --port 8000
 ```
 
@@ -209,10 +215,10 @@ The frontend expects Zarr datasets with this structure:
 ### Production Build
 
 ```bash
-# Create optimized build
 npm run build
+```
 
-# Preview production build
+```bash
 npm run preview
 ```
 
@@ -237,10 +243,10 @@ The production build generates:
 ### Development Tools
 
 ```bash
-# Enable source maps in build
 npm run build -- --sourcemap
+```
 
-# Analyze bundle size
+```bash
 npm run build -- --mode analyze
 ```
 
@@ -335,14 +341,26 @@ export default {
 ### Git Workflow
 
 ```bash
-# Feature development
 git checkout -b feature/new-visualization
-git add .
-git commit -m "Add new visualization feature"
-git push origin feature/new-visualization
+```
 
-# Testing
+```bash
+git add .
+```
+
+```bash
+git commit -m "Add new visualization feature"
+```
+
+```bash
+git push origin feature/new-visualization
+```
+
+```bash
 npm test
+```
+
+```bash
 npm run build
 ```
 
@@ -357,10 +375,10 @@ npm run build
 ### Development Metrics
 
 ```bash
-# Lighthouse CI
 npx lighthouse-ci autorun
+```
 
-# Bundle analyzer
+```bash
 npm run build -- --analyze
 ```
 

@@ -17,11 +17,23 @@ Experience ZoomingOnline with our sample datasets. Click the links below or copy
 
 ### Sample Datasets
 
-| Dataset | Description | Try it Now | Copy Dataset URL |
-|---------|-------------|------------|------------------|
-| **1nA** | Low current oscilloscope data | [🔗 View Dataset](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr) | `https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr` |
-| **64nA** | Higher current oscilloscope data | [🔗 View Dataset](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/64nA/64nA.zarr) | `https://s3.cloud.cyfronet.pl/zooming-online/64nA/64nA.zarr` |
-| **20231204m4** | Additional experimental data | [🔗 View Dataset](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/20231204m4/20231204m4.zarr) | `https://s3.cloud.cyfronet.pl/zooming-online/20231204m4/20231204m4.zarr` |
+**1nA Dataset** - Low current oscilloscope data  
+[🔗 Try it now](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr)
+```
+https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr
+```
+
+**64nA Dataset** - Higher current oscilloscope data  
+[🔗 Try it now](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/64nA/64nA.zarr)
+```
+https://s3.cloud.cyfronet.pl/zooming-online/64nA/64nA.zarr
+```
+
+**20231204m4 Dataset** - Additional experimental data  
+[🔗 Try it now](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/20231204m4/20231204m4.zarr)
+```
+https://s3.cloud.cyfronet.pl/zooming-online/20231204m4/20231204m4.zarr
+```
 
 ### Using Your Own Data
 
