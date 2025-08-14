@@ -1,7 +1,12 @@
 name: PR Checks
 
 on:
+  push:
+    branches: [ main ]
   pull_request:
+  schedule:
+    # Run once a week on Monday at 00:00 UTC
+    - cron: '0 0 * * 1'
 
 jobs:
   checks:
