@@ -37,9 +37,9 @@ export default defineConfig({
   /* Web server for local testing - disabled for CI to avoid conflicts with run_browser_tests.sh */
   webServer: process.env.CI ? [] : [
     {
-      command: 'npm run dev',
+      command: process.env.CI ? 'npm run preview' : 'npm run dev',
       url: 'http://localhost:5173/ZoomingOnline/',
-      reuseExistingServer: true, // Reuse existing server if running
+      reuseExistingServer: !process.env.CI,
     },
   ],
   use: {

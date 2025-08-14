@@ -12,7 +12,6 @@
     "check:watch": "svelte-check --tsconfig ./jsconfig.json --watch",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
     "test:unit": "vitest"
