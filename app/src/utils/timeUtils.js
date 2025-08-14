@@ -30,7 +30,7 @@ export function generateTimeSteps() {
     console.log('  - Generating new time steps...');
     
     // Define units and their conversion factors to microseconds
-    const units = {'ms': 1e3, 'ns': 1e-3, 'µs': 1,};
+    const units = {'ns': 1e-3, 'µs': 1, 'ms': 1e3};
     const bases = [1, 2, 5]; // Standard bases for logarithmic scale
     const addedValues = new Set(); // Track unique values to avoid duplicates
     const newTimeSteps = [];
@@ -38,18 +38,19 @@ export function generateTimeSteps() {
     // Generate time steps across multiple units and magnitudes
     for (const unit in units) {
         for (let mag = 1; mag <= 1000; mag *= 10) {
-            // Skip ranges that would be excessive
+            // Skip ranges that would be excessive for practical use
             if (unit === 'ns' && mag > 500) continue;
-            if (unit === 'ms' && mag > 5) continue;
+            if (unit === 'ms' && mag > 10) continue; // Allow up to 10ms
             
             bases.forEach(base => {
                 const val = base * mag;
-                if (unit === 'ms' && val > 5) return;
+                if (unit === 'ms' && val > 10) return; // Max 10ms
+                if (unit === 'ns' && val > 500) return; // Max 500ns
 
                 const value_us = val * units[unit];
                 if (!addedValues.has(value_us)) {
                     newTimeSteps.push({
-                        label: `${val} ${unit}`,
+                        label: formatTimeFromMicroseconds(value_us),
                         value_us: value_us
                     });
                     addedValues.add(value_us);
@@ -121,8 +122,38 @@ export function getZoomDomains(zoom1Pos, zoom1WindowIndex, zoom2Pos, zoom2Window
     console.log('  - validZoom2Steps length:', validZoom2Steps.length);
     
     // Get window sizes from arrays with safe indexing
-    const zoom1_window_us = validTimeSteps[safeZoom1Index]?.value_us || validTimeSteps[0]?.value_us || 1000;
-    const zoom2_window_us = validZoom2Steps[safeZoom2Index]?.value_us || validZoom2Steps[0]?.value_us || 100;
+    // For better defaults, choose a window that's roughly 1/10th of the total time
+    const defaultZoom1WindowUs = Math.max(1, total_time_us / 10); // At least 1µs
+    const defaultZoom2WindowUs = Math.max(0.1, defaultZoom1WindowUs / 10); // At least 0.1µs
+    
+    // Find the closest available step to our desired default, or use the provided index
+    let zoom1_window_us, zoom2_window_us;
+    
+    if (safeZoom1Index === 0 && validTimeSteps.length > 0) {
+        // Auto-select a reasonable default zoom1 window
+        const closestIndex = validTimeSteps.reduce((bestIdx, step, idx) => {
+            const currentDiff = Math.abs(step.value_us - defaultZoom1WindowUs);
+            const bestDiff = Math.abs(validTimeSteps[bestIdx].value_us - defaultZoom1WindowUs);
+            return currentDiff < bestDiff ? idx : bestIdx;
+        }, 0);
+        zoom1_window_us = validTimeSteps[closestIndex]?.value_us || validTimeSteps[0]?.value_us || 1000;
+        console.log('  - Auto-selected zoom1 window (index', closestIndex, '):', zoom1_window_us, 'µs');
+    } else {
+        zoom1_window_us = validTimeSteps[safeZoom1Index]?.value_us || validTimeSteps[0]?.value_us || 1000;
+    }
+    
+    if (safeZoom2Index === 0 && validZoom2Steps.length > 0) {
+        // Auto-select a reasonable default zoom2 window  
+        const closestIndex = validZoom2Steps.reduce((bestIdx, step, idx) => {
+            const currentDiff = Math.abs(step.value_us - defaultZoom2WindowUs);
+            const bestDiff = Math.abs(validZoom2Steps[bestIdx].value_us - defaultZoom2WindowUs);
+            return currentDiff < bestDiff ? idx : bestIdx;
+        }, 0);
+        zoom2_window_us = validZoom2Steps[closestIndex]?.value_us || validZoom2Steps[0]?.value_us || 100;
+        console.log('  - Auto-selected zoom2 window (index', closestIndex, '):', zoom2_window_us, 'µs');
+    } else {
+        zoom2_window_us = validZoom2Steps[safeZoom2Index]?.value_us || validZoom2Steps[0]?.value_us || 100;
+    }
     
     console.log('  - validTimeSteps sample:', validTimeSteps.slice(0, 3));
     console.log('  - validZoom2Steps sample:', validZoom2Steps.slice(0, 3));
