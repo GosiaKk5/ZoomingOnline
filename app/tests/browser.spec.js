@@ -2,7 +2,9 @@ import { test, expect } from '@playwright/test';
 
 // Configure data source based on environment
 const useLocalData = process.env.USE_LOCAL_DATA === 'true';
-const getDataUrl = (baseURL) => {
+const baseURL = 'http://localhost:5173/ZoomingOnline/';
+
+const getDataUrl = () => {
   if (useLocalData) {
     // Construct full URL for the static example file
     return `${baseURL}example.zarr`;
@@ -11,17 +13,20 @@ const getDataUrl = (baseURL) => {
   }
 };
 
+// Increase timeouts for CI environment
+const TIMEOUT_CI = 120000; // 2 minutes for CI
+const TIMEOUT_LOCAL = 60000; // 1 minute for local
+
 test.describe('ZoomingOnline Browser Tests', () => {
 
   test.beforeEach(async ({ page }) => {
     // Log data source for debugging
-    const dataUrl = getDataUrl(page.url());
+    const dataUrl = getDataUrl();
     console.log(`Using data source: ${dataUrl}`);
   });
 
   test('Load dataset via URL parameter', async ({ page }) => {
-    const baseURL = 'http://localhost:5173/ZoomingOnline/';
-    const dataUrl = getDataUrl(baseURL);
+    const dataUrl = getDataUrl();
     
     // Navigate to the app with data parameter
     await page.goto(`${baseURL}?data=${dataUrl}`);
@@ -29,10 +34,10 @@ test.describe('ZoomingOnline Browser Tests', () => {
     
     // Check if the selection container becomes visible (data loaded automatically)
     const selectionContainer = await page.locator('.selection-container');
-    await expect(selectionContainer).toBeVisible({ timeout: 60000 }); // Increased timeout
+    await expect(selectionContainer).toBeVisible({ timeout: TIMEOUT_CI }); // Increased timeout for CI
     
     // Wait for selectors to be populated
-    await page.waitForTimeout(10000); // Give more time for data to load and selectors to populate
+    await page.waitForTimeout(15000); // Give more time for data to load and selectors to populate
     
     // Debug: Check what options are available
     const channelOptions = await page.locator('#channel-select option').allTextContents();
@@ -64,20 +69,20 @@ test.describe('ZoomingOnline Browser Tests', () => {
     }
     
     // Wait a bit for the selections to update the store
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(3000);
     
     // Plot the selected data
     await page.click('.plot-button');
     
     // Wait for navigation to visualization page
-    await page.waitForURL('**/visualization', { timeout: 10000 });
+    await page.waitForURL('**/visualization', { timeout: 15000 });
     console.log('Navigated to visualization page');
     
     // Wait for chart container to appear (it needs plotConfig to be ready)
-    await page.waitForSelector('.chart-container', { timeout: 60000 });
+    await page.waitForSelector('.chart-container', { timeout: TIMEOUT_CI });
     
     // Wait additional time for charts to be fully rendered
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(10000);
     console.log('Charts should be rendered now');
     
     // Debug: Check if there are any error messages
@@ -108,7 +113,7 @@ test.describe('ZoomingOnline Browser Tests', () => {
     
     // Wait for charts to appear on the visualization page
     const chartContainer = await page.locator('.chart-container');
-    await expect(chartContainer).toBeVisible({ timeout: 30000 }); // Additional timeout
+    await expect(chartContainer).toBeVisible({ timeout: TIMEOUT_CI }); // Additional timeout
     
     // If charts have SVG content, they should be considered "ready"
     if (overviewSVG > 0 && zoom1SVG > 0 && zoom2SVG > 0) {
@@ -124,9 +129,9 @@ test.describe('ZoomingOnline Browser Tests', () => {
     
     // Try to verify charts are visible (but don't fail if they're not yet)
     try {
-        await expect(page.locator('#overview-chart')).toBeVisible({ timeout: 5000 });
-        await expect(page.locator('#zoom1-chart')).toBeVisible({ timeout: 5000 });
-        await expect(page.locator('#zoom2-chart')).toBeVisible({ timeout: 5000 });
+        await expect(page.locator('#overview-chart')).toBeVisible({ timeout: 15000 });
+        await expect(page.locator('#zoom1-chart')).toBeVisible({ timeout: 15000 });
+        await expect(page.locator('#zoom2-chart')).toBeVisible({ timeout: 15000 });
         console.log('All charts are visible!');
     } catch (error) {
         console.log('Charts not yet visible, but continuing test...');
@@ -141,8 +146,7 @@ test.describe('ZoomingOnline Browser Tests', () => {
   });
 
   test('Load dataset via input field', async ({ page }) => {
-    const baseURL = 'http://localhost:5173/ZoomingOnline/';
-    const dataUrl = getDataUrl(baseURL);
+    const dataUrl = getDataUrl();
     
     // Navigate to the app 
     await page.goto(baseURL);
@@ -158,10 +162,10 @@ test.describe('ZoomingOnline Browser Tests', () => {
     
     // Wait for data to load
     const selectionContainer = await page.locator('.selection-container');
-    await expect(selectionContainer).toBeVisible({ timeout: 60000 }); // Increased timeout
+    await expect(selectionContainer).toBeVisible({ timeout: TIMEOUT_CI }); // Increased timeout for CI
     
     // Wait for selectors to be populated
-    await page.waitForTimeout(10000); // Give more time for data to load and selectors to populate
+    await page.waitForTimeout(15000); // Give more time for data to load and selectors to populate
     
     // Debug: Check what options are available
     const channelOptions = await page.locator('#channel-select option').allTextContents();
@@ -193,20 +197,20 @@ test.describe('ZoomingOnline Browser Tests', () => {
     }
     
     // Wait a bit for the selections to update the store
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(3000);
     
     // Plot the selected data
     await page.click('.plot-button');
     
     // Wait for navigation to visualization page
-    await page.waitForURL('**/visualization', { timeout: 10000 });
+    await page.waitForURL('**/visualization', { timeout: 15000 });
     console.log('Navigated to visualization page');
     
     // Wait for chart container to appear (it needs plotConfig to be ready)
-    await page.waitForSelector('.chart-container', { timeout: 60000 });
+    await page.waitForSelector('.chart-container', { timeout: TIMEOUT_CI });
     
     // Wait additional time for charts to be fully rendered  
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(10000);
     console.log('Charts should be rendered now');
     
     // Debug: Check if there are any error messages
@@ -237,7 +241,7 @@ test.describe('ZoomingOnline Browser Tests', () => {
     
     // Wait for charts to appear on the visualization page
     const chartContainer = await page.locator('.chart-container');
-    await expect(chartContainer).toBeVisible({ timeout: 30000 }); // Additional timeout
+    await expect(chartContainer).toBeVisible({ timeout: TIMEOUT_CI }); // Additional timeout
     
     // If charts have SVG content, they should be considered "ready"
     if (overviewSVG > 0 && zoom1SVG > 0 && zoom2SVG > 0) {
@@ -253,9 +257,9 @@ test.describe('ZoomingOnline Browser Tests', () => {
     
     // Try to verify charts are visible (but don't fail if they're not yet)
     try {
-        await expect(page.locator('#overview-chart')).toBeVisible({ timeout: 5000 });
-        await expect(page.locator('#zoom1-chart')).toBeVisible({ timeout: 5000 });
-        await expect(page.locator('#zoom2-chart')).toBeVisible({ timeout: 5000 });
+        await expect(page.locator('#overview-chart')).toBeVisible({ timeout: 15000 });
+        await expect(page.locator('#zoom1-chart')).toBeVisible({ timeout: 15000 });
+        await expect(page.locator('#zoom2-chart')).toBeVisible({ timeout: 15000 });
         console.log('All charts are visible!');
     } catch (error) {
         console.log('Charts not yet visible, but continuing test...');

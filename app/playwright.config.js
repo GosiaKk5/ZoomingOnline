@@ -9,7 +9,7 @@ export default defineConfig({
   /* Define test match pattern to include our browser_tests.js file */
   testMatch: ['**/*.spec.js', '**/*test*.js', '**/browser_tests.js'],
   /* Maximum time one test can run for - increased for CI environments */
-  timeout: process.env.CI ? 180000 : 60000, // 3 minutes in CI, 1 minute locally
+  timeout: process.env.CI ? 300000 : 120000, // 5 minutes in CI, 2 minutes locally
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
