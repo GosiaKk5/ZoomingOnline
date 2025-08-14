@@ -1,4 +1,5 @@
-````markdown
+# ZoomingOnline
+
 <p align="center">
 <picture>
 <source media="(prefers-color-scheme: dark)" srcset="./docs/assets/logo-dark.svg">
@@ -6,199 +7,128 @@
 </picture>
 </p>
 
-<h1 align="center">ZoomingOnline</h1>
+**ZoomingOnline** is a modern web-based data visualization application for exploring massive, gigabyte-scale time-series datasets directly in your browser. Built with Svelte and optimized for efficient Zarr format data, it's specifically designed for visualizing waveform data from oscilloscopes taken in segment mode.
 
+![Demo of ZoomingOnline in action](./docs/assets/demo.gif)
 
-ZoomingOnline is a modern web-based data visualization application built with Svelte, supporting the efficient and scalable Zarr format.
-Main use case is visualization of the waveform data from oscilloscopes, taken in segment mode.
+## 🌐 Try it Live
 
-![demo](./docs/assets/demo.gif)
+Experience ZoomingOnline with our sample datasets. Click the links below or copy the data URLs to use with your own instance:
 
-## 🌐 Try it live
+### Sample Datasets
 
-Click on the links below to view the sample datasets, or copy the data file URLs to use in your own instance:
+| Dataset | Description | Try it Now |
+|---------|-------------|------------|
+| **1nA** | Low current oscilloscope data | [🔗 View Dataset](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr) |
+| **64nA** | Higher current oscilloscope data | [🔗 View Dataset](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/64nA/64nA.zarr) |
+| **20231204m4** | Additional experimental data | [🔗 View Dataset](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/20231204m4/20231204m4.zarr) |
 
-### Sample Dataset 1 (1nA)
-[View 1nA dataset in ZoomingOnline](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr)
+### Using Your Own Data
 
-Data file URL (copy to use with your own instance):
-```
-https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr
-```
-
-### Sample Dataset 2 (64nA)
-[View 64nA dataset in ZoomingOnline](https://datamedsci.github.io/ZoomingOnline/?data=https://s3.cloud.cyfronet.pl/zooming-online/64nA/64nA.zarr)
-
-Data file URL (copy to use with your own instance):
-```
-https://s3.cloud.cyfronet.pl/zooming-online/64nA/64nA.zarr
-```
-
-### Additional Data Files
-Additional file available on S3 (copy to use with [ZoomingOnline](https://datamedsci.github.io/ZoomingOnline/)):
-```
-https://s3.cloud.cyfronet.pl/zooming-online/20231204m4/20231204m4.zarr
-```
-
-## 🎯 Aim of the Project
-
-The aim of **ZoomingOnline** is to provide a high-performance web viewer for interactively exploring massive,
-gigabyte-scale time-series datasets directly in a browser.
-
-Key features include:
-
-- **Modern Architecture:** Built with Svelte for reactive state management and component-based architecture
-- **Efficient Zooming:** Fetches only the required high-resolution data chunks for the selected region, with a
-  memory-efficient cache to prevent redundant downloads during interaction.
-- **Time-Based Controls:** Features a three-level inset zoom interface with draggable windows and sliders that snap to
-  meaningful time units (e.g., 10 µs, 100 ns) for precise analysis.
-- **Instant Overview:** Utilizes pre-computed data pyramids within the Zarr format to load an initial overview of the
-  entire dataset almost instantly.
-- **Desktop Ready:** Architecture prepared for future desktop app deployment using Tauri or Electron.
-- **Data Toolkit:** Includes a suite of CLI scripts for generating test data, converting from HDF5, and managing cloud
-  storage.
-
-## 🏗️ Architecture
-
-The application is built using modern web technologies:
-
-- **Frontend Framework:** Svelte with Vite bundler
-- **State Management:** Svelte stores for reactive state management
-- **Visualization:** D3.js for interactive charts and data visualization
-- **Data Processing:** Zarr.js for efficient array data handling
-- **Deployment:** GitHub Pages with automated CI/CD
-
-### Project Structure
+To visualize your own Zarr datasets, simply append the data URL as a parameter:
 
 ```
-app/                    # Svelte application
-├── src/
-│   ├── components/     # Svelte components
-│   │   ├── Header.svelte
-│   │   ├── DataLoader.svelte
-│   │   ├── Charts.svelte
-│   │   ├── Controls.svelte
-│   │   └── CopyLink.svelte
-│   ├── stores/         # Svelte stores
-│   │   └── appStore.js
-│   ├── utils/          # Utility modules
-│   │   ├── dataLoader.js
-│   │   ├── chartRenderer.js
-│   │   ├── timeUtils.js
-│   │   └── uiManager.js
-│   ├── App.svelte      # Root component
-│   └── main.js         # Application entry point
-├── package.json
-├── vite.config.js
-└── svelte.config.js
-
-src/                    # Python CLI tools
-├── generate_data.py
-├── convert_hdf5_to_zarr.py
-├── data_to_s3_importer.py
-└── cors_server.py
+https://datamedsci.github.io/ZoomingOnline/?data=YOUR_ZARR_URL_HERE
 ```
 
-## 🛠 Available CLI Scripts
+## ✨ Key Features
 
-| Script                    | Description                                      |
-|---------------------------|--------------------------------------------------|
-| `generate_data.py`        | Generate .zarr or .h5 oscilloscope-like datasets |
-| `convert_hdf5_to_zarr.py` | Convert HDF5 files to Zarr format                |
-| `data_to_s3_importer.py`  | Recursively convert + upload to S3 bucket        |
-| `cors_server.py`          | Serve .zarr files locally with CORS enabled HTTP |
+- **🚀 Instant Loading**: Pre-computed data pyramids provide immediate overview of entire datasets
+- **🔍 Smart Zooming**: Fetches only required high-resolution data chunks with intelligent caching
+- **⏱️ Precise Controls**: Three-level zoom interface with time-based navigation (µs, ns precision)
+- **🌐 Browser-Native**: No installation required - works directly in modern web browsers
+- **📊 Interactive Visualization**: D3.js-powered charts with smooth interactions
+- **🔧 Developer Tools**: Complete CLI toolkit for data conversion and management
 
-📖 See [scripts.md](./docs/scripts.md) for detailed CLI usage and arguments.
+## � Perfect For
 
-## 🚀 Development Setup
+- **Researchers** analyzing oscilloscope waveform data
+- **Engineers** working with time-series measurements
+- **Data Scientists** exploring large temporal datasets
+- **Anyone** needing fast, interactive visualization of massive time-based data
 
-### Prerequisites
-- Node.js 24+ and npm
-- Python 3.8+ (for CLI tools)
+## 🚀 Quick Start
 
-### Frontend Development
+### Option 1: Use the Online Version
+1. Visit [ZoomingOnline](https://datamedsci.github.io/ZoomingOnline/)
+2. Enter your Zarr dataset URL or try our sample data
+3. Start exploring your data immediately
 
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   cd app
-   npm install
-   ```
-3. Start development server:
-   ```bash
-   npm run dev
-   ```
-4. Open browser at http://localhost:5173
-
-### Building for Production
-
+### Option 2: Run Locally
 ```bash
+# Clone the repository
+git clone https://github.com/DataMedSci/ZoomingOnline.git
+cd ZoomingOnline
+
+# Start the frontend
 cd app
-npm run build
+npm install
+npm run dev
+
+# In another terminal, serve your data (optional)
+cd ../python
+python src/cors_server.py --port 8000
 ```
 
-The built application will be in the `app/dist/` directory.
+Visit `http://localhost:5173` and load your data!
 
-### Backend Development (Python Tools)
+## 📁 Project Structure
 
-1. Install Python dependencies:
-   ```bash
-   pip install -r requirements.txt  # if available
-   # or install individual packages as needed
-   ```
-
-2. Create or serve a Zarr dataset:
-   ```bash
-   python src/generate_data.py -o waveform.zarr
-   python src/cors_server.py
-   ```
-
-3. Access your local data at:
-   ```
-   http://localhost:5173/?data=http://localhost:8000/waveform.zarr
-   ```
-
-## 🖥️ Desktop App Preparation
-
-The application architecture is prepared for desktop deployment:
-
-- **Tauri Integration:** Ready for Rust-based desktop wrapper
-- **Electron Support:** Can be packaged as Electron app
-- **Component Architecture:** Modular design enables easy platform-specific customizations
-
-## 🌐 Deployment
-
-The application is automatically deployed to GitHub Pages when changes are pushed to the main branch.
-
-### Manual Deployment
-
-To deploy manually:
-
-```bash
-cd app
-npm run build
-# Deploy contents of dist/ directory to your web server
+```
+ZoomingOnline/
+├── app/              # Frontend Svelte application
+├── python/           # Backend tools and data processing
+├── docs/             # Documentation and guides
+└── .github/          # CI/CD workflows
 ```
 
-## Zarr Version Support
-This project currently supports Zarr v2.
+## 🛠️ Data Tools
 
-To add support for Zarr v3, migration to [zarrita.js](https://github.com/manzt/zarrita.js) is required.
+ZoomingOnline includes powerful CLI tools for data management:
 
-## 🧪 Testing
+- **`generate_data.py`** - Create synthetic oscilloscope datasets for testing
+- **`convert_hdf5_to_zarr.py`** - Convert HDF5 files to efficient Zarr format  
+- **`data_to_s3_importer.py`** - Batch convert and upload to cloud storage
+- **`cors_server.py`** - Local development server with CORS support
 
-The project includes automated browser tests to verify application functionality.
+See the [`python/`](python/) directory for detailed tool documentation.
 
-📖 See [testing.md](./docs/testing.md) for detailed information about testing tools and procedures.
+## � Documentation
+
+- **[Setup Guide](docs/setup.md)** - Detailed installation and configuration
+- **[Testing Guide](docs/testing.md)** - Running and writing tests
+- **[CLI Scripts](docs/scripts.md)** - Complete tool reference
+- **[App Development](app/)** - Frontend development guide
+- **[Python Tools](python/)** - Backend development guide
+
+## 🌟 Why ZoomingOnline?
+
+Traditional data visualization tools struggle with gigabyte-scale datasets. ZoomingOnline solves this by:
+
+1. **Leveraging Zarr's chunked storage** for efficient partial data loading
+2. **Pre-computing overview pyramids** for instant visualization
+3. **Smart caching strategies** to minimize network requests
+4. **Modern web architecture** for responsive, interactive experiences
+
+## 🔧 Technology Stack
+
+- **Frontend**: Svelte, D3.js, Zarr.js
+- **Backend**: Python, Zarr, HDF5
+- **Build**: Vite, npm
+- **Deployment**: GitHub Pages, GitHub Actions
+
+## 🤝 Contributing
+
+We welcome contributions! Whether it's bug reports, feature requests, or code contributions, please check our documentation for developers in the [`app/`](app/) and [`python/`](python/) directories.
 
 ## 📄 License
 
-MIT License — see [LICENSE](LICENSE)
+MIT License - see [LICENSE](LICENSE) for details.
 
-## History
+## 🏛️ History
 
-The project was originally created as a part of the Large Scale Computing course at the AGH University in Kraków, Poland, by @ksew1, @irosikoni and @GosiaKk5.
+Originally created as part of the Large Scale Computing course at AGH University of Science and Technology in Kraków, Poland, by @ksew1, @irosikoni, and @GosiaKk5. Recently updated with modern Svelte architecture for improved maintainability and future desktop app support.
 
-Updated to modern Svelte architecture for improved maintainability and future desktop app support.
+---
 
-````
+**Ready to explore your data?** [Try ZoomingOnline now →](https://datamedsci.github.io/ZoomingOnline/)
