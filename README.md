@@ -1,3 +1,4 @@
+````markdown
 <p align="center">
 <picture>
 <source media="(prefers-color-scheme: dark)" srcset="./docs/assets/logo-dark.svg">
@@ -8,7 +9,7 @@
 <h1 align="center">ZoomingOnline</h1>
 
 
-ZoomingOnline is a web-based data visualization supporting the efficient and scalable Zarr format.
+ZoomingOnline is a modern web-based data visualization application built with Svelte, supporting the efficient and scalable Zarr format.
 Main use case is visualization of the waveform data from oscilloscopes, taken in segment mode.
 
 ![demo](./docs/assets/demo.gif)
@@ -46,14 +47,57 @@ gigabyte-scale time-series datasets directly in a browser.
 
 Key features include:
 
+- **Modern Architecture:** Built with Svelte for reactive state management and component-based architecture
 - **Efficient Zooming:** Fetches only the required high-resolution data chunks for the selected region, with a
   memory-efficient cache to prevent redundant downloads during interaction.
 - **Time-Based Controls:** Features a three-level inset zoom interface with draggable windows and sliders that snap to
   meaningful time units (e.g., 10 µs, 100 ns) for precise analysis.
 - **Instant Overview:** Utilizes pre-computed data pyramids within the Zarr format to load an initial overview of the
   entire dataset almost instantly.
+- **Desktop Ready:** Architecture prepared for future desktop app deployment using Tauri or Electron.
 - **Data Toolkit:** Includes a suite of CLI scripts for generating test data, converting from HDF5, and managing cloud
   storage.
+
+## 🏗️ Architecture
+
+The application is built using modern web technologies:
+
+- **Frontend Framework:** Svelte with Vite bundler
+- **State Management:** Svelte stores for reactive state management
+- **Visualization:** D3.js for interactive charts and data visualization
+- **Data Processing:** Zarr.js for efficient array data handling
+- **Deployment:** GitHub Pages with automated CI/CD
+
+### Project Structure
+
+```
+app/                    # Svelte application
+├── src/
+│   ├── components/     # Svelte components
+│   │   ├── Header.svelte
+│   │   ├── DataLoader.svelte
+│   │   ├── Charts.svelte
+│   │   ├── Controls.svelte
+│   │   └── CopyLink.svelte
+│   ├── stores/         # Svelte stores
+│   │   └── appStore.js
+│   ├── utils/          # Utility modules
+│   │   ├── dataLoader.js
+│   │   ├── chartRenderer.js
+│   │   ├── timeUtils.js
+│   │   └── uiManager.js
+│   ├── App.svelte      # Root component
+│   └── main.js         # Application entry point
+├── package.json
+├── vite.config.js
+└── svelte.config.js
+
+src/                    # Python CLI tools
+├── generate_data.py
+├── convert_hdf5_to_zarr.py
+├── data_to_s3_importer.py
+└── cors_server.py
+```
 
 ## 🛠 Available CLI Scripts
 
@@ -66,23 +110,75 @@ Key features include:
 
 📖 See [scripts.md](./docs/scripts.md) for detailed CLI usage and arguments.
 
-## 🚀 Quick Start
+## 🚀 Development Setup
+
+### Prerequisites
+- Node.js 18+ and npm
+- Python 3.8+ (for CLI tools)
+
+### Frontend Development
 
 1. Clone the repository
-2. Follow [setup.md](./docs/setup.md) to install dependencies and configure
-3. Create or serve a Zarr dataset:
+2. Install dependencies:
+   ```bash
+   cd app
+   npm install
+   ```
+3. Start development server:
+   ```bash
+   npm run dev
+   ```
+4. Open browser at http://localhost:5173
+
+### Building for Production
+
+```bash
+cd app
+npm run build
+```
+
+The built application will be in the `app/dist/` directory.
+
+### Backend Development (Python Tools)
+
+1. Install Python dependencies:
+   ```bash
+   pip install -r requirements.txt  # if available
+   # or install individual packages as needed
+   ```
+
+2. Create or serve a Zarr dataset:
    ```bash
    python src/generate_data.py -o waveform.zarr
-   ```
-   ```bash
    python src/cors_server.py
    ```
-4. View in browser: http://localhost:8000/website, website/index.html or online at [ZoomingOnline](https://datamedsci.github.io/ZoomingOnline/)
-5. In the input field enter http://localhost:8000/waveform.zarr or any other Zarr URL, you can also set path to
-   the Zarr file in query parameters, for example:
+
+3. Access your local data at:
    ```
-   https://datamedsci.github.io/ZoomingOnline/?data=http://localhost:8000/waveform.zarr
+   http://localhost:5173/?data=http://localhost:8000/waveform.zarr
    ```
+
+## 🖥️ Desktop App Preparation
+
+The application architecture is prepared for desktop deployment:
+
+- **Tauri Integration:** Ready for Rust-based desktop wrapper
+- **Electron Support:** Can be packaged as Electron app
+- **Component Architecture:** Modular design enables easy platform-specific customizations
+
+## 🌐 Deployment
+
+The application is automatically deployed to GitHub Pages when changes are pushed to the main branch.
+
+### Manual Deployment
+
+To deploy manually:
+
+```bash
+cd app
+npm run build
+# Deploy contents of dist/ directory to your web server
+```
 
 ## Zarr Version Support
 This project currently supports Zarr v2.
@@ -102,3 +198,7 @@ MIT License — see [LICENSE](LICENSE)
 ## History
 
 The project was originally created as a part of the Large Scale Computing course at the AGH University in Kraków, Poland, by @ksew1, @irosikoni and @GosiaKk5.
+
+Updated to modern Svelte architecture for improved maintainability and future desktop app support.
+
+````
