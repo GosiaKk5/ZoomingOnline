@@ -3,7 +3,6 @@ from pathlib import Path
 import h5py
 import numpy as np
 from _pytest.monkeypatch import MonkeyPatch
-
 from src.data_to_s3_importer import (
     load_s3_env,
 )

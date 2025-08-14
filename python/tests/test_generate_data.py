@@ -5,7 +5,6 @@ import h5py
 import numpy as np
 import pytest
 import zarr
-
 from src.generate_data import (
     generate_realistic_data,
     generate_signal,

@@ -3,7 +3,6 @@ from pathlib import Path
 import h5py
 import numpy as np
 import zarr
-
 from src.convert_hdf5_to_zarr import convert_hdf5_to_zarr
 
 

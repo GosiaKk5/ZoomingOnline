@@ -20,6 +20,7 @@ source = { virtual = "." }
 
 [tool.ruff]
 line-length = 120
+src = ["src"]
 
 [tool.ruff.lint]
 select = ["ALL"]
@@ -38,3 +39,6 @@ dev = [
     "pytest>=8.4.1",
     "ruff>=0.12.1",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
