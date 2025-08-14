@@ -52,8 +52,8 @@ jobs:
         working-directory: ./app
         run: |
           # Run the browser tests script with local data generation
-          chmod +x ../run_browser_tests.sh
-          CI=true ../run_browser_tests.sh --generate
+          chmod +x ./run_browser_tests.sh
+          CI=true ./run_browser_tests.sh --generate
 
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -61,6 +61,6 @@ jobs:
         with:
           name: playwright-report
           path: |
-            playwright-report/
-            *.png
+            app/playwright-report/
+            app/*.png
           retention-days: 30

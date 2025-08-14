@@ -1,16 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-# Detect if we're being called from app directory or root directory
-if [ -f "package.json" ] && [ -f "playwright.config.js" ]; then
-  # We're in the app directory
-  IN_APP_DIR=true
-  PROJECT_ROOT=".."
-else
-  # We're in the root directory
-  IN_APP_DIR=false
-  PROJECT_ROOT="."
-fi
+# This script should be run from the app directory
 
 # Parse command line options
 USE_LOCAL_DATA=false
@@ -55,61 +46,30 @@ if [ "$USE_LOCAL_DATA" = false ]; then
 fi
 
 # Install Node.js dependencies if needed
-if [ "$IN_APP_DIR" = true ]; then
-  if [ ! -d "node_modules" ]; then
-    echo "Installing Node.js dependencies..."
-    npm install
-  fi
-else
-  if [ ! -d "app/node_modules" ]; then
-    echo "Installing Node.js dependencies..."
-    cd app
-    npm install
-    cd ..
-  fi
+if [ ! -d "node_modules" ]; then
+  echo "Installing Node.js dependencies..."
+  npm install
 fi
 
 # Install Playwright browsers if needed
 echo "Installing Playwright browsers..."
-if [ "$IN_APP_DIR" = true ]; then
-  npx playwright install --with-deps chromium
-else
-  cd app
-  npx playwright install --with-deps chromium
-  cd ..
-fi
+npx playwright install --with-deps chromium
 
 # If using local data and need to generate it
 if [ "$GENERATE_DATA" = true ]; then
   echo "Generating minimal test data for quick testing..."
-  if [ "$IN_APP_DIR" = true ]; then
-    python ../src/generate_data.py -o ../test_data.zarr --minimal
-  else
-    python src/generate_data.py -o test_data.zarr --minimal
-  fi
+  python ../src/generate_data.py -o ../test_data.zarr --minimal
 fi
 
 # Start local server for the Svelte app
 echo "Starting local development server..."
-if [ "$IN_APP_DIR" = true ]; then
-  npm run dev &
-  SVELTE_SERVER_PID=$!
-else
-  cd app
-  npm run dev &
-  SVELTE_SERVER_PID=$!
-  cd ..
-fi
+npm run dev &
+SVELTE_SERVER_PID=$!
 
 # Start CORS server for serving test data
 echo "Starting CORS server for test data..."
-if [ "$IN_APP_DIR" = true ]; then
-  python ../src/cors_server.py --port 8000 &
-  CORS_SERVER_PID=$!
-else
-  python src/cors_server.py --port 8000 &
-  CORS_SERVER_PID=$!
-fi
+python ../src/cors_server.py --port 8000 &
+CORS_SERVER_PID=$!
 
 # Function to clean up server processes on exit
 cleanup() {
@@ -148,24 +108,12 @@ fi
 
 # Run the tests
 echo "Running Playwright tests..."
-if [ "$IN_APP_DIR" = true ]; then
-  if [ -n "$CI" ]; then
-    # When running in CI, explicitly set CI=true for Playwright to use our CI-specific config
-    CI=true npx playwright test ../tests/browser.spec.js
-  else
-    # For local runs, use standard configuration
-    npx playwright test ../tests/browser.spec.js
-  fi
+if [ -n "$CI" ]; then
+  # When running in CI, explicitly set CI=true for Playwright to use our CI-specific config
+  CI=true npx playwright test tests/browser.spec.js
 else
-  cd app
-  if [ -n "$CI" ]; then
-    # When running in CI, explicitly set CI=true for Playwright to use our CI-specific config
-    CI=true npx playwright test ../tests/browser.spec.js
-  else
-    # For local runs, use standard configuration
-    npx playwright test ../tests/browser.spec.js
-  fi
-  cd ..
+  # For local runs, use standard configuration
+  npx playwright test tests/browser.spec.js
 fi
 
 echo "All tests completed successfully!"

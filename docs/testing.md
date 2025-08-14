@@ -45,6 +45,7 @@ To run the browser tests locally:
 
 Alternatively, use the provided script that automates these steps:
 ```bash
+cd app
 ./run_browser_tests.sh
 ```
 
@@ -69,12 +70,15 @@ The test suite is configurable to use either remote S3 data or locally generated
 
 ```bash
 # Use S3 data (default)
+cd app
 ./run_browser_tests.sh
 
 # Use locally generated data
+cd app
 ./run_browser_tests.sh --local
 
 # Generate new test data and use it
+cd app
 ./run_browser_tests.sh --generate
 ```
 
