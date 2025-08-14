@@ -35,9 +35,28 @@ jobs:
         working-directory: ./app
         run: npx playwright install --with-deps chromium
 
-      - name: Build app
-        run: npm run build
+      - run: npm run build
         working-directory: ./app
+
+      - run: npm install -g serve # or use vite preview
+        working-directory: ./app
+
+      - name: Start preview server
+        run: npm run preview -- --port 5173 --strictPort &
+        working-directory: ./app
+      
+      - name: Wait for server
+        run: npx wait-on http://localhost:5173/ZoomingOnline/
+        working-directory: ./app
+
+      # - name: Run Playwright tests
+      #   run: npx playwright test --reporter=line
+      #   working-directory: ./app
+
+
+      # - name: Build app
+      #   run: npm run build
+      #   working-directory: ./app
 
       - name: Run browser tests with local data
         working-directory: ./app
