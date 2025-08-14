@@ -120,11 +120,17 @@ For manual testing:
    python src/cors_server.py
    ```
 
-2. Navigate to http://localhost:8000/website/ in your browser
+2. Start the Svelte development server:
+   ```bash
+   cd app
+   npm run dev
+   ```
 
-3. Test with different datasets:
+3. Navigate to http://localhost:5173/ in your browser
+
+4. Test with different datasets:
    - Enter a dataset URL in the input field
-   - Use the URL parameter: http://localhost:8000/website/?data=URL
+   - Use the URL parameter: http://localhost:5173/?data=URL
    
 4. Verify visualization features:
    - Select different channels, TRC files, and segments

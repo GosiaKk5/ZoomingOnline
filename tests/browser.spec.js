@@ -2,7 +2,7 @@ const { test, expect } = require('@playwright/test');
 
 // Configure data source based on environment
 const useLocalData = process.env.USE_LOCAL_DATA === 'true';
-const baseUrl = process.env.BASE_URL || 'http://localhost:8000/website';
+const baseUrl = process.env.BASE_URL || 'http://localhost:5173';
 const dataUrl = useLocalData 
   ? 'http://localhost:8000/test_data.zarr' 
   : 'https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr';
@@ -18,10 +18,10 @@ test.describe('ZoomingOnline Browser Tests', () => {
   test('Load dataset via URL parameter', async ({ page }) => {
     // Navigate to the app with data parameter
     await page.goto(`${baseUrl}/?data=${dataUrl}`);
-    await expect(page).toHaveTitle('Interactive Raw Data Analysis Plot');
+    await expect(page).toHaveTitle('ZoomingOnline - Interactive Raw Data Analysis');
     
     // Check if the selection container becomes visible (data loaded automatically)
-    const selectionContainer = await page.locator('#selection-container');
+    const selectionContainer = await page.locator('.selection-container');
     await expect(selectionContainer).toBeVisible({ timeout: 60000 }); // Increased timeout
     
     // Select specific options (for minimal dataset)
@@ -30,10 +30,10 @@ test.describe('ZoomingOnline Browser Tests', () => {
     await page.selectOption('#segment-select', '2'); // Third segment (index 2)
     
     // Plot the selected data
-    await page.click('#plot-button');
+    await page.click('.plot-button');
     
     // Wait for charts to appear
-    const chartContainer = await page.locator('#chart-container');
+    const chartContainer = await page.locator('.chart-container');
     await expect(chartContainer).toBeVisible({ timeout: 60000 }); // Increased timeout
     
     // Verify all three charts are visible
@@ -51,10 +51,10 @@ test.describe('ZoomingOnline Browser Tests', () => {
   test('Load dataset via input field', async ({ page }) => {
     // Navigate to the app 
     await page.goto(baseUrl);
-    await expect(page).toHaveTitle('Interactive Raw Data Analysis Plot');
+    await expect(page).toHaveTitle('ZoomingOnline - Interactive Raw Data Analysis');
     
     // Check if the input container is visible
-    const inputContainer = await page.locator('#input-container');
+    const inputContainer = await page.locator('.input-container');
     await expect(inputContainer).toBeVisible();
     
     // Load example data through input field
@@ -62,7 +62,7 @@ test.describe('ZoomingOnline Browser Tests', () => {
     await page.click('#load-button');
     
     // Wait for data to load
-    const selectionContainer = await page.locator('#selection-container');
+    const selectionContainer = await page.locator('.selection-container');
     await expect(selectionContainer).toBeVisible({ timeout: 60000 }); // Increased timeout
     
     // Select channel, TRC file, and segment (for minimal dataset)
@@ -71,10 +71,10 @@ test.describe('ZoomingOnline Browser Tests', () => {
     await page.selectOption('#segment-select', '2'); // Third segment (index 2)
     
     // Plot the selected data
-    await page.click('#plot-button');
+    await page.click('.plot-button');
     
     // Wait for charts to appear
-    const chartContainer = await page.locator('#chart-container');
+    const chartContainer = await page.locator('.chart-container');
     await expect(chartContainer).toBeVisible({ timeout: 60000 }); // Increased timeout
     
     // Verify all three charts are visible
