@@ -6,6 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ZoomingOnline - Interactive Raw Data Analysis</title>
     <meta name="description" content="Interactive visualization tool for raw data analysis with multi-level zooming capabilities">
+    <script>
+      // GitHub Pages SPA workaround
+      // This handles the redirect from 404.html when deployed to GitHub Pages
+      (function() {
+        var redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect && redirect !== location.href) {
+          history.replaceState(null, null, redirect);
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="app"></div>

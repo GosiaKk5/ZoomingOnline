@@ -13,7 +13,6 @@ export const isDataLoaded = writable(false);
 // UI state stores
 export const isLoading = writable(false);
 export const error = writable(null);
-export const currentView = writable('input'); // 'input', 'selection', 'visualization'
 
 // Selection state stores
 export const selectedChannel = writable('');
@@ -67,7 +66,6 @@ export function resetAppState() {
     isDataLoaded.set(false);
     isLoading.set(false);
     error.set(null);
-    currentView.set('input');
     selectedChannel.set('');
     selectedTrc.set('');
     selectedSegment.set('');

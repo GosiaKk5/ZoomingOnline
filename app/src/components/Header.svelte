@@ -1,10 +1,11 @@
 <script>
     import { showPlotAnotherButton, resetAppState } from '../stores/appStore.js';
+    import { push } from 'svelte-spa-router';
 
     function handlePlotAnother() {
         resetAppState();
-        // Navigate to the base URL
-        window.location.href = window.location.origin + window.location.pathname;
+        // Navigate to home route
+        push('/');
     }
 </script>
 

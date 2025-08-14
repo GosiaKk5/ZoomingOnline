@@ -4,7 +4,7 @@
     let isCopied = false;
     
     $: shareableUrl = $currentDataUrl ? 
-        `${window.location.origin}${window.location.pathname}?data=${encodeURIComponent($currentDataUrl)}` : '';
+        `${window.location.origin}${import.meta.env.BASE_URL}?data=${encodeURIComponent($currentDataUrl)}` : '';
     
     async function copyToClipboard() {
         try {
