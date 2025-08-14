@@ -1,12 +1,7 @@
 name: PR Checks
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
-  schedule:
-    # Run once a week on Monday at 00:00 UTC
-    - cron: '0 0 * * 1'
 
 jobs:
   checks:
@@ -21,6 +16,8 @@ jobs:
 
       - name: Install the project
         run: uv sync --locked --all-extras --dev
+        working-directory: python
 
       - name: Run check.sh
-        run: bash ci_scripts/check.sh
+        run: bash check.sh
+        working-directory: python
