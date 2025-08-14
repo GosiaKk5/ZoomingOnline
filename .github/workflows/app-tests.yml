@@ -37,6 +37,7 @@ jobs:
 
       - name: Build app
         run: npm run build
+        working-directory: ./app
 
       - name: Run browser tests with local data
         working-directory: ./app
