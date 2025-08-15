@@ -18,26 +18,11 @@
 
     onMount(() => {
         console.log('🏠 Home component mounted');
+        console.log('  - Current data loaded state:', $isDataLoaded);
+        console.log('  - Current dataUrl:', $dataUrl);
         
-        // Check if a data URL was provided in the query parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlDataParam = urlParams.get('data');
-        
-        console.log('🔍 Checking URL parameters:');
-        console.log('  - Full URL:', window.location.href);
-        console.log('  - Search params:', window.location.search);
-        console.log('  - Data param:', urlDataParam);
-        console.log('  - Is data loaded:', $isDataLoaded);
-        
-        if (urlDataParam && !$isDataLoaded) {
-            console.log('🚀 Auto-loading data from URL parameter:', urlDataParam);
-            inputUrl = urlDataParam;
-            handleLoadData();
-        } else if (urlDataParam && $isDataLoaded) {
-            console.log('⚠️ Data param found but data already loaded, skipping auto-load');
-        } else {
-            console.log('ℹ️ No data param found or no auto-load needed');
-        }
+        // Note: Data loading from URL parameters is now handled at the App level
+        // This component only handles manual data input
     });
 
     async function handleLoadData() {

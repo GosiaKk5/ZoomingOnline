@@ -9,7 +9,9 @@
         rawStore,
         overviewStore,
         plotConfig,
-        timeSteps
+        timeSteps,
+        isLoading,
+        isDataLoaded
     } from '../stores/appStore.js';
     import { push } from 'svelte-spa-router';
     
@@ -48,10 +50,19 @@
         push('/selection');
     }
 
-    // Redirect to selection if data is not ready
-    $: if (!$isDataReadyForPlot) {
-        console.log('🚨 Data not ready for plot, redirecting to selection');
+    // Redirect to selection if data is not ready (but allow time for loading on refresh)
+    let hasAttemptedLoad = false;
+    
+    $: if (!$isDataReadyForPlot && !$isLoading && hasAttemptedLoad && $isDataLoaded) {
+        // Only redirect if we've attempted to load, we're not currently loading,
+        // and we have loaded data but selections aren't ready
+        console.log('🚨 Data loaded but selections not ready, redirecting to selection');
         push('/selection');
+    }
+    
+    // Track when we've attempted to load data to prevent premature redirects
+    $: if ($isDataLoaded || $isLoading) {
+        hasAttemptedLoad = true;
     }
 </script>
 
