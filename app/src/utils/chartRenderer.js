@@ -10,7 +10,6 @@ import { formatTimeFromMicroseconds } from './siFormat.js';
 
 // Constants for time conversions
 import { getRawDataSlice } from './dataLoader.js';
-import { getZoomDomains } from './timeUtils.js';
 import { get } from 'svelte/store';
 
 // Time conversion factors

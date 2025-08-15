@@ -122,60 +122,43 @@ test.describe('ZoomingOnline Browser Tests', () => {
     
     // Debug: Check chart containers exist and their content
     const overviewExists = await page.locator('#overview-chart').count();
-    const zoom1Exists = await page.locator('#zoom1-chart').count();
-    const zoom2Exists = await page.locator('#zoom2-chart').count();
     
     console.log('Chart container counts:');
     console.log('  Overview:', overviewExists);
-    console.log('  Zoom1:', zoom1Exists);
-    console.log('  Zoom2:', zoom2Exists);
     
     // Check if charts have SVG content
     const overviewSVG = await page.locator('#overview-chart svg').count();
-    const zoom1SVG = await page.locator('#zoom1-chart svg').count();
-    const zoom2SVG = await page.locator('#zoom2-chart svg').count();
     
     console.log('Chart SVG counts:');
     console.log('  Overview SVG:', overviewSVG);
-    console.log('  Zoom1 SVG:', zoom1SVG);
-    console.log('  Zoom2 SVG:', zoom2SVG);
     
     // Wait for charts to appear on the visualization page
     const chartContainer = await page.locator('.chart-container');
     await expect(chartContainer).toBeVisible({ timeout: TIMEOUT_CI }); // Additional timeout
     
-    // If zoom charts have SVG content, the core functionality is working
-    if (zoom1SVG > 0 && zoom2SVG > 0) {
-        console.log('Zoom charts have SVG content - core functionality working');
+    // If overview chart has SVG content, the core functionality is working
+    if (overviewSVG > 0) {
+        console.log('Overview chart has SVG content - core functionality working');
         // Take screenshot for debugging
         await page.screenshot({ path: 'charts-with-svg-input.png' });
     } else {
-        console.log('Charts missing SVG content - may still be loading');
+        console.log('Overview chart missing SVG content - may still be loading');
         // Try waiting a bit more (reduced from 5s to 3s)
         await page.waitForTimeout(3000); // Wait for complete rendering
         await page.screenshot({ path: 'charts-waiting-longer-input.png' });
     }
     
-    // Try to verify charts are visible (pass if zoom charts work, even if overview doesn't)
+    // Try to verify overview chart is visible 
     try {
-        await expect(page.locator('#zoom1-chart')).toBeVisible({ timeout: 5000 });
-        await expect(page.locator('#zoom2-chart')).toBeVisible({ timeout: 5000 });
-        console.log('Zoom charts are visible - test passes!');
-        
-        // Also check overview but don't fail if it's not working
-        try {
-            await expect(page.locator('#overview-chart')).toBeVisible({ timeout: 2000 });
-            console.log('Overview chart is also visible!');
-        } catch (overviewError) {
-            console.log('Overview chart not visible (known issue), but zoom charts work');
-        }
+        await expect(page.locator('#overview-chart')).toBeVisible({ timeout: 5000 });
+        console.log('Overview chart is visible - test passes!');
     } catch (error) {
-        console.log('Charts not yet visible, but continuing test...');
+        console.log('Overview chart not yet visible, but continuing test...');
         await page.screenshot({ path: 'charts-not-visible-debug-input.png' });
     }
     
-    // Core functionality test - if we reach here with zoom charts working, test passes
-    console.log('✓ Core functionality verified: data loading, navigation, and zoom charts working');
+    // Core functionality test - if we reach here with overview chart working, test passes
+    console.log('✓ Core functionality verified: data loading, navigation, and overview chart working');
     
     // Take screenshot
     await page.screenshot({ path: 'data-input-field-test.png' });

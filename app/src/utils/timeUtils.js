@@ -2,19 +2,18 @@
  * timeUtils.js
  * 
  * Handles time-related functionality for the ZoomingOnline application.
- * Manages time step generation, zoom domain calculations, and slider configuration
- * for controlling the visualization's time ranges.
+ * Manages time step generation for the overview visualization.
  * Adapted for Svelte store-based state management.
  */
 
-import { timeSteps, plotConfig } from '../stores/appStore.js';
+import { timeSteps } from '../stores/appStore.js';
 import { formatTimeFromMicroseconds } from './siFormat.js';
 import { get } from 'svelte/store';
 
 /**
  * Generate a comprehensive set of time step options across different units
  * Creates an array of time steps from nanoseconds to milliseconds
- * with appropriate scaling for use in zoom level controls
+ * with appropriate scaling for use in controls
  */
 export function generateTimeSteps() {
     console.log('⏰ generateTimeSteps() called');
@@ -66,232 +65,6 @@ export function generateTimeSteps() {
     
     timeSteps.set(newTimeSteps);
     console.log('✅ Time steps generated and stored');
-}
-
-/**
- * Calculate current zoom domains based on slider positions
- * @param {number} zoom1Pos - Zoom1 position percentage (0-100)
- * @param {number} zoom1WindowIndex - Index in validTimeSteps array
- * @param {number} zoom2Pos - Zoom2 position percentage (0-100)
- * @param {number} zoom2WindowIndex - Index in validZoom2Steps array
- * @returns {Object} - Contains zoom1Domain and zoom2Domain time ranges in microseconds
- */
-export function getZoomDomains(zoom1Pos, zoom1WindowIndex, zoom2Pos, zoom2WindowIndex) {
-    console.log('🔍 getZoomDomains() called');
-    console.log('  - zoom1Pos:', zoom1Pos, 'zoom1WindowIndex:', zoom1WindowIndex);
-    console.log('  - zoom2Pos:', zoom2Pos, 'zoom2WindowIndex:', zoom2WindowIndex);
-    
-    // Validate input parameters
-    const zoom1PosValid = !isNaN(zoom1Pos) && isFinite(zoom1Pos);
-    const zoom1IndexValid = !isNaN(zoom1WindowIndex) && isFinite(zoom1WindowIndex) && zoom1WindowIndex >= 0;
-    const zoom2PosValid = !isNaN(zoom2Pos) && isFinite(zoom2Pos);
-    const zoom2IndexValid = !isNaN(zoom2WindowIndex) && isFinite(zoom2WindowIndex) && zoom2WindowIndex >= 0;
-    
-    console.log('  - zoom1Pos valid:', zoom1PosValid);
-    console.log('  - zoom1WindowIndex valid:', zoom1IndexValid);
-    console.log('  - zoom2Pos valid:', zoom2PosValid);
-    console.log('  - zoom2WindowIndex valid:', zoom2IndexValid);
-    
-    // Use defaults for invalid parameters
-    const safeZoom1Pos = zoom1PosValid ? zoom1Pos : 50;
-    const safeZoom1Index = zoom1IndexValid ? zoom1WindowIndex : 0;
-    const safeZoom2Pos = zoom2PosValid ? zoom2Pos : 50;
-    const safeZoom2Index = zoom2IndexValid ? zoom2WindowIndex : 0;
-    
-    console.log('  - Using safe values:');
-    console.log('    - safeZoom1Pos:', safeZoom1Pos);
-    console.log('    - safeZoom1Index:', safeZoom1Index);
-    console.log('    - safeZoom2Pos:', safeZoom2Pos);
-    console.log('    - safeZoom2Index:', safeZoom2Index);
-    
-    const config = get(plotConfig);
-    console.log('  - config exists:', !!config);
-    console.log('  - config.validTimeSteps exists:', !!config?.validTimeSteps);
-    console.log('  - config.validZoom2Steps exists:', !!config?.validZoom2Steps);
-    console.log('  - config.total_time_us:', config?.total_time_us);
-    
-    if (!config || !config.validTimeSteps || !config.validZoom2Steps) {
-        console.error("❌ getZoomDomains: plotConfig or time steps are not defined.");
-        console.error("  - config:", config);
-        return { zoom1Domain: [0, 1], zoom2Domain: [0, 1] };
-    }
-
-    const { total_time_us, validTimeSteps, validZoom2Steps } = config;
-    console.log('  - total_time_us:', total_time_us);
-    console.log('  - validTimeSteps length:', validTimeSteps.length);
-    console.log('  - validZoom2Steps length:', validZoom2Steps.length);
-    
-    // Get window sizes from arrays with safe indexing
-    // For better defaults, choose a window that's roughly 1/10th of the total time
-    const defaultZoom1WindowUs = Math.max(1, total_time_us / 10); // At least 1µs
-    const defaultZoom2WindowUs = Math.max(0.1, defaultZoom1WindowUs / 10); // At least 0.1µs
-    
-    console.log('🎯 Default window calculations:');
-    console.log('  - defaultZoom1WindowUs (1/10 of total):', defaultZoom1WindowUs, 'µs');
-    console.log('  - defaultZoom2WindowUs (1/10 of zoom1):', defaultZoom2WindowUs, 'µs');
-    
-    // Find the closest available step to our desired default, or use the provided index
-    let zoom1_window_us, zoom2_window_us;
-    
-    if (safeZoom1Index === 0 && validTimeSteps.length > 0) {
-        // Auto-select a reasonable default zoom1 window
-        console.log('🔍 Auto-selecting zoom1 window...');
-        const closestIndex = validTimeSteps.reduce((bestIdx, step, idx) => {
-            const currentDiff = Math.abs(step.value_us - defaultZoom1WindowUs);
-            const bestDiff = Math.abs(validTimeSteps[bestIdx].value_us - defaultZoom1WindowUs);
-            return currentDiff < bestDiff ? idx : bestIdx;
-        }, 0);
-        zoom1_window_us = validTimeSteps[closestIndex]?.value_us || validTimeSteps[0]?.value_us || 1000;
-        console.log('  - Auto-selected zoom1 window (index', closestIndex, '):', zoom1_window_us, 'µs');
-        console.log('  - Selected from options:', validTimeSteps[closestIndex]);
-    } else {
-        zoom1_window_us = validTimeSteps[safeZoom1Index]?.value_us || validTimeSteps[0]?.value_us || 1000;
-        console.log('  - Using provided zoom1 index', safeZoom1Index, ':', zoom1_window_us, 'µs');
-    }
-    
-    if (safeZoom2Index === 0 && validZoom2Steps.length > 0) {
-        // Auto-select a reasonable default zoom2 window  
-        console.log('🔍 Auto-selecting zoom2 window...');
-        const closestIndex = validZoom2Steps.reduce((bestIdx, step, idx) => {
-            const currentDiff = Math.abs(step.value_us - defaultZoom2WindowUs);
-            const bestDiff = Math.abs(validZoom2Steps[bestIdx].value_us - defaultZoom2WindowUs);
-            return currentDiff < bestDiff ? idx : bestIdx;
-        }, 0);
-        zoom2_window_us = validZoom2Steps[closestIndex]?.value_us || validZoom2Steps[0]?.value_us || 100;
-        console.log('  - Auto-selected zoom2 window (index', closestIndex, '):', zoom2_window_us, 'µs');
-        console.log('  - Selected from options:', validZoom2Steps[closestIndex]);
-    } else {
-        zoom2_window_us = validZoom2Steps[safeZoom2Index]?.value_us || validZoom2Steps[0]?.value_us || 100;
-        console.log('  - Using provided zoom2 index', safeZoom2Index, ':', zoom2_window_us, 'µs');
-    }
-    
-    console.log('  - validTimeSteps sample:', validTimeSteps.slice(0, 3));
-    console.log('  - validZoom2Steps sample:', validZoom2Steps.slice(0, 3));
-    console.log('  - zoom1_window_us (from index', safeZoom1Index, '):', zoom1_window_us);
-    console.log('  - zoom2_window_us (from index', safeZoom2Index, '):', zoom2_window_us);
-
-    // Calculate zoom1 domain (time range) based on position and window size
-    const zoom1HalfWidth_us = zoom1_window_us / 2;
-    const zoom1Center_us = total_time_us * (safeZoom1Pos / 100);
-    const zoom1Domain = [
-        Math.max(0, zoom1Center_us - zoom1HalfWidth_us),
-        Math.min(total_time_us, zoom1Center_us + zoom1HalfWidth_us)
-    ];
-
-    console.log('  - zoom1 calculations:');
-    console.log('    - zoom1HalfWidth_us:', zoom1HalfWidth_us);
-    console.log('    - zoom1Center_us:', zoom1Center_us);
-    console.log('    - zoom1Domain before bounds:', [zoom1Center_us - zoom1HalfWidth_us, zoom1Center_us + zoom1HalfWidth_us]);
-
-    // Calculate zoom2 domain within zoom1 domain
-    const zoom2Range_us = (zoom1Domain[1] - zoom1Domain[0]);
-    const zoom2HalfWidth_us = zoom2_window_us / 2;
-    const zoom2Center_us = zoom1Domain[0] + (zoom2Range_us * (safeZoom2Pos / 100));
-    const zoom2Domain = [
-        Math.max(zoom1Domain[0], zoom2Center_us - zoom2HalfWidth_us),
-        Math.min(zoom1Domain[1], zoom2Center_us + zoom2HalfWidth_us)
-    ];
-
-    console.log('  - zoom2 calculations:');
-    console.log('    - zoom2Range_us:', zoom2Range_us);
-    console.log('    - zoom2HalfWidth_us:', zoom2HalfWidth_us);
-    console.log('    - zoom2Center_us:', zoom2Center_us);
-    console.log('    - zoom2Domain before bounds:', [zoom2Center_us - zoom2HalfWidth_us, zoom2Center_us + zoom2HalfWidth_us]);
-
-    console.log('📊 Calculated domains:');
-    console.log('  - zoom1Domain:', zoom1Domain);
-    console.log('  - zoom2Domain:', zoom2Domain);
-    
-    return { zoom1Domain, zoom2Domain };
-}
-
-/**
- * Setup the time sliders with appropriate ranges and initial values
- * Called once after plotData initializes the plotConfig
- * @param {number} totalTimeUs - Total time duration in microseconds
- * @returns {Object} - Contains validTimeSteps and validZoom2Steps
- */
-export function setupTimeSliders(totalTimeUs) {
-    console.log('🎛️ setupTimeSliders() called');
-    console.log('  - totalTimeUs parameter:', totalTimeUs);
-    console.log('  - totalTimeUs type:', typeof totalTimeUs);
-    console.log('  - totalTimeUs is valid number:', !isNaN(totalTimeUs) && isFinite(totalTimeUs));
-    
-    const currentTimeSteps = get(timeSteps);
-    console.log('  - Available time steps count:', currentTimeSteps.length);
-    console.log('  - Sample time steps:', currentTimeSteps.slice(0, 5));
-    console.log('  - All time steps values (µs):', currentTimeSteps.map(s => s.value_us));
-    
-    if (!totalTimeUs || isNaN(totalTimeUs) || !isFinite(totalTimeUs)) {
-        console.error('❌ setupTimeSliders: Invalid totalTimeUs value');
-        console.error('  - Received value:', totalTimeUs);
-        return { validTimeSteps: [], validZoom2Steps: [] };
-    }
-    
-    // Filter to only include time steps that make sense for this dataset
-    console.log('🔍 Filtering time steps for totalTimeUs =', totalTimeUs, 'µs');
-    const validTimeSteps = currentTimeSteps.filter(step => {
-        const isValid = step.value_us < totalTimeUs;
-        if (!isValid) {
-            console.log('  - Filtered out step:', step.label, '(', step.value_us, 'µs) >= totalTimeUs');
-        }
-        return isValid;
-    });
-    
-    console.log('📊 Time step filtering results:');
-    console.log('  - Valid time steps count:', validTimeSteps.length);
-    console.log('  - Valid time steps sample:', validTimeSteps.slice(0, 5));
-    console.log('  - Valid time steps (all labels):', validTimeSteps.map(s => s.label));
-    console.log('  - Valid time steps (all values µs):', validTimeSteps.map(s => s.value_us));
-    console.log('  - Largest valid step:', validTimeSteps[validTimeSteps.length - 1]);
-    
-    // Initially, zoom2 can show all valid time steps (will be filtered when zoom1 changes)
-    const validZoom2Steps = [...validTimeSteps];
-    console.log('  - Valid zoom2 steps count:', validZoom2Steps.length);
-    
-    // Update plot config with valid time steps
-    console.log('📊 Updating plot config...');
-    plotConfig.update(config => {
-        const newConfig = {
-            ...config,
-            total_time_us: totalTimeUs,
-            validTimeSteps,
-            validZoom2Steps
-        };
-        console.log('  - Updated config total_time_us:', newConfig.total_time_us);
-        console.log('  - Updated config validTimeSteps count:', newConfig.validTimeSteps.length);
-        console.log('  - Updated config validZoom2Steps count:', newConfig.validZoom2Steps.length);
-        return newConfig;
-    });
-    
-    console.log('✅ setupTimeSliders completed');
-    return { validTimeSteps, validZoom2Steps };
-}
-
-/**
- * Update zoom2 slider range based on the current zoom1 window size
- * @param {number} zoom1WindowIndex - Current zoom1 window index
- * @returns {Array} - Updated validZoom2Steps array
- */
-export function updateZoom2SliderRange(zoom1WindowIndex) {
-    const config = get(plotConfig);
-    if (!config.validTimeSteps || zoom1WindowIndex >= config.validTimeSteps.length) {
-        return [];
-    }
-    
-    // Get current zoom1 window size and filter time steps
-    const currentVal1_us = config.validTimeSteps[zoom1WindowIndex].value_us;
-    
-    // Zoom2 can only show windows smaller than zoom1
-    const validZoom2Steps = config.validTimeSteps.filter(step => step.value_us < currentVal1_us);
-    
-    // Update plot config
-    plotConfig.update(config => ({
-        ...config,
-        validZoom2Steps
-    }));
-    
-    return validZoom2Steps;
 }
 
 /**
