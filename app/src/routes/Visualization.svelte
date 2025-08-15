@@ -84,6 +84,8 @@
             </div>
         </div>
         
+        <h3>This dataset:</h3>
+        
         <Charts />
     </div>
 {/if}
@@ -140,5 +142,11 @@
     .info-separator {
         color: #6c757d;
         margin: 0 0.25rem;
+    }
+
+    h3 {
+        margin: 1rem 0;
+        color: #333;
+        text-align: center;
     }
 </style>

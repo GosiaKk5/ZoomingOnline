@@ -11,7 +11,8 @@
         setError,
         selectedChannel,
         selectedTrc,
-        selectedSegment 
+        selectedSegment,
+        showCopyLink
     } from './stores/appStore.js';
     import { generateTimeSteps } from './utils/timeUtils.js';
     import { loadZarrData } from './utils/dataLoader.js';
@@ -24,6 +25,23 @@
     import Home from './routes/Home.svelte';
     import Selection from './routes/Selection.svelte';
     import Visualization from './routes/Visualization.svelte';
+
+    // Helper functions to convert between display names and numeric indices
+    function getIndexFromDisplayName(displayName) {
+        // Extract number from "Channel 1", "TRC 2", "Segment 3", etc.
+        const match = displayName.match(/(\d+)$/);
+        return match ? parseInt(match[1]) : 1;
+    }
+
+    function getDisplayNameFromIndex(type, index) {
+        // Convert number back to display name
+        const typeNames = {
+            channel: 'Channel',
+            trc: 'TRC', 
+            segment: 'Segment'
+        };
+        return `${typeNames[type]} ${index}`;
+    }
 
     // Define routes - only for our app routes, not static files
     const routes = {
@@ -44,9 +62,9 @@
     // Update URL with selection parameters when they change (for visualization persistence)
     $: if ($location === '/visualization' && $selectedChannel && $selectedTrc && $selectedSegment) {
         const url = new URL(window.location);
-        url.searchParams.set('channel', $selectedChannel);
-        url.searchParams.set('trc', $selectedTrc);
-        url.searchParams.set('segment', $selectedSegment);
+        url.searchParams.set('channel', getIndexFromDisplayName($selectedChannel));
+        url.searchParams.set('trc', getIndexFromDisplayName($selectedTrc));
+        url.searchParams.set('segment', getIndexFromDisplayName($selectedSegment));
         window.history.replaceState(null, '', url.toString());
     }
 
@@ -70,16 +88,19 @@
         
         // Restore selection parameters if they exist and current values are empty
         if (urlChannelParam && (!$selectedChannel || $selectedChannel === '')) {
-            console.log('🔄 Restoring channel from URL:', urlChannelParam);
-            selectedChannel.set(urlChannelParam);
+            const channelDisplayName = getDisplayNameFromIndex('channel', parseInt(urlChannelParam));
+            console.log('🔄 Restoring channel from URL:', urlChannelParam, '→', channelDisplayName);
+            selectedChannel.set(channelDisplayName);
         }
         if (urlTrcParam && (!$selectedTrc || $selectedTrc === '')) {
-            console.log('🔄 Restoring TRC from URL:', urlTrcParam);
-            selectedTrc.set(urlTrcParam);
+            const trcDisplayName = getDisplayNameFromIndex('trc', parseInt(urlTrcParam));
+            console.log('🔄 Restoring TRC from URL:', urlTrcParam, '→', trcDisplayName);
+            selectedTrc.set(trcDisplayName);
         }
         if (urlSegmentParam && (!$selectedSegment || $selectedSegment === '')) {
-            console.log('🔄 Restoring segment from URL:', urlSegmentParam);
-            selectedSegment.set(urlSegmentParam);
+            const segmentDisplayName = getDisplayNameFromIndex('segment', parseInt(urlSegmentParam));
+            console.log('🔄 Restoring segment from URL:', urlSegmentParam, '→', segmentDisplayName);
+            selectedSegment.set(segmentDisplayName);
         }
         
         if (urlDataParam && !$isDataLoaded && !$isLoading) {
@@ -95,9 +116,11 @@
                 console.log('💾 Updating stores...');
                 dataUrl.set(urlDataParam);
                 isDataLoaded.set(true);
+                showCopyLink.set(true);
                 setError(null);
                 console.log('  - dataUrl store updated to:', urlDataParam);
                 console.log('  - isDataLoaded set to true');
+                console.log('  - showCopyLink set to true');
                 
                 // If we're not on a valid route for loaded data, navigate to selection
                 if ($location === '/' || $location === '') {
