@@ -61,6 +61,16 @@
             <button class="back-button" on:click={handleGoBack}>
                 ← Back to Selection
             </button>
+            <div class="selection-info">
+                <span class="info-label">Channel:</span>
+                <span class="info-value">{$selectedChannel}</span>
+                <span class="info-separator">|</span>
+                <span class="info-label">TRC:</span>
+                <span class="info-value">{$selectedTrc}</span>
+                <span class="info-separator">|</span>
+                <span class="info-label">Segment:</span>
+                <span class="info-value">{$selectedSegment}</span>
+            </div>
         </div>
         
         <Charts />
@@ -74,7 +84,8 @@
 
     .navigation {
         display: flex;
-        justify-content: flex-start;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 1rem;
         padding: 1rem;
         background: white;
@@ -95,5 +106,28 @@
 
     .back-button:hover {
         background-color: #5a6268;
+    }
+
+    .selection-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: #495057;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #343a40;
+    }
+
+    .info-value {
+        color: #007bff;
+        font-weight: 500;
+    }
+
+    .info-separator {
+        color: #6c757d;
+        margin: 0 0.25rem;
     }
 </style>
