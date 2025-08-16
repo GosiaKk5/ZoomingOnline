@@ -6,7 +6,7 @@
  */
 
 import * as d3 from 'd3';
-import { formatTimeFromMicroseconds } from './siFormat.js';
+import { formatTimeFromMicroseconds } from './mathUtils.js';
 
 // Constants for time conversions
 import { getRawDataSlice } from './dataLoader.js';

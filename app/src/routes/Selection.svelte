@@ -1,5 +1,5 @@
 <script>
-    import { formatTimeFromMicroseconds, formatFileSize } from '../utils/siFormat.js';
+    import { formatTimeFromMicroseconds, formatFileSize } from '../utils/mathUtils.js';
     import { onMount } from 'svelte';
     import { 
         isLoading, 

@@ -7,7 +7,7 @@
  */
 
 import { timeSteps } from '../stores/appStore.js';
-import { formatTimeFromMicroseconds } from './siFormat.js';
+import { formatTimeFromMicroseconds } from './mathUtils.js';
 import { get } from 'svelte/store';
 
 /**
