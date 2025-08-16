@@ -6,20 +6,16 @@
  * This replaces the previous siFormat utility.
  */
 
-import { create, all } from 'mathjs';
+import { create, all, type MathJsInstance } from 'mathjs';
 
 // Create a math.js instance with all functions
-const math = create(all);
+const math = create(all!) as MathJsInstance;
 
 /**
  * Format time duration from microseconds using math.js
  * Common case for this application
- * 
- * @param {number} valueInMicroseconds - Time value in microseconds
- * @param {number} precision - Number of significant digits (default: 3)
- * @returns {string} Formatted time string with appropriate SI prefix
  */
-export function formatTimeFromMicroseconds(valueInMicroseconds, precision = 3) {
+export function formatTimeFromMicroseconds(valueInMicroseconds: number, precision = 3): string {
     // Convert microseconds to seconds for math.js
     const valueInSeconds = valueInMicroseconds / 1e6;
     
@@ -44,12 +40,8 @@ export function formatTimeFromMicroseconds(valueInMicroseconds, precision = 3) {
 /**
  * Format time duration with appropriate SI prefix
  * Optimized for time values (seconds as base unit)
- * 
- * @param {number} valueInSeconds - Time value in seconds
- * @param {number} precision - Number of significant digits (default: 3)
- * @returns {string} Formatted time string with appropriate SI prefix
  */
-export function formatTime(valueInSeconds, precision = 3) {
+export function formatTime(valueInSeconds: number, precision = 3): string {
     // Handle special cases
     if (!isFinite(valueInSeconds) || isNaN(valueInSeconds)) {
         return `${valueInSeconds} s`;
@@ -70,13 +62,8 @@ export function formatTime(valueInSeconds, precision = 3) {
 
 /**
  * Format file size with appropriate binary or decimal prefix
- * 
- * @param {number} valueInBytes - File size in bytes
- * @param {boolean} useBinary - Use binary prefixes (default: true)
- * @param {number} precision - Number of significant digits (default: 3)
- * @returns {string} Formatted file size string
  */
-export function formatFileSize(valueInBytes, useBinary = true, precision = 3) {
+export function formatFileSize(valueInBytes: number, _useBinary = true, precision = 3): string {
     // Handle special cases
     if (!isFinite(valueInBytes) || isNaN(valueInBytes)) {
         return `${valueInBytes} B`;
@@ -87,19 +74,16 @@ export function formatFileSize(valueInBytes, useBinary = true, precision = 3) {
     }
     
     // Use math.js format with toBest to get the best unit
+    // Note: _useBinary parameter preserved for API compatibility but math.js handles unit selection automatically
     const formatted = math.format(math.unit(valueInBytes, 'B'), {notation: 'auto', precision: precision});
     
     return formatted;
 }
 
 /**
- * Format frequency with appropriate SI prefix
- * 
- * @param {number} valueInHz - Frequency value in Hz
- * @param {number} precision - Number of significant digits (default: 3)
- * @returns {string} Formatted frequency string with appropriate SI prefix
+ * Format frequency with appropriate prefix (Hz, kHz, MHz, GHz, etc.)
  */
-export function formatFrequency(valueInHz, precision = 3) {
+export function formatFrequency(valueInHz: number, _unit = 'Hz', precision = 3): string {
     // Handle special cases
     if (!isFinite(valueInHz) || isNaN(valueInHz)) {
         return `${valueInHz} Hz`;
@@ -109,7 +93,8 @@ export function formatFrequency(valueInHz, precision = 3) {
         return '0 Hz';
     }
     
-    // Use math.js format with toBest to get the best SI unit
+    // Use math.js format with toBest to get the best unit
+    // Note: _unit parameter preserved for API compatibility
     const formatted = math.format(math.unit(valueInHz, 'Hz'), {notation: 'auto', precision: precision});
     
     return formatted;
@@ -117,12 +102,8 @@ export function formatFrequency(valueInHz, precision = 3) {
 
 /**
  * Format voltage with appropriate SI prefix
- * 
- * @param {number} valueInVolts - Voltage value in volts
- * @param {number} precision - Number of significant digits (default: 3)
- * @returns {string} Formatted voltage string with appropriate SI prefix
  */
-export function formatVoltage(valueInVolts, precision = 3) {
+export function formatVoltage(valueInVolts: number, precision = 3): string {
     // Handle special cases
     if (!isFinite(valueInVolts) || isNaN(valueInVolts)) {
         return `${valueInVolts} V`;
@@ -140,13 +121,8 @@ export function formatVoltage(valueInVolts, precision = 3) {
 
 /**
  * Generic function to format any value with SI prefix using math.js
- * 
- * @param {number} value - Numeric value to format
- * @param {string} unit - Base unit (e.g., 's', 'Hz', 'V', 'B')
- * @param {number} precision - Number of significant digits (default: 3)
- * @returns {string} Formatted string with appropriate SI prefix
  */
-export function formatWithSI(value, unit = '', precision = 3) {
+export function formatWithSI(value: number, unit = '', precision = 3): string {
     // Handle special cases
     if (!isFinite(value) || isNaN(value)) {
         return `${value} ${unit}`.trim();
@@ -170,11 +146,8 @@ export function formatWithSI(value, unit = '', precision = 3) {
 /**
  * Parse a formatted SI string back to numeric value
  * Note: This is a simplified implementation as math.js handles parsing internally
- * 
- * @param {string} siString - String like "1.23 MHz" or "456 ns"
- * @returns {number} Numeric value in base units, or NaN if parsing fails
  */
-export function parseFromSI(siString) {
+export function parseFromSI(siString: string): number {
     try {
         // Use math.js to parse the unit string
         const unit = math.unit(siString);

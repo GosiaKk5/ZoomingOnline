@@ -1,5 +1,5 @@
 <script>
-    import { showPlotAnotherButton, resetAppState } from '../stores/appStore.js';
+    import { showPlotAnotherButton, resetAppState } from '../stores/appStore.ts';
     import { push } from 'svelte-spa-router';
 
     function handlePlotAnother() {

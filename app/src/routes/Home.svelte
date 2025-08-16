@@ -7,8 +7,8 @@
         isDataLoaded,
         setLoadingState,
         setError
-    } from '../stores/appStore.js';
-    import { loadZarrData } from '../utils/dataLoader.js';
+    } from '../stores/appStore.ts';
+    import { loadZarrData } from '../utils/dataLoader.ts';
     import { push } from 'svelte-spa-router';
 
     let inputUrl = '';

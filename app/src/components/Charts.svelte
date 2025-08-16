@@ -8,15 +8,15 @@
         selectedChannel,
         selectedTrc,
         selectedSegment
-    } from '../stores/appStore.js';
-    import { parseSelectedIndex } from '../utils/uiManager.js';
+    } from '../stores/appStore.ts';
+    import { parseSelectedIndex } from '../utils/uiManager.ts';
     import { 
         initializePlotData, 
         createChartSVG, 
         drawAxes, 
         drawGridLines, 
         drawArea
-    } from '../utils/chartRenderer.js';
+    } from '../utils/chartRenderer.ts';
     import * as d3 from 'd3';
 
     // Chart container elements

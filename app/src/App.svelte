@@ -13,9 +13,9 @@
         selectedTrc,
         selectedSegment,
         showCopyLink
-    } from './stores/appStore.js';
-    import { generateTimeSteps } from './utils/timeUtils.js';
-    import { loadZarrData } from './utils/dataLoader.js';
+    } from './stores/appStore.ts';
+    import { generateTimeSteps } from './utils/timeUtils.ts';
+    import { loadZarrData } from './utils/dataLoader.ts';
     
     // Import components
     import Header from './components/Header.svelte';

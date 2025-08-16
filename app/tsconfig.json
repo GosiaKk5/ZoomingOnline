@@ -1,0 +1,47 @@
+{
+  "extends": "@tsconfig/svelte/tsconfig.json",
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+
+    "allowJs": true,
+    "checkJs": false,
+    
+    /* Path mapping for cleaner imports */
+    "baseUrl": ".",
+    "paths": {
+      "$lib": ["src/lib"],
+      "$lib/*": ["src/lib/*"],
+      "$utils/*": ["src/utils/*"],
+      "$stores/*": ["src/stores/*"],
+      "$components/*": ["src/components/*"]
+    }
+  },
+  "include": [
+    "src/**/*.js",
+    "src/**/*.ts", 
+    "src/**/*.svelte",
+    "src/**/*.test.js",
+    "src/**/*.test.ts"
+  ],
+  "exclude": ["node_modules"]
+}

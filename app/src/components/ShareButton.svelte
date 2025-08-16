@@ -1,5 +1,5 @@
 <script>
-    import { showCopyLink, currentDataUrl } from '../stores/appStore.js';
+    import { showCopyLink, currentDataUrl } from '../stores/appStore.ts';
     
     let showModal = false;
     let isCopied = false;

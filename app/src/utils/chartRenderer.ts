@@ -1,21 +1,57 @@
 /**
- * chartRenderer.js
+ * chartRenderer.ts
  * 
  * Chart rendering utility adapted for Svelte store-based state management.
  * Handles D3.js visualization of time series data with multi-level zoom functionality.
  */
 
 import * as d3 from 'd3';
-import { formatTimeFromMicroseconds } from './mathUtils.js';
+import { formatTimeFromMicroseconds } from './mathUtils.ts';
+import { getRawDataSlice } from './dataLoader.ts';
+import type { CacheEntry } from '../stores/appStore.ts';
+
+// Type definitions
+export interface ChartMargin {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+}
+
+export interface PlotDataResult {
+    margin: ChartMargin;
+    width: number;
+    height: number;
+    fullWidth: number;
+    chartHeight: number;
+    horiz_interval: number;
+    no_of_samples: number;
+    total_time_us: number;
+    adcToMv: (adc: number) => number;
+    channel: number;
+    trc: number;
+    segment: number;
+    overviewData: OverviewDataPoint[];
+    globalYMin: number | undefined;
+    globalYMax: number | undefined;
+    validTimeSteps: any[];
+    validZoom2Steps: any[];
+}
+
+export interface OverviewDataPoint {
+    time_us: number;
+    min_mv: number;
+    max_mv: number;
+}
+
+export interface TimeUnitInfo {
+    useNanoseconds: boolean;
+    timeUnitLabel: string;
+}
 
 // Constants for time conversions
-import { getRawDataSlice } from './dataLoader.js';
-import { get } from 'svelte/store';
-
-// Time conversion factors
 const S_TO_US_FACTOR = 1e6;
 const S_TO_NS_FACTOR = 1e9;
-const US_TO_NS_FACTOR = 1000;
 
 // Threshold for switching to nanosecond display (in microseconds)
 const NANOSECOND_THRESHOLD_US = 0.5;
@@ -26,7 +62,7 @@ const DETAIL_THRESHOLD = 40000;
 /**
  * Helper function to determine appropriate time unit and label
  */
-function getTimeUnitInfo(timeSpanUs) {
+function getTimeUnitInfo(timeSpanUs: number): TimeUnitInfo {
     const useNanoseconds = timeSpanUs <= NANOSECOND_THRESHOLD_US;
     const timeUnitLabel = useNanoseconds ? "Relative Time [ns]" : "Relative Time [µs]";
     return { useNanoseconds, timeUnitLabel };
@@ -35,7 +71,7 @@ function getTimeUnitInfo(timeSpanUs) {
 /**
  * Helper function to format time duration with appropriate SI units
  */
-function formatTimeDuration(durationUs, useNanoseconds = false) {
+function formatTimeDuration(durationUs: number, _useNanoseconds = false): string {
     // Use the new SI formatting utility for better readability
     return formatTimeFromMicroseconds(durationUs);
 }
@@ -43,7 +79,14 @@ function formatTimeDuration(durationUs, useNanoseconds = false) {
 /**
  * Initialize plot configuration and process overview data
  */
-export async function initializePlotData(rawStore, zarrGroup, overviewStore, channel, trc, segment) {
+export async function initializePlotData(
+    rawStore: any, 
+    zarrGroup: any, 
+    overviewStore: any, 
+    channel: number, 
+    trc: number, 
+    segment: number
+): Promise<PlotDataResult> {
     console.log('🏗️ initializePlotData() called');
     console.log('  - channel:', channel, 'trc:', trc, 'segment:', segment);
     console.log('  - rawStore shape:', rawStore?.shape);
@@ -56,18 +99,22 @@ export async function initializePlotData(rawStore, zarrGroup, overviewStore, cha
         const attrs = await zarrGroup.attrs.asObject();
         console.log('  - attrs:', attrs);
         
-        const horiz_interval = attrs.horiz_interval;
-        const vertical_gains = attrs.vertical_gains;
-        const vertical_offsets = attrs.vertical_offsets;
+        const horiz_interval = attrs.horiz_interval as number;
+        const vertical_gains = attrs.vertical_gains as number[][][];
+        const vertical_offsets = attrs.vertical_offsets as number[][][];
         
         console.log('📊 Metadata extracted:');
         console.log('  - horiz_interval:', horiz_interval);
         console.log('  - vertical_gains:', vertical_gains);
         console.log('  - vertical_offsets:', vertical_offsets);
         
-        const vertical_gain = vertical_gains[channel][trc];
-        const vertical_offset = vertical_offsets[channel][trc];
-        const no_of_samples = rawStore.shape[3];
+        const vertical_gain = vertical_gains[channel]?.[trc];
+        const vertical_offset = vertical_offsets[channel]?.[trc];
+        
+        if (typeof vertical_gain !== 'number' || typeof vertical_offset !== 'number') {
+            throw new Error('Invalid vertical gain or offset values');
+        }
+        const no_of_samples = rawStore.shape[3] as number;
         
         console.log('📈 Calculated values:');
         console.log('  - vertical_gain:', vertical_gain);
@@ -75,7 +122,7 @@ export async function initializePlotData(rawStore, zarrGroup, overviewStore, cha
         console.log('  - no_of_samples:', no_of_samples);
         
         // Function to convert ADC values to millivolts
-        const adcToMilliVolts = (adc) => 1000 * (adc * vertical_gain - vertical_offset);
+        const adcToMilliVolts = (adc: number): number => 1000 * (adc * vertical_gain - vertical_offset);
         const total_time_us = (no_of_samples - 1) * horiz_interval * S_TO_US_FACTOR;
         
         console.log('⏰ Time calculation:');
@@ -85,7 +132,7 @@ export async function initializePlotData(rawStore, zarrGroup, overviewStore, cha
         console.log('  - total_time_us is valid:', !isNaN(total_time_us) && isFinite(total_time_us));
 
         // Chart dimensions
-        const margin = {top: 40, right: 40, bottom: 50, left: 60};
+        const margin: ChartMargin = {top: 40, right: 40, bottom: 50, left: 60};
         const fullWidth = 900;
         const chartHeight = 300;
         const width = fullWidth - margin.left - margin.right;
@@ -96,8 +143,8 @@ export async function initializePlotData(rawStore, zarrGroup, overviewStore, cha
         // Load overview (downsampled) data
         console.log('🔍 Loading overview data...');
         const overviewSlice = await overviewStore.get([channel, trc, segment, null, null]);
-        const overviewMin = (await overviewSlice.get(0)).data;
-        const overviewMax = (await overviewSlice.get(1)).data;
+        const overviewMin = (await overviewSlice.get(0)).data as number[];
+        const overviewMax = (await overviewSlice.get(1)).data as number[];
         const downsampling_factor = no_of_samples / overviewMin.length;
         
         console.log('📊 Overview data loaded:');
@@ -109,12 +156,16 @@ export async function initializePlotData(rawStore, zarrGroup, overviewStore, cha
 
         // Process overview data for plotting
         console.log('🔄 Processing overview data...');
-        const overviewData = Array.from(overviewMin).map((min_val, i) => {
+        const overviewData: OverviewDataPoint[] = Array.from(overviewMin).map((min_val, i) => {
             const time_us = (i + 0.5) * downsampling_factor * horiz_interval * S_TO_US_FACTOR;
+            const maxVal = overviewMax[i];
+            if (typeof maxVal === 'undefined') {
+                throw new Error(`Missing overview max value at index ${i}`);
+            }
             return {
                 time_us,
                 min_mv: adcToMilliVolts(min_val),
-                max_mv: adcToMilliVolts(overviewMax[i])
+                max_mv: adcToMilliVolts(maxVal)
             };
         });
 
@@ -132,7 +183,7 @@ export async function initializePlotData(rawStore, zarrGroup, overviewStore, cha
         console.log('  - overviewData sample (first 3):', overviewData.slice(0, 3));
         console.log('  - overviewData sample (last 3):', overviewData.slice(-3));
 
-        const result = {
+        const result: PlotDataResult = {
             margin, width, height, fullWidth, chartHeight,
             horiz_interval, no_of_samples, total_time_us,
             adcToMv: adcToMilliVolts,
@@ -148,7 +199,7 @@ export async function initializePlotData(rawStore, zarrGroup, overviewStore, cha
     } catch (error) {
         console.error('❌ Error in initializePlotData:');
         console.error('  - Error:', error);
-        console.error('  - Error stack:', error.stack);
+        console.error('  - Error stack:', (error as Error).stack);
         throw error;
     }
 }
@@ -156,7 +207,15 @@ export async function initializePlotData(rawStore, zarrGroup, overviewStore, cha
 /**
  * Create SVG container for a chart with title and y-axis label
  */
-export function createChartSVG(containerElement, title, margin, width, height, fullWidth, chartHeight) {
+export function createChartSVG(
+    containerElement: HTMLElement, 
+    title: string, 
+    margin: ChartMargin, 
+    width: number, 
+    height: number, 
+    fullWidth: number, 
+    chartHeight: number
+): d3.Selection<SVGGElement, unknown, null, undefined> {
     console.log('🎨 createChartSVG() called');
     console.log('  - title:', title);
     console.log('  - containerElement exists:', !!containerElement);
@@ -212,7 +271,15 @@ export function createChartSVG(containerElement, title, margin, width, height, f
 /**
  * Draw x and y axes on the chart
  */
-export function drawAxes(svg, xScale, yScale, xLabel, height, margin, width) {
+export function drawAxes(
+    svg: d3.Selection<SVGGElement, unknown, null, undefined>, 
+    xScale: d3.ScaleLinear<number, number>, 
+    yScale: d3.ScaleLinear<number, number>, 
+    xLabel: string, 
+    height: number, 
+    margin: ChartMargin, 
+    width: number
+): void {
     svg.append("g")
         .attr("transform", `translate(0, ${height})`)
         .call(d3.axisBottom(xScale).ticks(5).tickFormat(d3.format(".3f")));
@@ -229,7 +296,13 @@ export function drawAxes(svg, xScale, yScale, xLabel, height, margin, width) {
 /**
  * Draw grid lines on the chart
  */
-export function drawGridLines(svg, xScale, yScale, width, height) {
+export function drawGridLines(
+    svg: d3.Selection<SVGGElement, unknown, null, undefined>, 
+    xScale: d3.ScaleLinear<number, number>, 
+    yScale: d3.ScaleLinear<number, number>, 
+    width: number, 
+    height: number
+): void {
     // Add horizontal grid lines
     svg.append("g")
         .attr("class", "grid-lines")
@@ -266,11 +339,19 @@ export function drawGridLines(svg, xScale, yScale, width, height) {
 /**
  * Draw a filled area chart (used for min-max overview)
  */
-export function drawArea(svg, data, xScale, yScale, xAcc, y0Acc, y1Acc) {
+export function drawArea<T>(
+    svg: d3.Selection<SVGGElement, unknown, null, undefined>, 
+    data: T[], 
+    xScale: d3.ScaleLinear<number, number>, 
+    yScale: d3.ScaleLinear<number, number>, 
+    xAcc: (d: T) => number, 
+    y0Acc: (d: T) => number, 
+    y1Acc: (d: T) => number
+): void {
     svg.append("path")
         .datum(data)
         .attr("fill", "#000")
-        .attr("d", d3.area()
+        .attr("d", d3.area<T>()
             .x(d => xScale(xAcc(d)))
             .y0(d => yScale(y0Acc(d)))
             .y1(d => yScale(y1Acc(d)))
@@ -280,13 +361,20 @@ export function drawArea(svg, data, xScale, yScale, xAcc, y0Acc, y1Acc) {
 /**
  * Draw a line chart
  */
-export function drawLine(svg, data, xScale, yScale, xAcc, yAcc) {
+export function drawLine<T>(
+    svg: d3.Selection<SVGGElement, unknown, null, undefined>, 
+    data: T[], 
+    xScale: d3.ScaleLinear<number, number>, 
+    yScale: d3.ScaleLinear<number, number>, 
+    xAcc: (d: T) => number, 
+    yAcc: (d: T) => number
+): void {
     svg.append("path")
         .datum(data)
         .attr("fill", "none")
         .attr("stroke", "black")
         .attr("stroke-width", 1.5)
-        .attr("d", d3.line()
+        .attr("d", d3.line<T>()
             .x(d => xScale(xAcc(d)))
             .y(d => yScale(yAcc(d)))
         );
@@ -295,10 +383,14 @@ export function drawLine(svg, data, xScale, yScale, xAcc, yAcc) {
 /**
  * Add draggable zoom rectangle with position callback
  */
-export function addDragHandler(target, scale, width, onPositionChange) {
-    let startX, rectX, rectWidth;
+export function addDragHandler(
+    target: d3.Selection<SVGRectElement, unknown, null, undefined>, 
+    width: number, 
+    onPositionChange?: (percentage: number) => void
+): void {
+    let startX: number, rectX: number, rectWidth: number;
     
-    const drag = d3.drag()
+    const drag = d3.drag<SVGRectElement, unknown>()
         .on("start", function (event) {
             startX = event.x;
             rectX = parseFloat(target.attr("x"));
@@ -321,7 +413,7 @@ export function addDragHandler(target, scale, width, onPositionChange) {
                 onPositionChange(percentage);
             }
         })
-        .on("end", function(event) {
+        .on("end", function() {
             target.classed("dragging", false);
         });
         
@@ -332,13 +424,13 @@ export function addDragHandler(target, scale, width, onPositionChange) {
  * Render detailed data for zoom charts
  */
 export async function renderDetailChart(
-    containerElement, 
-    domain_us, 
-    plotConfig, 
-    rawStoreObj, 
-    cacheObj,
-    title
-) {
+    containerElement: HTMLElement, 
+    domain_us: [number, number], 
+    plotConfig: PlotDataResult, 
+    rawStoreObj: any, 
+    cacheObj: CacheEntry,
+    title: string
+): Promise<d3.Selection<SVGGElement, unknown, null, undefined>> {
     const { horiz_interval, no_of_samples, adcToMv, channel, trc, segment, 
             width, height, margin, fullWidth, chartHeight } = plotConfig;
 
@@ -365,7 +457,7 @@ export async function renderDetailChart(
     const relativeStartTime = 0;
     const timeFactor = useNanoseconds ? S_TO_NS_FACTOR : S_TO_US_FACTOR;
     const relativeEndTime = (endIndex - startIndex) * horiz_interval * timeFactor;
-    const relativeTimeRange = [relativeStartTime, relativeEndTime];
+    const relativeTimeRange: [number, number] = [relativeStartTime, relativeEndTime];
 
     // Create scales
     const xScale = d3.scaleLinear().domain(relativeTimeRange).range([0, width]);
@@ -376,7 +468,7 @@ export async function renderDetailChart(
         if (visibleSampleWidth > DETAIL_THRESHOLD) {
             const target_points = 4000;
             const step = Math.max(1, Math.floor(visibleSampleWidth / target_points));
-            const detailOverviewData = [];
+            const detailOverviewData: OverviewDataPoint[] = [];
             let yMin = Infinity, yMax = -Infinity;
 
             for (let i = startIndex; i < endIndex; i += step) {
@@ -411,7 +503,9 @@ export async function renderDetailChart(
             }));
             
             loadingText.remove();
-            yScale.domain(d3.extent(detailData, d => d.voltage_mv) || [0, 0]).nice();
+            const extent = d3.extent(detailData, d => d.voltage_mv);
+            const domain = extent[0] !== undefined && extent[1] !== undefined ? extent : [0, 0];
+            yScale.domain(domain).nice();
             drawGridLines(svg, xScale, yScale, width, height);
             drawLine(svg, detailData, xScale, yScale, d => d.time_us, d => d.voltage_mv);
         }
@@ -419,7 +513,7 @@ export async function renderDetailChart(
         drawAxes(svg, xScale, yScale, timeUnitLabel, height, margin, width);
         
     } catch (error) {
-        loadingText.text(`Error loading data: ${error.message}`);
+        loadingText.text(`Error loading data: ${(error as Error).message}`);
         console.error('Error rendering detail chart:', error);
     }
 

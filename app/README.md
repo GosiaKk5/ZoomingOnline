@@ -1,6 +1,6 @@
-# Svelte Frontend - Developer Guide
+# Svelte + TypeScript Frontend - Developer Guide
 
-This directory contains the Svelte frontend application for ZoomingOnline. The application provides an interactive web interface for visualizing and exploring large time-series datasets stored in Zarr format.
+This directory contains the Svelte + TypeScript frontend application for ZoomingOnline. The application provides an interactive web interface for visualizing and exploring large time-series datasets stored in Zarr format with full type safety.
 
 ## 🏗️ Architecture
 
@@ -8,10 +8,15 @@ The frontend is built with modern web technologies and organized as follows:
 
 ```
 app/
-├── src/                   # Source code
+├── src/                   # TypeScript source code
+│   ├── components/        # Svelte components
+│   ├── stores/           # Svelte stores (TypeScript)
+│   ├── utils/            # Utility functions (TypeScript)
+│   └── routes/           # Application routes
 ├── static/               # Static assets
 ├── tests/                # E2E tests with Playwright
 ├── package.json          # Dependencies and scripts
+├── tsconfig.json         # TypeScript configuration
 ├── vite.config.js        # Vite build configuration
 ├── playwright.config.js  # Playwright test configuration
 └── README.md            # This file
@@ -47,21 +52,32 @@ Open browser to http://localhost:5173
 | `npm run dev` | Start development server | Local development with hot reload |
 | `npm run build` | Production build | Generates optimized build in `dist/` |
 | `npm run preview` | Preview production build | Test production build locally |
-| `npm test` | Run E2E tests | Playwright browser tests |
+| `npm run check` | TypeScript type checking | Validate types with svelte-check |
+| `npm run check:watch` | Watch mode type checking | Continuous type validation |
+| `npm run test:unit` | Run unit tests | Vitest-based unit tests |
+| `npm run test:headed` | Run E2E tests (headed) | Playwright browser tests with UI |
 
 ## 🔧 Development Tools
 
+### TypeScript Integration
+
+- **Full Type Safety**: All source code is written in TypeScript
+- **Svelte TypeScript Support**: Native TypeScript support in Svelte components
+- **Type Checking**: Integrated with svelte-check for comprehensive validation
+- **Math.js Integration**: Proper type-safe integration with mathematical utilities
+
 ### Build System
 
-- **Vite**: Fast build tool and dev server
+- **Vite**: Fast build tool with TypeScript support
 - **ES Modules**: Native ES module support
 - **Hot Module Replacement**: Instant updates during development
 
 ### Testing
 
+- **Vitest**: Unit testing framework with TypeScript support
 - **Playwright**: E2E browser testing
 - **Multi-browser**: Tests on Chromium, Firefox, and WebKit
-- **Visual Testing**: Screenshot comparisons
+- **Type-safe Tests**: All test files written in TypeScript
 
 ### Development Server
 
@@ -75,10 +91,26 @@ npm run dev -- --host 0.0.0.0
 
 ## 🧪 Testing
 
+### TypeScript Type Checking
+
+```bash
+npm run check
+```
+
+```bash
+npm run check:watch
+```
+
+### Unit Tests with Vitest
+
+```bash
+npm run test:unit
+```
+
 ### E2E Tests with Playwright
 
 ```bash
-npm test
+npm run test:headed
 ```
 
 ```bash
@@ -337,9 +369,10 @@ export default {
 
 ### Code Style
 
+- **TypeScript**: Full type safety with strict mode enabled
 - **ES2022**: Modern JavaScript features
-- **Svelte Style**: Follow Svelte best practices
-- **Type Safety**: Use JSDoc for type hints
+- **Svelte Style**: Follow Svelte best practices with TypeScript
+- **Type Annotations**: Comprehensive type coverage
 - **Testing**: Add tests for new features
 
 ### Git Workflow

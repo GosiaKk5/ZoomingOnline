@@ -13,9 +13,9 @@
         showCopyLink,
         setLoadingState,
         setError
-    } from '../stores/appStore.js';
-    import { loadZarrData } from '../utils/dataLoader.js';
-    import { populateSelectors } from '../utils/uiManager.js';
+    } from '../stores/appStore.ts';
+    import { loadZarrData } from '../utils/dataLoader.ts';
+    import { populateSelectors } from '../utils/uiManager.ts';
 
     let inputUrl = '';
     let channels = [];

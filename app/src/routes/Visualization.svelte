@@ -12,7 +12,7 @@
         timeSteps,
         isLoading,
         isDataLoaded
-    } from '../stores/appStore.js';
+    } from '../stores/appStore.ts';
     import { push } from 'svelte-spa-router';
     
     import Charts from '../components/Charts.svelte';

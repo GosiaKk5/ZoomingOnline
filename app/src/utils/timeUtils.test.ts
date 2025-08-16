@@ -1,11 +1,11 @@
 /**
- * Unit tests for timeUtils.js
+ * Unit tests for timeUtils.ts
  * Testing basic time step generation functionality
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
-import { generateTimeSteps, formatTimeLabel } from './timeUtils.js';
-import { timeSteps } from '../stores/appStore.js';
+import { generateTimeSteps, formatTimeLabel } from './timeUtils.ts';
+import { timeSteps } from '../stores/appStore.ts';
 import { get } from 'svelte/store';
 
 describe('timeUtils', () => {
@@ -35,7 +35,11 @@ describe('timeUtils', () => {
             
             // Check sorting
             for (let i = 1; i < steps.length; i++) {
-                expect(steps[i].value_us).toBeGreaterThanOrEqual(steps[i-1].value_us);
+                const currentStep = steps[i];
+                const previousStep = steps[i-1];
+                if (currentStep && previousStep) {
+                    expect(currentStep.value_us).toBeGreaterThanOrEqual(previousStep.value_us);
+                }
             }
         });
 

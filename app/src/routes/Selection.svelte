@@ -1,5 +1,5 @@
 <script>
-    import { formatTimeFromMicroseconds, formatFileSize } from '../utils/mathUtils.js';
+    import { formatTimeFromMicroseconds, formatFileSize } from '../utils/mathUtils.ts';
     import { onMount } from 'svelte';
     import { 
         isLoading, 
@@ -14,8 +14,8 @@
         dataUrl,
         isDataReadyForPlot,
         showCopyLink
-    } from '../stores/appStore.js';
-    import { populateSelectors } from '../utils/uiManager.js';
+    } from '../stores/appStore.ts';
+    import { populateSelectors } from '../utils/uiManager.ts';
     import { push } from 'svelte-spa-router';
     import ShareButton from '../components/ShareButton.svelte';
 

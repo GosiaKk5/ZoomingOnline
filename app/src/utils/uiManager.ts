@@ -1,5 +1,5 @@
 /**
- * uiManager.js
+ * uiManager.ts
  * 
  * Manages user interface elements and interactions for the ZoomingOnline application.
  * Handles populating selectors, managing UI state, and clipboard functionality.
@@ -7,13 +7,27 @@
  */
 
 /**
+ * Interface for selector options
+ */
+export interface SelectorOptions {
+    channels: string[];
+    trcFiles: string[];
+    segments: string[];
+}
+
+/**
+ * Interface for data store with shape information
+ */
+interface DataStore {
+    shape: number[];
+    [key: string]: any;
+}
+
+/**
  * Populate the dropdown selectors for channel, TRC, and segment
  * based on the data dimensions from the loaded store
- * 
- * @param {Object} store - The Zarr data store containing shape information
- * @returns {Object} - Object containing arrays of options for each selector
  */
-export async function populateSelectors(store) {
+export async function populateSelectors(store: DataStore | null): Promise<SelectorOptions> {
     console.log('🎯 populateSelectors() called');
     console.log('  - store parameter:', store);
     console.log('  - store type:', typeof store);
@@ -42,18 +56,24 @@ export async function populateSelectors(store) {
     console.log('  - trcCount:', trcCount); 
     console.log('  - segmentCount:', segmentCount);
     
+    // Validate dimensions
+    if (typeof channelCount !== 'number' || typeof trcCount !== 'number' || typeof segmentCount !== 'number') {
+        console.error('❌ Invalid dimensions from store shape');
+        return { channels: [], trcFiles: [], segments: [] };
+    }
+    
     // Create arrays of options
     console.log('🔨 Creating selector arrays...');
-    const channels = Array.from({ length: channelCount }, (_, i) => `Channel ${i + 1}`);
-    const trcFiles = Array.from({ length: trcCount }, (_, i) => `TRC ${i + 1}`);
-    const segments = Array.from({ length: segmentCount }, (_, i) => `Segment ${i + 1}`);
+    const channels = Array.from({ length: channelCount }, (_, i): string => `Channel ${i + 1}`);
+    const trcFiles = Array.from({ length: trcCount }, (_, i): string => `TRC ${i + 1}`);
+    const segments = Array.from({ length: segmentCount }, (_, i): string => `Segment ${i + 1}`);
     
     console.log('✅ Generated selectors:');
     console.log('  - channels:', channels);
     console.log('  - trcFiles:', trcFiles);
     console.log('  - segments:', segments);
     
-    const result = { channels, trcFiles, segments };
+    const result: SelectorOptions = { channels, trcFiles, segments };
     console.log('📤 Returning result:', result);
     
     return result;
@@ -61,12 +81,9 @@ export async function populateSelectors(store) {
 
 /**
  * Create a shareable URL with the current data parameter
- * 
- * @param {string} dataUrl - URL of the currently loaded Zarr data
- * @returns {string} - Complete shareable URL
  */
-export function createShareableUrl(dataUrl) {
-    const currentUrl = new URL(window.location);
+export function createShareableUrl(dataUrl: string): string {
+    const currentUrl = new URL(window.location.href);
     currentUrl.searchParams.set('data', dataUrl);
     return currentUrl.toString();
 }
@@ -74,21 +91,16 @@ export function createShareableUrl(dataUrl) {
 /**
  * Extract the numeric index from a formatted selector value
  * (e.g., "Channel 1" -> 0, "TRC 3" -> 2)
- * 
- * @param {string} value - Formatted value from selector
- * @returns {number} - Zero-based index
  */
-export function parseSelectedIndex(value) {
+export function parseSelectedIndex(value: string | null): number | null {
     if (!value) return null;
     const match = value.match(/(\d+)$/);
-    return match ? parseInt(match[1]) - 1 : null;
+    return match && match[1] ? parseInt(match[1]) - 1 : null;
 }
 
 /**
  * Get URL parameters from current location
- * 
- * @returns {URLSearchParams} - URL search parameters
  */
-export function getUrlParams() {
+export function getUrlParams(): URLSearchParams {
     return new URLSearchParams(window.location.search);
 }

@@ -1,5 +1,5 @@
 /**
- * dataLoader.js
+ * dataLoader.ts
  * 
  * This module handles loading and retrieving Zarr-formatted data from a URL.
  * It provides functions to load remote data and efficiently retrieve slices
@@ -13,14 +13,14 @@ import {
     overviewStore, 
     lastChunkCache,
     setLoadingState,
-    setError
-} from '../stores/appStore.js';
+    setError,
+    type CacheEntry
+} from '../stores/appStore.ts';
 
 /**
  * Load Zarr data from a remote URL
- * @param {string} url - URL of the Zarr store
  */
-export async function loadZarrData(url) {
+export async function loadZarrData(url: string): Promise<void> {
     try {
         console.log('🔗 dataLoader.loadZarrData() called');
         console.log('  - URL:', url);
@@ -50,7 +50,7 @@ export async function loadZarrData(url) {
         console.log('  - Raw array shape:', raw?.shape);
         
         console.log('🔍 Opening overview array...');
-        let overview;
+        let overview: any;
         try {
             overview = await Promise.race([
                 openArray({ store, path: 'overview/0' }),
@@ -79,47 +79,55 @@ export async function loadZarrData(url) {
         console.error('❌ Error in loadZarrData():');
         console.error('  - Error:', error);
         console.error('  - URL that failed:', url);
-        console.error('  - Error type:', error.constructor.name);
+        console.error('  - Error type:', (error as Error).constructor.name);
         setLoadingState(false); // Make sure to reset loading state on error
-        setError(`Failed to load Zarr data: ${error.message}`);
+        setError(`Failed to load Zarr data: ${(error as Error).message}`);
         throw error;
     }
 }
 
 /**
  * Get a slice of raw data with efficient chunk caching
- * @param {Object} rawStoreObj - Raw store object
- * @param {Object} cacheObj - Cache object
- * @param {number} ch - Channel index
- * @param {number} trc - TRC index
- * @param {number} seg - Segment index
- * @param {number} start - Start sample index
- * @param {number} end - End sample index
- * @returns {TypedArray} - Array of data points for the requested range
+ * @param rawStoreObj - Raw store object
+ * @param cacheObj - Cache object
+ * @param ch - Channel index
+ * @param trc - TRC index
+ * @param seg - Segment index
+ * @param start - Start sample index
+ * @param end - End sample index
+ * @returns Array of data points for the requested range
  */
-export async function getRawDataSlice(rawStoreObj, cacheObj, ch, trc, seg, start, end) {
-    const chunkSize = rawStoreObj.meta.chunks[3];
+export async function getRawDataSlice(
+    rawStoreObj: any, 
+    cacheObj: CacheEntry, 
+    ch: number, 
+    trc: number, 
+    seg: number, 
+    start: number, 
+    end: number
+): Promise<Int16Array> {
+    const chunkSize = rawStoreObj.meta.chunks[3] as number;
     const startChunkIdx = Math.floor(start / chunkSize);
     const endChunkIdx = Math.floor((end - 1) / chunkSize);
 
     // Create buffer for the final data
-    let finalData = new Int16Array(end - start);
+    const finalData = new Int16Array(end - start);
     let finalDataOffset = 0;
 
     // Fetch data chunk by chunk, using cache when possible
     for (let i = startChunkIdx; i <= endChunkIdx; i++) {
         const cacheKey = `${ch}-${trc}-${seg}-${i}`;
-        let chunkData;
+        let chunkData: Int16Array;
 
         // Check if we have this chunk in cache
         if (cacheObj.key === cacheKey) {
-            chunkData = cacheObj.data;
+            chunkData = cacheObj.data as Int16Array;
         } else {
             // Otherwise fetch from remote store
             const chunkStart = i * chunkSize;
             const chunkEnd = Math.min((i + 1) * chunkSize, rawStoreObj.shape[3]);
             const fetchedSlice = await rawStoreObj.get([ch, trc, seg, slice(chunkStart, chunkEnd)]);
-            chunkData = fetchedSlice.data;
+            chunkData = fetchedSlice.data as Int16Array;
             
             // Update cache with this chunk
             lastChunkCache.update(() => ({ key: cacheKey, data: chunkData }));
