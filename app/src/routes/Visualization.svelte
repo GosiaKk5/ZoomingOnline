@@ -16,6 +16,7 @@
     import { push } from 'svelte-spa-router';
     
     import Charts from '../components/Charts.svelte';
+    import ShareButton from '../components/ShareButton.svelte';
 
     onMount(() => {
         console.log('🎬 Visualization component mounted');
@@ -69,22 +70,23 @@
 {#if $isDataReadyForPlot}
     <div class="visualization-container">
         <div class="navigation">
-            <button class="back-button" on:click={handleGoBack}>
-                ← Back to Selection
-            </button>
-            <div class="selection-info">
-                <span class="info-label">Channel:</span>
-                <span class="info-value">{$selectedChannel}</span>
-                <span class="info-separator">|</span>
-                <span class="info-label">TRC:</span>
-                <span class="info-value">{$selectedTrc}</span>
-                <span class="info-separator">|</span>
-                <span class="info-label">Segment:</span>
-                <span class="info-value">{$selectedSegment}</span>
+            <div class="left-section">
+                <button class="back-button" on:click={handleGoBack}>
+                    ← Back to Selection
+                </button>
+                <div class="selection-info">
+                    <span class="info-label">Channel:</span>
+                    <span class="info-value">{$selectedChannel}</span>
+                    <span class="info-separator">|</span>
+                    <span class="info-label">TRC:</span>
+                    <span class="info-value">{$selectedTrc}</span>
+                    <span class="info-separator">|</span>
+                    <span class="info-label">Segment:</span>
+                    <span class="info-value">{$selectedSegment}</span>
+                </div>
             </div>
+            <ShareButton />
         </div>
-        
-        <h3>This dataset:</h3>
         
         <Charts />
     </div>
@@ -144,9 +146,9 @@
         margin: 0 0.25rem;
     }
 
-    h3 {
-        margin: 1rem 0;
-        color: #333;
-        text-align: center;
+    .left-section {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
 </style>

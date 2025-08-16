@@ -19,7 +19,6 @@
     
     // Import components
     import Header from './components/Header.svelte';
-    import CopyLink from './components/CopyLink.svelte';
     
     // Import route components
     import Home from './routes/Home.svelte';
@@ -157,8 +156,6 @@
 
 <main class="container">
     <Header />
-    
-    <CopyLink />
     
     <Router {routes} />
 </main>

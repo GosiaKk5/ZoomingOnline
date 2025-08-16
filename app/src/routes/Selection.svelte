@@ -17,6 +17,7 @@
     } from '../stores/appStore.js';
     import { populateSelectors } from '../utils/uiManager.js';
     import { push } from 'svelte-spa-router';
+    import ShareButton from '../components/ShareButton.svelte';
 
     let channels = [];
     let trcFiles = [];
@@ -188,6 +189,7 @@
             <button class="back-button" on:click={handleGoBack}>
                 ← Back to Data Input
             </button>
+            <ShareButton />
         </div>
         
         <h3>Select Data Parameters</h3>
@@ -272,7 +274,8 @@
 
     .navigation {
         display: flex;
-        justify-content: flex-start;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 1rem;
     }
 
