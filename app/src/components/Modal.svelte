@@ -1,4 +1,5 @@
 <script>
+    import { MdClose } from 'svelte-icons/md';
     import { createEventDispatcher } from 'svelte';
 
     export let show = false;
@@ -35,10 +36,9 @@
             <div class="modal-header">
                 <h2 id="modal-title" class="modal-title">{title}</h2>
                 <button class="btn-close" on:click={handleClose} aria-label="Close modal">
-                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
+                    <div class="w-5 h-5">
+                        <MdClose />
+                    </div>
                 </button>
             </div>
             <div class="modal-body">
