@@ -287,26 +287,6 @@
         min-width: 150px;
     }
 
-    button {
-        padding: 0.5rem 1rem;
-        font-size: 1rem;
-        color: #fff;
-        background-color: #007bff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-
-    button:hover:not(:disabled) {
-        background-color: #0056b3;
-    }
-
-    button:disabled {
-        background-color: #6c757d;
-        cursor: not-allowed;
-    }
-
     .loading {
         padding: 2rem;
         color: #666;
