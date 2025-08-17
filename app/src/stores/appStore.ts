@@ -16,11 +16,6 @@ export interface CacheEntry {
   data: any | null;
 }
 
-export interface TimeStep {
-  label: string;
-  value_s: number;
-}
-
 // Data-related stores
 export const zarrGroup: Writable<any | null> = writable(null);
 export const rawStore: Writable<any | null> = writable(null);
@@ -50,9 +45,6 @@ export const lastChunkCache: Writable<CacheEntry> = writable({
   key: null,
   data: null,
 });
-
-// Time steps store
-export const timeSteps: Writable<TimeStep[]> = writable([]);
 
 // Derived stores for computed values
 export const isDataReadyForPlot: Readable<boolean> = derived(
@@ -90,7 +82,6 @@ export function resetAppState(): void {
     selectedSegmentData: null,
   });
   lastChunkCache.set({ key: null, data: null });
-  timeSteps.set([]);
   showCopyLink.set(false);
 }
 

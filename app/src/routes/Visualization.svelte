@@ -5,10 +5,6 @@
         selectedChannel,
         selectedTrc,
         selectedSegment,
-        rawStore,
-        overviewStore,
-        plotConfig,
-        timeSteps,
         isLoading,
         isDataLoaded
     } from '../stores/appStore.ts';

@@ -14,7 +14,6 @@
         selectedSegment,
         showCopyLink
     } from './stores/appStore.ts';
-    import { generateTimeSteps } from './utils/timeUtils.ts';
     import { loadZarrData } from './utils/dataLoader.ts';
     
     // Import components
@@ -75,30 +74,17 @@
         const urlTrcParam = urlParams.get('trc');
         const urlSegmentParam = urlParams.get('segment');
         
-        console.log('🔍 App-level checking URL parameters:');
-        console.log('  - Full URL:', window.location.href);
-        console.log('  - Search params:', window.location.search);
-        console.log('  - Data param:', urlDataParam);
-        console.log('  - Channel param:', urlChannelParam);
-        console.log('  - TRC param:', urlTrcParam);
-        console.log('  - Segment param:', urlSegmentParam);
-        console.log('  - Is data loaded:', $isDataLoaded);
-        console.log('  - Current route:', $location);
-        
         // Restore selection parameters if they exist and current values are empty
         if (urlChannelParam && (!$selectedChannel || $selectedChannel === '')) {
             const channelDisplayName = getDisplayNameFromIndex('channel', parseInt(urlChannelParam));
-            console.log('🔄 Restoring channel from URL:', urlChannelParam, '→', channelDisplayName);
             selectedChannel.set(channelDisplayName);
         }
         if (urlTrcParam && (!$selectedTrc || $selectedTrc === '')) {
             const trcDisplayName = getDisplayNameFromIndex('trc', parseInt(urlTrcParam));
-            console.log('🔄 Restoring TRC from URL:', urlTrcParam, '→', trcDisplayName);
             selectedTrc.set(trcDisplayName);
         }
         if (urlSegmentParam && (!$selectedSegment || $selectedSegment === '')) {
             const segmentDisplayName = getDisplayNameFromIndex('segment', parseInt(urlSegmentParam));
-            console.log('🔄 Restoring segment from URL:', urlSegmentParam, '→', segmentDisplayName);
             selectedSegment.set(segmentDisplayName);
         }
         
@@ -111,15 +97,10 @@
                 console.log('🔄 Calling loadZarrData from App...');
                 await loadZarrData(urlDataParam);
                 console.log('✅ loadZarrData completed successfully');
-                
-                console.log('💾 Updating stores...');
                 dataUrl.set(urlDataParam);
                 isDataLoaded.set(true);
                 showCopyLink.set(true);
                 setError(null);
-                console.log('  - dataUrl store updated to:', urlDataParam);
-                console.log('  - isDataLoaded set to true');
-                console.log('  - showCopyLink set to true');
                 
                 // If we're not on a valid route for loaded data, navigate to selection
                 if ($location === '/' || $location === '') {
@@ -141,9 +122,6 @@
     }
 
     onMount(() => {
-        // Generate time steps early
-        generateTimeSteps();
-        
         // Check for data URL parameter on mount
         checkAndLoadDataFromUrl();
     });

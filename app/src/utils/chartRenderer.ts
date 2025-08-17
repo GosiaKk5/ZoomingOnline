@@ -32,8 +32,6 @@ export interface PlotDataResult {
   overviewData: OverviewDataPoint[];
   globalYMin: number | undefined;
   globalYMax: number | undefined;
-  validTimeSteps: any[];
-  validZoom2Steps: any[];
 }
 
 export interface OverviewDataPoint {
@@ -215,8 +213,6 @@ export async function initializePlotData(
       overviewData,
       globalYMin,
       globalYMax,
-      validTimeSteps: [],
-      validZoom2Steps: [],
     };
 
     console.log("✅ initializePlotData completed successfully");
