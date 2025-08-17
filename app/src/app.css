@@ -1,226 +1,146 @@
-:root {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  color-scheme: light;
-  color: #333;
-  background-color: #f8f9fa;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-
-  /* Custom properties for common values */
-  --color-primary: #007bff;
-  --color-primary-hover: #0056b3;
-  --color-secondary: #6c757d;
-  --color-secondary-hover: #5a6268;
-  --color-success: #10b981;
-  --color-success-hover: #059669;
-  --color-danger: #dc3545;
-  --color-muted: #6c757d;
-  --color-text-secondary: #495057;
-  --color-border: #ccc;
-  --color-backdrop: rgba(0, 0, 0, 0.5);
+/* Custom component classes using Tailwind */
+@layer components {
+  /* Button Components */
+  .btn {
+    @apply inline-flex items-center gap-2 px-4 py-2 font-medium rounded-md transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+  }
   
-  --border-radius-sm: 4px;
-  --border-radius-md: 5px;
-  --border-radius-lg: 8px;
-  --border-radius-xl: 12px;
+  .btn-primary {
+    @apply btn bg-primary text-white hover:bg-primary-hover disabled:bg-gray-400;
+  }
   
-  --padding-xs: 0.25rem;
-  --padding-sm: 0.5rem;
-  --padding-md: 1rem;
-  --padding-lg: 1.5rem;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-#app {
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  text-align: center;
-}
-
-/* Base Button Styles */
-.btn {
-  padding: var(--padding-sm) var(--padding-md);
-  font-size: 1rem;
-  border: none;
-  border-radius: var(--border-radius-md);
-  cursor: pointer;
-  transition: background-color 0.2s;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--padding-sm);
-  font-weight: 500;
-}
-
-.btn:disabled {
-  background-color: var(--color-muted);
-  cursor: not-allowed;
-}
-
-/* Primary Button */
-.btn-primary {
-  color: #fff;
-  background-color: var(--color-primary);
-}
-
-.btn-primary:hover:not(:disabled) {
-  background-color: var(--color-primary-hover);
-}
-
-/* Secondary Button */
-.btn-secondary {
-  color: white;
-  background-color: var(--color-secondary);
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background-color: var(--color-secondary-hover);
-}
-
-/* Link Button */
-.btn-link {
-  background: none;
-  border: none;
-  color: var(--color-primary);
-  text-decoration: underline;
-  cursor: pointer;
-  font-size: inherit;
-  padding: 0;
-  margin: 0;
-}
-
-.btn-link:hover:not(:disabled) {
-  color: var(--color-primary-hover);
-  background: none;
-}
-
-.btn-link:disabled {
-  color: var(--color-muted);
-  cursor: not-allowed;
-  text-decoration: none;
-}
-
-/* Success Button */
-.btn-success {
-  color: white;
-  background-color: var(--color-success);
-}
-
-.btn-success:hover:not(:disabled) {
-  background-color: var(--color-success-hover);
-}
-
-/* Close Button */
-.btn-close {
-  background: none;
-  border: none;
-  color: #6b7280;
-  cursor: pointer;
-  padding: var(--padding-sm);
-  border-radius: 6px;
-  transition: background-color 0.2s;
-}
-
-.btn-close:hover {
-  background: #f3f4f6;
-  color: #111827;
-}
-
-/* Button sizes */
-.btn-sm {
-  padding: 0.375rem 0.75rem;
-  font-size: 0.875rem;
-}
-
-/* Form Styles */
-.form-control {
-  padding: var(--padding-sm);
-  font-size: 1rem;
-  border-radius: var(--border-radius-md);
-  border: 1px solid var(--color-border);
-  transition: border-color 0.2s, background-color 0.2s;
-}
-
-.form-control:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  background: white;
-}
-
-/* Modal Styles */
-.modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--color-backdrop);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 2rem;
-}
-
-.modal-content {
-  background: white;
-  border-radius: var(--border-radius-xl);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  max-width: 600px;
-  width: 100%;
-  max-height: 80vh;
-  overflow: hidden;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--padding-lg);
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.modal-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #111827;
-  margin: 0;
-}
-
-.modal-body {
-  padding: var(--padding-lg);
-}
-
-@media (max-width: 768px) {
+  .btn-secondary {
+    @apply btn bg-secondary text-white hover:bg-secondary-hover;
+  }
+  
+  .btn-success {
+    @apply btn bg-success text-white hover:bg-success-hover;
+  }
+  
+  .btn-link {
+    @apply btn bg-transparent text-primary underline hover:text-primary-hover hover:bg-transparent p-0 disabled:text-gray-400 disabled:no-underline;
+  }
+  
+  .btn-close {
+    @apply btn bg-transparent text-gray-500 hover:bg-gray-100 hover:text-gray-800 p-2 rounded-md;
+  }
+  
+  .btn-sm {
+    @apply btn px-3 py-1.5 text-sm;
+  }
+  
+  /* Form Components */
+  .form-control {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors;
+  }
+  
+  /* Card Components */
+  .card {
+    @apply bg-white rounded-lg shadow-md p-4 mb-4;
+  }
+  
+  .card-header {
+    @apply flex items-center justify-between p-6 border-b border-gray-200;
+  }
+  
+  .card-body {
+    @apply p-6;
+  }
+  
+  /* Container Components */
+  .container-center {
+    @apply bg-white p-4 rounded-lg shadow-md text-center mb-4;
+  }
+  
+  /* Input Groups */
+  .input-group {
+    @apply flex gap-2 justify-center items-center flex-wrap;
+  }
+  
+  /* Loading States */
+  .loading {
+    @apply text-blue-600 animate-pulse;
+  }
+  
+  /* Example Hints */
+  .example-hint {
+    @apply my-2 p-3 bg-gray-50 border border-gray-200 rounded text-sm text-gray-600;
+  }
+  
+  /* Selection Info */
+  .selection-info {
+    @apply flex items-center gap-2 text-sm text-gray-600;
+  }
+  
+  /* Modal Components */
   .modal-backdrop {
-    padding: var(--padding-md);
+    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-8;
   }
   
   .modal-content {
-    margin: 0;
-    border-radius: var(--border-radius-lg);
+    @apply bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden;
   }
   
-  .modal-header,
+  .modal-header {
+    @apply flex items-center justify-between p-6 border-b border-gray-200;
+  }
+  
+  .modal-title {
+    @apply text-xl font-semibold text-gray-800 m-0;
+  }
+  
   .modal-body {
-    padding: var(--padding-md);
+    @apply p-6;
+  }
+}
+
+/* Keep chart-specific styles that aren't easily replaceable with Tailwind */
+@layer base {
+  :root {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+    color-scheme: light;
+    color: #333;
+    background-color: #f8f9fa;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply m-0 flex items-center min-w-80 min-h-screen;
+  }
+
+  #app {
+    @apply w-full max-w-screen-xl mx-auto text-center;
+  }
+}
+
+/* Responsive modal adjustments */
+@layer utilities {
+  @media (max-width: 768px) {
+    .modal-backdrop {
+      @apply p-4;
+    }
+    
+    .modal-content {
+      @apply m-0 rounded-lg;
+    }
+    
+    .modal-header,
+    .modal-body {
+      @apply p-4;
+    }
   }
 }

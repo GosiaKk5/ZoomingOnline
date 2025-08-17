@@ -47,6 +47,7 @@
         color: #212529;
         font-size: 1rem;
         font-weight: 600;
+        text-align: center;
     }
 
     .info-grid {

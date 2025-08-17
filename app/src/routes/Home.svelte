@@ -84,12 +84,13 @@
 </script>
 
 <div class="input-container">
-    <h3>Load Zarr Data</h3>
-    <p>Please enter the full URL to your .zarr file.</p>
+    <div class="mb-6 mt-6">
+        <h3 class="px-4">Load Zarr Data - Enter full URL to your .zarr file</h3>
+    </div>
     <div class="example-hint">
         <p>For testing, try the example dataset: 
             <button 
-                class="btn btn-link" 
+                class="btn-link" 
                 on:click={loadExample}
                 disabled={$isLoading}
             >
@@ -97,21 +98,27 @@
             </button>
         </p>
     </div>
-    <div class="input-group">
+    <div class="w-full max-w-2xl mx-auto">
         <input 
             type="text" 
+            class="form-control font-mono text-sm text-gray-900 bg-gray-50 border-2 border-gray-300 focus:border-blue-500 focus:bg-white w-full mb-4"
             bind:value={inputUrl}
             placeholder={exampleUrl}
             on:keypress={handleKeyPress}
             disabled={$isLoading}
         />
-        <button 
-            class="btn btn-primary"
-            on:click={handleLoadData}
-            disabled={$isLoading || !inputUrl.trim()}
-        >
-            {$isLoading ? 'Loading...' : 'Load Data'}
-        </button>
+        <div class="flex justify-center">
+            <button 
+                class="btn-primary flex items-center gap-2"
+                on:click={handleLoadData}
+                disabled={$isLoading || !inputUrl.trim()}
+            >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                </svg>
+                {$isLoading ? 'Loading...' : 'Load Data'}
+            </button>
+        </div>
     </div>
 
     {#if $error}
@@ -130,28 +137,6 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         text-align: center;
         margin-bottom: var(--padding-md);
-    }
-
-    .input-group {
-        display: flex;
-        gap: var(--padding-sm);
-        justify-content: center;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-
-    input {
-        font-size: 1rem;
-        padding: var(--padding-sm);
-        border: 1px solid var(--color-border);
-        border-radius: var(--border-radius-sm);
-        width: 350px;
-        max-width: 100%;
-    }
-
-    input:disabled {
-        background-color: #f5f5f5;
-        cursor: not-allowed;
     }
 
     .example-hint {
@@ -177,15 +162,5 @@
     .error h3 {
         margin-top: 0;
         color: #dc3545;
-    }
-
-    @media (max-width: 768px) {
-        .input-group {
-            flex-direction: column;
-        }
-        
-        input {
-            width: 100%;
-        }
     }
 </style>

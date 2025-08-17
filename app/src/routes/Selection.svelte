@@ -142,22 +142,22 @@
     }
 </script>
 
-<div class="selection-container">
+<div class="container-center">
     {#if $isLoading}
         <div class="loading">
             <p>Loading data selectors...</p>
         </div>
     {:else if $error}
-        <div class="error">
-            <h3>Error</h3>
-            <p>{$error}</p>
-            <button class="btn btn-primary" on:click={handleGoBack}>
+        <div class="text-red-600 p-4">
+            <h3 class="font-semibold mb-2">Error</h3>
+            <p class="mb-4">{$error}</p>
+            <button class="btn-primary" on:click={handleGoBack}>
                 Try Again
             </button>
         </div>
     {:else if $isDataLoaded}
-        <div class="navigation">
-            <button class="btn btn-secondary btn-sm" on:click={handleGoBack}>
+        <div class="flex justify-between items-center mb-4">
+            <button class="btn-primary btn-sm" on:click={handleGoBack}>
                 ← Back to Data Input
             </button>
             <ShareButton />
@@ -166,30 +166,30 @@
         <!-- Dataset Information Display -->
         <DatasetInfo datasetInfo={datasetInfo} />
         
-        <h3>Select Data Parameters</h3>
+        <h3 class="text-xl font-semibold my-4 text-gray-800">Select Data Parameters</h3>
         
-        <div class="selection-controls">
-            <div class="control">
-                <label for="channel-select">Channel:</label>
-                <select id="channel-select" bind:value={$selectedChannel}>
+        <div class="flex flex-wrap gap-4 justify-center mb-6">
+            <div class="form-group min-w-[200px]">
+                <label for="channel-select" class="block text-sm font-medium text-gray-700 mb-1 text-center">Channel:</label>
+                <select id="channel-select" class="form-control w-full" bind:value={$selectedChannel}>
                     {#each channels as channel}
                         <option value={channel}>{channel}</option>
                     {/each}
                 </select>
             </div>
             
-            <div class="control">
-                <label for="trc-select">TRC File:</label>
-                <select id="trc-select" bind:value={$selectedTrc}>
+            <div class="form-group min-w-[200px]">
+                <label for="trc-select" class="block text-sm font-medium text-gray-700 mb-1 text-center">TRC File:</label>
+                <select id="trc-select" class="form-control w-full" bind:value={$selectedTrc}>
                     {#each trcFiles as trc}
                         <option value={trc}>{trc}</option>
                     {/each}
                 </select>
             </div>
             
-            <div class="control">
-                <label for="segment-select">Segment:</label>
-                <select id="segment-select" bind:value={$selectedSegment}>
+            <div class="form-group min-w-[200px]">
+                <label for="segment-select" class="block text-sm font-medium text-gray-700 mb-1 text-center">Segment:</label>
+                <select id="segment-select" class="form-control w-full" bind:value={$selectedSegment}>
                     {#each segments as segment}
                         <option value={segment}>{segment}</option>
                     {/each}
@@ -198,7 +198,7 @@
         </div>
         
         <button 
-            class="btn btn-primary plot-button"
+            class="btn-primary mt-8"
             on:click={handlePlotData}
             disabled={!$isDataReadyForPlot}
         >
@@ -208,90 +208,9 @@
 </div>
 
 <style>
-    .selection-container {
-        padding: var(--padding-md);
-        background: white;
-        border-radius: var(--border-radius-lg);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        text-align: center;
-        margin-bottom: var(--padding-md);
-    }
-
-    .navigation {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-    }
-
-    h3 {
-        margin: 1rem 0;
-        color: #333;
-    }
-
-    .plot-button {
-        margin-top: 1rem;
-    }
-
-    .selection-controls {
-        display: flex;
-        gap: 1rem;
-        align-items: end;
-        justify-content: center;
-        margin-bottom: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .control {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.25rem;
-    }
-
-    label {
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: #333;
-    }
-
-    select {
-        padding: var(--padding-sm);
-        font-size: 1rem;
-        border-radius: var(--border-radius-md);
-        border: 1px solid var(--color-border);
-        min-width: 150px;
-    }
-
     .loading {
         padding: 2rem;
         color: #666;
         font-style: italic;
-    }
-
-    .error {
-        padding: 2rem;
-        color: #dc3545;
-    }
-
-    .error h3 {
-        margin-top: 0;
-        color: #dc3545;
-    }
-
-    .error button {
-        background-color: #dc3545;
-        margin-top: 1rem;
-    }
-
-    .error button:hover {
-        background-color: #c82333;
-    }
-
-    @media (max-width: 768px) {        
-        .selection-controls {
-            flex-direction: column;
-            align-items: center;
-        }
     }
 </style>

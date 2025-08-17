@@ -46,7 +46,7 @@
 </script>
 
 {#if $showCopyLink}
-    <button class="btn btn-primary btn-sm" on:click={openModal}>
+    <button class="btn-primary btn-sm" on:click={openModal}>
         <svg class="share-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="18" cy="5" r="3"></circle>
             <circle cx="6" cy="12" r="3"></circle>
@@ -59,12 +59,12 @@
 {/if}
 
 <Modal bind:show={showModal} title="Share Dataset" on:close={closeModal}>
-    <p class="description">Copy this URL to share the current dataset and visualization settings with others:</p>
+    <p class="text-gray-500 mb-6 text-sm leading-relaxed">Copy this URL to share the current dataset and visualization settings with others:</p>
     
-    <div class="url-container">
+    <div class="mb-6">
         <input 
             type="text" 
-            class="form-control url-input" 
+            class="form-control w-full font-mono text-sm text-gray-900 bg-gray-50 border-2 border-gray-300" 
             value={shareableUrl} 
             readonly
             on:focus={(e) => e.target.select()}
@@ -72,7 +72,7 @@
     </div>
     
     <button 
-        class="btn copy-button" 
+        class="flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-medium transition-all duration-200 mx-auto"
         class:btn-success={isCopied}
         class:btn-primary={!isCopied}
         on:click={copyToClipboard}
@@ -92,39 +92,6 @@
     .share-icon {
         width: 16px;
         height: 16px;
-    }
-    
-    .description {
-        color: #6b7280;
-        margin: 0 0 1.5rem 0;
-        font-size: 0.875rem;
-        line-height: 1.5;
-    }
-    
-    .url-container {
-        margin-bottom: 1.5rem;
-    }
-    
-    .url-input {
-        width: 100%;
-        font-family: 'SFMono-Regular', 'Consolas', 'Liberation Mono', 'Menlo', monospace;
-        font-size: 0.875rem;
-        color: #111827;
-        background: #f9fafb;
-        border: 2px solid #e5e7eb;
-    }
-    
-    .copy-button {
-        display: flex;
-        align-items: center;
-        gap: var(--padding-sm);
-        border-radius: var(--border-radius-lg);
-        padding: 0.75rem var(--padding-lg);
-        font-size: 0.875rem;
-        font-weight: 500;
-        transition: all 0.2s;
-        position: relative;
-        margin: 0 auto;
     }
     
     .copy-icon, .check-icon {
@@ -147,11 +114,5 @@
     .check-icon.show {
         opacity: 1;
         position: static;
-    }
-    
-    @media (max-width: 768px) {
-        .url-input {
-            font-size: 0.75rem;
-        }
     }
 </style>

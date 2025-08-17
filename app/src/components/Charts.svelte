@@ -110,24 +110,9 @@
 </script>
 
 {#if isInitialized && $plotConfig.total_time_us > 0}
-    <div class="chart-container">
-        <div bind:this={overviewContainer} class="chart" id="overview-chart"></div>
+    <div class="bg-white p-8 rounded-lg shadow-md">
+        <div bind:this={overviewContainer} id="overview-chart" class="mb-10"></div>
     </div>
 {/if}
 
-<style>
-    .chart-container {
-        background: white;
-        padding: 2rem;
-        border-radius: var(--border-radius-lg);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
 
-    .chart {
-        margin-bottom: 2.5rem;
-    }
-
-    .chart:last-child {
-        margin-bottom: 0;
-    }
-</style>

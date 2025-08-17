@@ -48,21 +48,21 @@
 </script>
 
 {#if $isDataReadyForPlot}
-    <div class="visualization-container">
-        <div class="navigation">
-            <div class="left-section">
-                <button class="btn btn-primary btn-sm" on:click={handleGoBack}>
+    <div class="w-full">
+        <div class="flex justify-between items-center mb-4 p-6 bg-white rounded-lg shadow-md">
+            <div class="flex items-center gap-4">
+                <button class="btn-primary btn-sm" on:click={handleGoBack}>
                     ← Back to Selection
                 </button>
-                <div class="selection-info">
-                    <span class="info-label">Channel:</span>
-                    <span class="info-value">{$selectedChannel}</span>
-                    <span class="info-separator">|</span>
-                    <span class="info-label">TRC:</span>
-                    <span class="info-value">{$selectedTrc}</span>
-                    <span class="info-separator">|</span>
-                    <span class="info-label">Segment:</span>
-                    <span class="info-value">{$selectedSegment}</span>
+                <div class="flex items-center gap-2 text-sm text-gray-600">
+                    <span class="font-semibold text-gray-800">Channel:</span>
+                    <span class="text-blue-600 font-medium">{$selectedChannel}</span>
+                    <span class="text-gray-500 mx-1">|</span>
+                    <span class="font-semibold text-gray-800">TRC:</span>
+                    <span class="text-blue-600 font-medium">{$selectedTrc}</span>
+                    <span class="text-gray-500 mx-1">|</span>
+                    <span class="font-semibold text-gray-800">Segment:</span>
+                    <span class="text-blue-600 font-medium">{$selectedSegment}</span>
                 </div>
             </div>
             <ShareButton />
@@ -72,48 +72,4 @@
     </div>
 {/if}
 
-<style>
-    .visualization-container {
-        width: 100%;
-    }
 
-    .navigation {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-        padding: var(--padding-md);
-        background: white;
-        border-radius: var(--border-radius-lg);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
-
-    .selection-info {
-        display: flex;
-        align-items: center;
-        gap: var(--padding-sm);
-        font-size: 0.875rem;
-        color: #495057;
-    }
-
-    .info-label {
-        font-weight: 600;
-        color: #343a40;
-    }
-
-    .info-value {
-        color: #007bff;
-        font-weight: 500;
-    }
-
-    .info-separator {
-        color: #6c757d;
-        margin: 0 0.25rem;
-    }
-
-    .left-section {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-</style>
