@@ -71,7 +71,7 @@
     <div class="visualization-container">
         <div class="navigation">
             <div class="left-section">
-                <button class="btn btn-secondary btn-sm" on:click={handleGoBack}>
+                <button class="btn btn-primary btn-sm" on:click={handleGoBack}>
                     ← Back to Selection
                 </button>
                 <div class="selection-info">

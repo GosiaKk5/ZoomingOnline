@@ -187,10 +187,10 @@
             <ShareButton />
         </div>
         
-        <h3>Select Data Parameters</h3>
-        
         <!-- Dataset Information Display -->
         <DatasetInfo datasetInfo={datasetInfo} />
+        
+        <h3>Select Data Parameters</h3>
         
         <div class="selection-controls">
             <div class="control">
