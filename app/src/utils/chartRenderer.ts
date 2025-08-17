@@ -6,7 +6,6 @@
  */
 
 import * as d3 from 'd3';
-import { formatTimeFromMicroseconds } from './mathUtils.ts';
 
 // Type definitions
 export interface ChartMargin {
@@ -60,14 +59,6 @@ function getTimeUnitInfo(timeSpanUs: number): TimeUnitInfo {
     const useNanoseconds = timeSpanUs <= NANOSECOND_THRESHOLD_US;
     const timeUnitLabel = useNanoseconds ? "Relative Time [ns]" : "Relative Time [µs]";
     return { useNanoseconds, timeUnitLabel };
-}
-
-/**
- * Helper function to format time duration with appropriate SI units
- */
-function formatTimeDuration(durationUs: number, _useNanoseconds = false): string {
-    // Use the new SI formatting utility for better readability
-    return formatTimeFromMicroseconds(durationUs);
 }
 
 /**
@@ -374,4 +365,4 @@ export function drawLine<T>(
         );
 }
 
-export { getTimeUnitInfo, formatTimeDuration };
+export { getTimeUnitInfo };

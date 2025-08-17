@@ -24,11 +24,11 @@
     let segments = [];
     let selectorsPopulated = false; // Flag to prevent infinite loop
 
-    // File metadata
-    let fileInfo = {
+    // Dataset metadata
+    let datasetInfo = {
         pointsInSegment: 0,
-        timeBetweenPoints: 0,
-        segmentLength: 0,
+        timeBetweenPoints: 0, // in seconds
+        segmentLength: 0, // in seconds
         totalDataSize: 0,
         url: ''
     };
@@ -43,14 +43,14 @@
         console.log('  - selectorsPopulated on mount:', selectorsPopulated);
     });
 
-    // Calculate file metadata when data is available
+    // Calculate dataset metadata when data is available
     $: if ($rawStore && $zarrGroup && $dataUrl) {
-        calculateFileInfo();
+        calculateDatasetInfo();
     }
 
-    async function calculateFileInfo() {
+    async function calculateDatasetInfo() {
         try {
-            console.log('📊 Calculating file metadata...');
+            console.log('📊 Calculating dataset metadata...');
             
             // Get basic info from rawStore shape
             const shape = $rawStore.shape;
@@ -58,11 +58,6 @@
             
             // Get attributes from zarr group
             const attrs = await $zarrGroup.attrs.asObject();
-            const horizInterval = attrs.horiz_interval; // Time between points in seconds
-            
-            // Calculate timing information
-            const timeBetweenPointsUs = horizInterval * 1e6; // Convert to microseconds
-            const segmentLengthUs = (pointsInSegment - 1) * timeBetweenPointsUs;
             
             // Calculate total data size
             const rawDataElements = shape.reduce((a, b) => a * b, 1);
@@ -72,18 +67,18 @@
             // Assume 2 bytes per element (int16) for raw data and overview
             const totalBytes = (rawDataElements * 2) + (overviewElements * 2);
             
-            fileInfo = {
+            datasetInfo = {
                 pointsInSegment,
-                timeBetweenPoints: timeBetweenPointsUs,
-                segmentLength: segmentLengthUs,
+                timeBetweenPoints: attrs.horiz_interval, // in seconds
+                segmentLength: (pointsInSegment - 1) * attrs.horiz_interval, // in seconds
                 totalDataSize: totalBytes,
                 url: $dataUrl
             };
             
-            console.log('✅ File metadata calculated:', fileInfo);
+            console.log('✅ Dataset metadata calculated:', datasetInfo);
             
         } catch (error) {
-            console.error('❌ Error calculating file metadata:', error);
+            console.error('❌ Error calculating dataset metadata:', error);
         }
     }
 
@@ -194,8 +189,8 @@
         
         <h3>Select Data Parameters</h3>
         
-        <!-- File Information Display -->
-        <DatasetInfo {fileInfo} />
+        <!-- Dataset Information Display -->
+        <DatasetInfo datasetInfo={datasetInfo} />
         
         <div class="selection-controls">
             <div class="control">

@@ -1,39 +1,39 @@
 <script>
-    import { formatTimeFromMicroseconds, formatFileSize } from '../utils/mathUtils.ts';
+    import { formatTime, formatFileSize } from '../utils/mathUtils.ts';
     
-    export let fileInfo;
+    export let datasetInfo;
 </script>
 
-<div class="file-info">
+<div class="dataset-info">
     <h4>Dataset Information</h4>
     <div class="info-grid">
         <div class="info-item">
             <span class="info-label">Points per segment:</span>
-            <span class="info-value">{fileInfo.pointsInSegment.toLocaleString()}</span>
+            <span class="info-value">{datasetInfo.pointsInSegment.toLocaleString()}</span>
         </div>
         <div class="info-item">
             <span class="info-label">Time between points:</span>
-            <span class="info-value">{formatTimeFromMicroseconds(fileInfo.timeBetweenPoints)}</span>
+            <span class="info-value">{formatTime(datasetInfo.timeBetweenPoints)}</span>
         </div>
         <div class="info-item">
             <span class="info-label">Segment duration:</span>
-            <span class="info-value">{formatTimeFromMicroseconds(fileInfo.segmentLength)}</span>
+            <span class="info-value">{formatTime(datasetInfo.segmentLength)}</span>
         </div>
         <div class="info-item">
             <span class="info-label">Total dataset size:</span>
-            <span class="info-value">{formatFileSize(fileInfo.totalDataSize)}</span>
+            <span class="info-value">{formatFileSize(datasetInfo.totalDataSize)}</span>
         </div>
         <div class="info-item">
             <span class="info-label">Data source:</span>
-            <span class="info-value info-url" title={fileInfo.url}>
-                {fileInfo.url.length > 60 ? '...' + fileInfo.url.slice(-60) : fileInfo.url}
+            <span class="info-value info-url" title={datasetInfo.url}>
+                {datasetInfo.url.length > 60 ? '...' + datasetInfo.url.slice(-60) : datasetInfo.url}
             </span>
         </div>
     </div>
 </div>
 
 <style>
-    .file-info {
+    .dataset-info {
         background: #f8f9fa;
         border: 1px solid #e9ecef;
         border-radius: 6px;
@@ -42,7 +42,7 @@
         text-align: left;
     }
 
-    .file-info h4 {
+    .dataset-info h4 {
         margin: 0 0 1rem 0;
         color: #212529;
         font-size: 1rem;
