@@ -44,10 +44,10 @@
 <style>
     .header {
         background: white;
-        padding: 1rem 2rem;
-        border-radius: 8px;
+        padding: var(--padding-md) 2rem;
+        border-radius: var(--border-radius-lg);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        margin-bottom: 1rem;
+        margin-bottom: var(--padding-md);
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -93,11 +93,11 @@
     }
 
     .plot-another-btn {
-        background-color: #28a745;
+        background-color: var(--color-success);
         color: white;
         border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 5px;
+        padding: var(--padding-sm) var(--padding-md);
+        border-radius: var(--border-radius-md);
         font-size: 0.875rem;
         cursor: pointer;
         transition: background-color 0.2s;

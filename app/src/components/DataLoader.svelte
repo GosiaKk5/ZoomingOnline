@@ -167,17 +167,17 @@
 
 <style>
     .input-container, .selection-container {
-        padding: 1rem;
+        padding: var(--padding-md);
         background: white;
-        border-radius: 8px;
+        border-radius: var(--border-radius-lg);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         text-align: center;
-        margin-bottom: 1rem;
+        margin-bottom: var(--padding-md);
     }
 
     .input-group {
         display: flex;
-        gap: 0.5rem;
+        gap: var(--padding-sm);
         justify-content: center;
         align-items: center;
         flex-wrap: wrap;
@@ -185,9 +185,9 @@
 
     input {
         font-size: 1rem;
-        padding: 0.5rem;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        padding: var(--padding-sm);
+        border: 1px solid var(--color-border);
+        border-radius: var(--border-radius-sm);
         width: 350px;
         max-width: 100%;
     }
@@ -198,13 +198,13 @@
     }
 
     .example-hint {
-        margin: 0.5rem 0;
+        margin: var(--padding-sm) 0;
         padding: 0.75rem;
         background-color: #f8f9fa;
         border: 1px solid #e9ecef;
-        border-radius: 4px;
+        border-radius: var(--border-radius-sm);
         font-size: 0.875rem;
-        color: #495057;
+        color: var(--color-text-secondary);
     }
 
     .example-hint p {
@@ -237,15 +237,15 @@
         padding: 0.5rem 1rem;
         font-size: 1rem;
         color: #fff;
-        background-color: #007bff;
+        background-color: var(--color-primary);
         border: none;
-        border-radius: 5px;
+        border-radius: var(--border-radius-md);
         cursor: pointer;
         transition: background-color 0.2s;
     }
 
     button:hover:not(:disabled) {
-        background-color: #0056b3;
+        background-color: var(--color-primary-hover);
     }
 
     button:disabled {
@@ -280,10 +280,10 @@
     }
 
     select {
-        padding: 0.5rem;
+        padding: var(--padding-sm);
         font-size: 1rem;
-        border-radius: 5px;
-        border: 1px solid #ccc;
+        border-radius: var(--border-radius-md);
+        border: 1px solid var(--color-border);
         min-width: 150px;
     }
 

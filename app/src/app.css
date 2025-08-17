@@ -12,6 +12,29 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
+
+  /* Custom properties for common values */
+  --color-primary: #007bff;
+  --color-primary-hover: #0056b3;
+  --color-secondary: #6c757d;
+  --color-secondary-hover: #5a6268;
+  --color-success: #10b981;
+  --color-success-hover: #059669;
+  --color-danger: #dc3545;
+  --color-muted: #6c757d;
+  --color-text-secondary: #495057;
+  --color-border: #ccc;
+  --color-backdrop: rgba(0, 0, 0, 0.5);
+  
+  --border-radius-sm: 4px;
+  --border-radius-md: 5px;
+  --border-radius-lg: 8px;
+  --border-radius-xl: 12px;
+  
+  --padding-xs: 0.25rem;
+  --padding-sm: 0.5rem;
+  --padding-md: 1rem;
+  --padding-lg: 1.5rem;
 }
 
 * {
@@ -35,48 +58,48 @@ body {
 
 /* Base Button Styles */
 .btn {
-  padding: 0.5rem 1rem;
+  padding: var(--padding-sm) var(--padding-md);
   font-size: 1rem;
   border: none;
-  border-radius: 5px;
+  border-radius: var(--border-radius-md);
   cursor: pointer;
   transition: background-color 0.2s;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--padding-sm);
   font-weight: 500;
 }
 
 .btn:disabled {
-  background-color: #6c757d;
+  background-color: var(--color-muted);
   cursor: not-allowed;
 }
 
 /* Primary Button */
 .btn-primary {
   color: #fff;
-  background-color: #007bff;
+  background-color: var(--color-primary);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: #0056b3;
+  background-color: var(--color-primary-hover);
 }
 
 /* Secondary Button */
 .btn-secondary {
   color: white;
-  background-color: #6c757d;
+  background-color: var(--color-secondary);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: #5a6268;
+  background-color: var(--color-secondary-hover);
 }
 
 /* Link Button */
 .btn-link {
   background: none;
   border: none;
-  color: #007bff;
+  color: var(--color-primary);
   text-decoration: underline;
   cursor: pointer;
   font-size: inherit;
@@ -85,12 +108,12 @@ body {
 }
 
 .btn-link:hover:not(:disabled) {
-  color: #0056b3;
+  color: var(--color-primary-hover);
   background: none;
 }
 
 .btn-link:disabled {
-  color: #6c757d;
+  color: var(--color-muted);
   cursor: not-allowed;
   text-decoration: none;
 }
@@ -98,11 +121,11 @@ body {
 /* Success Button */
 .btn-success {
   color: white;
-  background-color: #10b981;
+  background-color: var(--color-success);
 }
 
 .btn-success:hover:not(:disabled) {
-  background-color: #059669;
+  background-color: var(--color-success-hover);
 }
 
 /* Close Button */
@@ -111,7 +134,7 @@ body {
   border: none;
   color: #6b7280;
   cursor: pointer;
-  padding: 0.5rem;
+  padding: var(--padding-sm);
   border-radius: 6px;
   transition: background-color 0.2s;
 }
@@ -127,37 +150,19 @@ body {
   font-size: 0.875rem;
 }
 
-.btn-lg {
-  padding: 0.75rem 1.5rem;
-  font-size: 1.125rem;
-}
-
 /* Form Styles */
 .form-control {
-  padding: 0.5rem;
+  padding: var(--padding-sm);
   font-size: 1rem;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--color-border);
   transition: border-color 0.2s, background-color 0.2s;
 }
 
 .form-control:focus {
   outline: none;
-  border-color: #007bff;
+  border-color: var(--color-primary);
   background: white;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.form-label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #333;
 }
 
 /* Modal Styles */
@@ -167,7 +172,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--color-backdrop);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -177,7 +182,7 @@ body {
 
 .modal-content {
   background: white;
-  border-radius: 12px;
+  border-radius: var(--border-radius-xl);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   max-width: 600px;
   width: 100%;
@@ -189,7 +194,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem;
+  padding: var(--padding-lg);
   border-bottom: 1px solid #e5e7eb;
 }
 
@@ -201,21 +206,21 @@ body {
 }
 
 .modal-body {
-  padding: 1.5rem;
+  padding: var(--padding-lg);
 }
 
 @media (max-width: 768px) {
   .modal-backdrop {
-    padding: 1rem;
+    padding: var(--padding-md);
   }
   
   .modal-content {
     margin: 0;
-    border-radius: 8px;
+    border-radius: var(--border-radius-lg);
   }
   
   .modal-header,
   .modal-body {
-    padding: 1rem;
+    padding: var(--padding-md);
   }
 }

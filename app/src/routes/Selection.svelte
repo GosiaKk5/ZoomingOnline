@@ -34,13 +34,7 @@
     };
 
     onMount(() => {
-        console.log('🎯 Selection component mounted');
-        console.log('  - isDataLoaded:', $isDataLoaded);
-        console.log('  - rawStore exists:', !!$rawStore);
-        console.log('  - rawStore:', $rawStore);
-        console.log('  - isLoading:', $isLoading);
-        console.log('  - error:', $error);
-        console.log('  - selectorsPopulated on mount:', selectorsPopulated);
+        // Component mounted
     });
 
     // Calculate dataset metadata when data is available
@@ -50,8 +44,6 @@
 
     async function calculateDatasetInfo() {
         try {
-            console.log('📊 Calculating dataset metadata...');
-            
             // Get basic info from rawStore shape
             const shape = $rawStore.shape;
             const pointsInSegment = shape[3]; // Last dimension is time samples
@@ -75,42 +67,26 @@
                 url: $dataUrl
             };
             
-            console.log('✅ Dataset metadata calculated:', datasetInfo);
             
         } catch (error) {
-            console.error('❌ Error calculating dataset metadata:', error);
+            // Error calculating dataset metadata
         }
     }
 
     // Reactive statements - only populate once when rawStore becomes available
     $: if ($rawStore && !selectorsPopulated) {
-        console.log('📊 rawStore changed, populating selectors...');
-        console.log('  - rawStore shape:', $rawStore?.shape);
-        console.log('  - rawStore meta:', $rawStore?.meta);
-        console.log('  - rawStore attrs:', $rawStore?.attrs);
-        console.log('  - selectorsPopulated flag:', selectorsPopulated);
-        
         selectorsPopulated = true; // Set flag to prevent re-population
         
         populateSelectors($rawStore).then(data => {
-            console.log('✅ populateSelectors completed:');
-            console.log('  - channels:', data.channels);
-            console.log('  - trcFiles:', data.trcFiles);
-            console.log('  - segments:', data.segments);
-            
             channels = data.channels;
             trcFiles = data.trcFiles;
             segments = data.segments;
             
-            console.log('🔧 Setting default values...');
-            
             // Set default values to first available option if not already set
             if (channels.length > 0 && (!$selectedChannel || $selectedChannel === '')) {
-                console.log('  - Setting default channel to:', channels[0]);
                 selectedChannel.set(channels[0]);
             }
             if (trcFiles.length > 0 && (!$selectedTrc || $selectedTrc === '')) {
-                console.log('  - Setting default trcFile to:', trcFiles[0]);
                 selectedTrc.set(trcFiles[0]);
             }
             if (segments.length > 0 && (!$selectedSegment || $selectedSegment === '')) {
@@ -233,12 +209,12 @@
 
 <style>
     .selection-container {
-        padding: 1rem;
+        padding: var(--padding-md);
         background: white;
-        border-radius: 8px;
+        border-radius: var(--border-radius-lg);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         text-align: center;
-        margin-bottom: 1rem;
+        margin-bottom: var(--padding-md);
     }
 
     .navigation {
@@ -280,10 +256,10 @@
     }
 
     select {
-        padding: 0.5rem;
+        padding: var(--padding-sm);
         font-size: 1rem;
-        border-radius: 5px;
-        border: 1px solid #ccc;
+        border-radius: var(--border-radius-md);
+        border: 1px solid var(--color-border);
         min-width: 150px;
     }
 

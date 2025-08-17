@@ -124,17 +124,17 @@
 
 <style>
     .input-container {
-        padding: 1rem;
+        padding: var(--padding-md);
         background: white;
-        border-radius: 8px;
+        border-radius: var(--border-radius-lg);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         text-align: center;
-        margin-bottom: 1rem;
+        margin-bottom: var(--padding-md);
     }
 
     .input-group {
         display: flex;
-        gap: 0.5rem;
+        gap: var(--padding-sm);
         justify-content: center;
         align-items: center;
         flex-wrap: wrap;
@@ -142,9 +142,9 @@
 
     input {
         font-size: 1rem;
-        padding: 0.5rem;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        padding: var(--padding-sm);
+        border: 1px solid var(--color-border);
+        border-radius: var(--border-radius-sm);
         width: 350px;
         max-width: 100%;
     }
@@ -159,9 +159,9 @@
         padding: 0.75rem;
         background-color: #f8f9fa;
         border: 1px solid #e9ecef;
-        border-radius: 4px;
+        border-radius: var(--border-radius-sm);
         font-size: 0.875rem;
-        color: #495057;
+        color: var(--color-text-secondary);
     }
 
     .example-hint p {

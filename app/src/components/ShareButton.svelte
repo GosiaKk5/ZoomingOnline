@@ -117,9 +117,9 @@
     .copy-button {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        border-radius: 8px;
-        padding: 0.75rem 1.5rem;
+        gap: var(--padding-sm);
+        border-radius: var(--border-radius-lg);
+        padding: 0.75rem var(--padding-lg);
         font-size: 0.875rem;
         font-weight: 500;
         transition: all 0.2s;

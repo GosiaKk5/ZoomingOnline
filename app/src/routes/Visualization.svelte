@@ -19,35 +19,15 @@
     import ShareButton from '../components/ShareButton.svelte';
 
     onMount(() => {
-        console.log('🎬 Visualization component mounted');
-        console.log('  - isDataReadyForPlot:', $isDataReadyForPlot);
-        console.log('  - selectedChannel:', $selectedChannel);
-        console.log('  - selectedTrc:', $selectedTrc);
-        console.log('  - selectedSegment:', $selectedSegment);
-        console.log('  - rawStore exists:', !!$rawStore);
-        console.log('  - overviewStore exists:', !!$overviewStore);
-        
         // Show plot another button when entering visualization mode
         showPlotAnotherButton.set(true);
-        console.log('  - Plot another button enabled');
 
         return () => {
-            console.log('🧹 Visualization component cleanup');
             showPlotAnotherButton.set(false);
         };
     });
 
-    // Monitor store changes during visualization
-    $: {
-        console.log('📊 Store state update in Visualization:');
-        console.log('  - plotConfig total_time_us:', $plotConfig?.total_time_us);
-        console.log('  - plotConfig selectedChannelData length:', $plotConfig?.selectedChannelData?.length);
-        console.log('  - plotConfig selectedTrcData length:', $plotConfig?.selectedTrcData?.length);
-        console.log('  - plotConfig selectedSegmentData length:', $plotConfig?.selectedSegmentData?.length);
-    }
-
     function handleGoBack() {
-        console.log('⬅️ Going back to selection page');
         push('/selection');
     }
 
@@ -57,7 +37,7 @@
     $: if (!$isDataReadyForPlot && !$isLoading && hasAttemptedLoad && $isDataLoaded) {
         // Only redirect if we've attempted to load, we're not currently loading,
         // and we have loaded data but selections aren't ready
-        console.log('🚨 Data loaded but selections not ready, redirecting to selection');
+        push('/selection');
         push('/selection');
     }
     
@@ -102,16 +82,16 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 1rem;
-        padding: 1rem;
+        padding: var(--padding-md);
         background: white;
-        border-radius: 8px;
+        border-radius: var(--border-radius-lg);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
     .selection-info {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: var(--padding-sm);
         font-size: 0.875rem;
         color: #495057;
     }

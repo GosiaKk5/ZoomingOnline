@@ -3,7 +3,6 @@
 
     export let show = false;
     export let title = '';
-    export let maxWidth = '600px';
     
     const dispatch = createEventDispatcher();
     
@@ -32,7 +31,7 @@
         on:click={handleBackdropClick}
         on:keydown={handleKeydown}
     >
-        <div class="modal-content" style="max-width: {maxWidth}" role="dialog" aria-labelledby="modal-title">
+        <div class="modal-content" role="dialog" aria-labelledby="modal-title">
             <div class="modal-header">
                 <h2 id="modal-title" class="modal-title">{title}</h2>
                 <button class="btn btn-close" on:click={handleClose} aria-label="Close modal">

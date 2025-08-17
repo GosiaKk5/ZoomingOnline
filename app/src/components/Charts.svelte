@@ -26,50 +26,31 @@
 
     // Component mount logging
     onMount(() => {
-        console.log('🎬 Charts component mounted');
-        console.log('  - rawStore exists:', !!$rawStore);
-        console.log('  - zarrGroup exists:', !!$zarrGroup);
-        console.log('  - overviewStore exists:', !!$overviewStore);
-        console.log('  - selectedChannel:', $selectedChannel);
-        console.log('  - selectedTrc:', $selectedTrc);
-        console.log('  - selectedSegment:', $selectedSegment);
-        console.log('  - plotConfig exists:', !!$plotConfig);
-        console.log('  - isInitialized:', isInitialized);
+        // Charts component mounted
     });
 
     // Initialize plot when data is ready
     $: if ($rawStore && $zarrGroup && $overviewStore && 
            $selectedChannel && $selectedTrc && $selectedSegment && 
            !isInitialized) {
-        console.log('📊 Charts: All data ready, initializing plot...');
         initializePlot();
     }
 
     // Update charts when plot config is ready
     $: if ($plotConfig && overviewContainer && isInitialized) {
-        console.log('🔄 Charts reactive update triggered for overview');
         updateOverviewChart();
     }
     
     async function initializePlot() {
         try {
-            console.log('🎯 Charts: initializePlot() called');
-            
             const channelIndex = parseSelectedIndex($selectedChannel);
             const trcIndex = parseSelectedIndex($selectedTrc);
             const segmentIndex = parseSelectedIndex($selectedSegment);
 
-            console.log('📊 Parsed indices:');
-            console.log('  - channelIndex:', channelIndex);
-            console.log('  - trcIndex:', trcIndex);
-            console.log('  - segmentIndex:', segmentIndex);
-
             if (channelIndex === null || trcIndex === null || segmentIndex === null) {
-                console.error('❌ Invalid indices - cannot initialize plot');
                 return;
             }
 
-            console.log('🔧 Calling initializePlotData...');
             const config = await initializePlotData(
                 $rawStore, 
                 $zarrGroup, 
@@ -79,23 +60,16 @@
                 segmentIndex
             );
 
-            console.log('✅ initializePlotData completed:');
-            console.log('  - config.total_time_us:', config.total_time_us);
-            console.log('  - config.overviewData length:', config.overviewData?.length);
-
             plotConfig.set(config);
-            console.log('💾 Plot config updated in store');
             
             isInitialized = true;
-            console.log('✅ Plot initialization completed');
             
         } catch (error) {
-            console.error('❌ Error initializing plot:', error);
+            // Error initializing plot
         }
     }
 
     async function updateOverviewChart() {
-        console.log('🎨 updateOverviewChart() called');
         
         if (!$plotConfig || !isInitialized || !overviewContainer) {
             console.log('⚠️ Cannot update overview chart - missing requirements');
@@ -145,7 +119,7 @@
     .chart-container {
         background: white;
         padding: 2rem;
-        border-radius: 8px;
+        border-radius: var(--border-radius-lg);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     }
 
