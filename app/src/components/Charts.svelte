@@ -24,11 +24,6 @@
 
     let isInitialized = false;
 
-    // Component mount logging
-    onMount(() => {
-        // Charts component mounted
-    });
-
     // Initialize plot when data is ready
     $: if ($rawStore && $zarrGroup && $overviewStore && 
            $selectedChannel && $selectedTrc && $selectedSegment && 
@@ -71,17 +66,8 @@
 
     async function updateOverviewChart() {
         
-        if (!$plotConfig || !isInitialized || !overviewContainer) {
-            console.log('⚠️ Cannot update overview chart - missing requirements');
-            return;
-        }
-
         const { width, height, total_time_us, overviewData, globalYMin, globalYMax,
                 margin, fullWidth, chartHeight } = $plotConfig;
-
-        console.log('📊 Overview chart config:');
-        console.log('  - total_time_us:', total_time_us);
-        console.log('  - overviewData length:', overviewData?.length);
 
         if (!overviewData || overviewData.length === 0) {
             console.error('❌ No overview data available for rendering');

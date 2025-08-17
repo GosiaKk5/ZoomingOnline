@@ -78,7 +78,6 @@ export const currentDataUrl: Readable<string> = derived(
 
 // UI control stores
 export const showCopyLink: Writable<boolean> = writable(false);
-export const showPlotAnotherButton: Writable<boolean> = writable(false);
 
 // Helper functions to reset state
 export function resetAppState(): void {
@@ -106,7 +105,6 @@ export function resetAppState(): void {
     lastChunkCache.set({ key: null, data: null });
     timeSteps.set([]);
     showCopyLink.set(false);
-    showPlotAnotherButton.set(false);
 }
 
 export function setLoadingState(loading: boolean): void {

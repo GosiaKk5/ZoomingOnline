@@ -1,7 +1,6 @@
 <script>
     import { onMount } from 'svelte';
     import { 
-        showPlotAnotherButton,
         isDataReadyForPlot,
         selectedChannel,
         selectedTrc,
@@ -17,15 +16,6 @@
     
     import Charts from '../components/Charts.svelte';
     import ShareButton from '../components/ShareButton.svelte';
-
-    onMount(() => {
-        // Show plot another button when entering visualization mode
-        showPlotAnotherButton.set(true);
-
-        return () => {
-            showPlotAnotherButton.set(false);
-        };
-    });
 
     function handleGoBack() {
         push('/selection');
@@ -71,5 +61,3 @@
         <Charts />
     </div>
 {/if}
-
-

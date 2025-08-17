@@ -17,53 +17,24 @@
     // Construct the full example URL using the dedicated static route
     $: exampleUrl = `${window.location.origin}${import.meta.env.BASE_URL}static/example.zarr`;
 
-    onMount(() => {
-        console.log('🏠 Home component mounted');
-        console.log('  - Current data loaded state:', $isDataLoaded);
-        console.log('  - Current dataUrl:', $dataUrl);
-        
-        // Note: Data loading from URL parameters is now handled at the App level
-        // This component only handles manual data input
-    });
-
     async function handleLoadData() {
         if (!inputUrl.trim()) {
             console.log('❌ No input URL provided');
             return;
         }
         
-        console.log('📊 Starting data load process...');
-        console.log('  - Input URL:', inputUrl);
-        console.log('  - Current loading state:', $isLoading);
-        console.log('  - Current data loaded state:', $isDataLoaded);
-        
         setLoadingState(true);
-        console.log('  - Loading state set to true');
         
         try {
-            console.log('🔄 Calling loadZarrData...');
             await loadZarrData(inputUrl);
-            console.log('✅ loadZarrData completed successfully');
-            
-            console.log('💾 Updating stores...');
             dataUrl.set(inputUrl);
             isDataLoaded.set(true);
             setError(null);
-            console.log('  - dataUrl store updated to:', inputUrl);
-            console.log('  - isDataLoaded set to true');
-            console.log('  - error cleared');
-            
-            console.log('🧭 Navigating to selection route...');
             push('/selection');
-            console.log('  - Navigation push() called');
             
         } catch (err) {
-            console.error('❌ Error during data loading:', err);
-            console.error('  - Error message:', err.message);
-            console.error('  - Error stack:', err.stack);
             setError(err.message);
         } finally {
-            console.log('🏁 Setting loading state to false');
             setLoadingState(false);
         }
     }
@@ -76,10 +47,7 @@
     }
 
     function loadExample() {
-        console.log('🎯 Example button clicked');
-        console.log('  - Example URL:', exampleUrl);
         inputUrl = exampleUrl;
-        console.log('  - Input URL set to example URL');
         handleLoadData();
     }
 </script>

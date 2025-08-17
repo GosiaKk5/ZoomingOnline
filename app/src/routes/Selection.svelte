@@ -33,10 +33,6 @@
         url: ''
     };
 
-    onMount(() => {
-        // Component mounted
-    });
-
     // Calculate dataset metadata when data is available
     $: if ($rawStore && $zarrGroup && $dataUrl) {
         calculateDatasetInfo();
@@ -90,46 +86,20 @@
                 selectedTrc.set(trcFiles[0]);
             }
             if (segments.length > 0 && (!$selectedSegment || $selectedSegment === '')) {
-                console.log('  - Setting default segment to:', segments[0]);
                 selectedSegment.set(segments[0]);
-            }
-            
-            console.log('📋 Final selected values:');
-            console.log('  - selectedChannel:', $selectedChannel);
-            console.log('  - selectedTrc:', $selectedTrc);
-            console.log('  - selectedSegment:', $selectedSegment);
-            console.log('  - isDataReadyForPlot after setting defaults:', $isDataReadyForPlot);
+            }            
         }).catch(err => {
-            console.error('❌ Error in populateSelectors:');
-            console.error('  - Error:', err);
-            console.error('  - rawStore that failed:', $rawStore);
             selectorsPopulated = false; // Reset flag on error so user can retry
         });
     }
 
     // Show copy link when data is loaded
     $: if ($isDataLoaded) {
-        console.log('🔗 Data loaded, showing copy link');
         showCopyLink.set(true);
     }
 
-    // Monitor isDataReadyForPlot changes (only log when it becomes true)
-    $: if ($isDataReadyForPlot) {
-        console.log('✅ Data is ready for plot!');
-        console.log('  - selectedChannel:', $selectedChannel);
-        console.log('  - selectedTrc:', $selectedTrc);
-        console.log('  - selectedSegment:', $selectedSegment);
-    }
-
-    function handlePlotData() {
-        console.log('📈 Plot data button clicked');
-        console.log('  - isDataReadyForPlot:', $isDataReadyForPlot);
-        console.log('  - selectedChannel:', $selectedChannel);
-        console.log('  - selectedTrc:', $selectedTrc);
-        console.log('  - selectedSegment:', $selectedSegment);
-        
+    function handlePlotData() {        
         if ($isDataReadyForPlot) {
-            console.log('🧭 Navigating to visualization...');
             push('/visualization');
         } else {
             console.log('⚠️ Data not ready for plot');
@@ -137,7 +107,6 @@
     }
 
     function handleGoBack() {
-        console.log('⬅️ Going back to home page');
         push('/');
     }
 </script>
