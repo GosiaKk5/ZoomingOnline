@@ -33,8 +33,8 @@ test.describe('ZoomingOnline Browser Tests', () => {
     // Wait for the data to load and charts to render
     await page.waitForTimeout(3000);
 
-    // Wait for data to load
-    const selectionContainer = await page.locator('.selection-container');
+    // Wait for data to load - look for the selection interface with container-center class
+    const selectionContainer = await page.locator('.container-center');
     await expect(selectionContainer).toBeVisible({ timeout: TIMEOUT_CI });
 
     // Verify that data controls are present and populated
@@ -61,8 +61,8 @@ test.describe('ZoomingOnline Browser Tests', () => {
     await page.fill('input[type="text"]', dataUrl);
     await page.click('button:has-text("Load Data")');
     
-    // Wait for data to load
-    const selectionContainer = await page.locator('.selection-container');
+    // Wait for data to load - look for the selection interface with container-center class
+    const selectionContainer = await page.locator('.container-center');
     await expect(selectionContainer).toBeVisible({ timeout: TIMEOUT_CI }); // Increased timeout for CI
     
     // Wait for selectors to be populated
@@ -100,15 +100,15 @@ test.describe('ZoomingOnline Browser Tests', () => {
     // Wait a bit for the selections to update the store
     await page.waitForTimeout(3000);
     
-    // Plot the selected data
-    await page.click('.plot-button');
+    // Plot the selected data - use the button text instead of the removed CSS class
+    await page.click('button:has-text("Plot Selected Data")');
     
     // Wait for navigation to visualization page
     await page.waitForURL('**/visualization', { timeout: 15000 });
     console.log('Navigated to visualization page');
     
-    // Wait for chart container to appear (it needs plotConfig to be ready)
-    await page.waitForSelector('.chart-container', { timeout: TIMEOUT_CI });
+    // Wait for chart container to appear (it needs plotConfig to be ready) - use overview chart directly
+    await page.waitForSelector('#overview-chart', { timeout: TIMEOUT_CI });
     
     // Wait additional time for charts to be fully rendered (reduced from 10s to 3s)
     await page.waitForTimeout(3000);
@@ -132,9 +132,9 @@ test.describe('ZoomingOnline Browser Tests', () => {
     console.log('Chart SVG counts:');
     console.log('  Overview SVG:', overviewSVG);
     
-    // Wait for charts to appear on the visualization page
-    const chartContainer = await page.locator('.chart-container');
-    await expect(chartContainer).toBeVisible({ timeout: TIMEOUT_CI }); // Additional timeout
+    // Wait for charts to appear on the visualization page - use the overview chart directly
+    const overviewChart = await page.locator('#overview-chart');
+    await expect(overviewChart).toBeVisible({ timeout: TIMEOUT_CI }); // Additional timeout
     
     // If overview chart has SVG content, the core functionality is working
     if (overviewSVG > 0) {
