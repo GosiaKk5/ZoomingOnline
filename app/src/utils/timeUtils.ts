@@ -7,7 +7,7 @@
  */
 
 import { timeSteps } from "../stores/appStore.ts";
-import { formatTimeFromMicroseconds } from "./mathUtils.ts";
+import { formatTime } from "./mathUtils.ts";
 import { get } from "svelte/store";
 import type { TimeStep } from "../stores/appStore.ts";
 
@@ -36,8 +36,8 @@ export function generateTimeSteps(): void {
 
   console.log("  - Generating new time steps...");
 
-  // Define units and their conversion factors to microseconds
-  const units: UnitConversions = { ns: 1e-3, µs: 1, ms: 1e3 };
+  // Define units and their conversion factors to seconds
+  const units: UnitConversions = { ns: 1e-9, µs: 1e-6, ms: 1e-3, s: 1 };
   const bases = [1, 2, 5]; // Standard bases for logarithmic scale
   const addedValues = new Set<number>(); // Track unique values to avoid duplicates
   const newTimeSteps: TimeStep[] = [];
@@ -48,26 +48,28 @@ export function generateTimeSteps(): void {
       // Skip ranges that would be excessive for practical use
       if (unit === "ns" && mag > 500) continue;
       if (unit === "ms" && mag > 10) continue; // Allow up to 10ms
+      if (unit === "s" && mag > 1) continue; // Allow up to 1s
 
       bases.forEach((base) => {
         const val = base * mag;
         if (unit === "ms" && val > 10) return; // Max 10ms
         if (unit === "ns" && val > 500) return; // Max 500ns
+        if (unit === "s" && val > 1) return; // Max 1s
 
-        const value_us = val * units[unit]!; // Non-null assertion since we're iterating over keys
-        if (!addedValues.has(value_us)) {
+        const value_s = val * units[unit]!; // Non-null assertion since we're iterating over keys
+        if (!addedValues.has(value_s)) {
           newTimeSteps.push({
-            label: formatTimeFromMicroseconds(value_us),
-            value_us: value_us,
+            label: formatTime(value_s),
+            value_s: value_s,
           });
-          addedValues.add(value_us);
+          addedValues.add(value_s);
         }
       });
     }
   }
 
   // Sort by increasing duration and update store
-  newTimeSteps.sort((a, b) => a.value_us - b.value_us);
+  newTimeSteps.sort((a, b) => a.value_s - b.value_s);
   console.log("  - Generated time steps count:", newTimeSteps.length);
   console.log("  - Sample time steps:", newTimeSteps.slice(0, 10));
 
@@ -78,6 +80,6 @@ export function generateTimeSteps(): void {
 /**
  * Get formatted time label for a time step value using SI formatting
  */
-export function formatTimeLabel(valueUs: number): string {
-  return formatTimeFromMicroseconds(valueUs);
+export function formatTimeLabel(valueS: number): string {
+  return formatTime(valueS);
 }

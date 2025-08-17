@@ -1,5 +1,4 @@
 <script>
-    import { onMount } from 'svelte';
     import { 
         plotConfig, 
         rawStore, 
@@ -66,7 +65,7 @@
 
     async function updateOverviewChart() {
         
-        const { width, height, total_time_us, overviewData, globalYMin, globalYMax,
+        const { width, height, total_time_s, overviewData, globalYMin, globalYMax,
                 margin, fullWidth, chartHeight } = $plotConfig;
 
         if (!overviewData || overviewData.length === 0) {
@@ -76,15 +75,15 @@
 
         try {
             // Create scales for full overview
-            const x0 = d3.scaleLinear().domain([0, total_time_us]).range([0, width]);
+            const x0 = d3.scaleLinear().domain([0, total_time_s]).range([0, width]);
             const y0 = d3.scaleLinear().domain([globalYMin, globalYMax]).range([height, 0]).nice();
 
             // Create SVG
             const svg0 = createChartSVG(overviewContainer, "Overview", margin, width, height, fullWidth, chartHeight);
             
             // Draw chart elements
-            drawArea(svg0, overviewData, x0, y0, d => d.time_us, d => d.min_mv, d => d.max_mv);
-            drawAxes(svg0, x0, y0, "Time [µs]", height, margin, width);
+            drawArea(svg0, overviewData, x0, y0, d => d.time_s, d => d.min_mv, d => d.max_mv);
+            drawAxes(svg0, x0, y0, "Time", height, margin, width);
             drawGridLines(svg0, x0, y0, width, height);
             
             console.log('✅ Overview chart rendering completed');
@@ -95,7 +94,7 @@
     }
 </script>
 
-{#if isInitialized && $plotConfig.total_time_us > 0}
+{#if isInitialized && $plotConfig.total_time_s > 0}
     <div class="bg-white p-8 rounded-lg shadow-md">
         <div bind:this={overviewContainer} id="overview-chart" class="mb-10"></div>
     </div>

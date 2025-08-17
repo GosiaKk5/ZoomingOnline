@@ -5,12 +5,7 @@ import { writable, derived, type Writable, type Readable } from "svelte/store";
 
 // Type definitions for better type safety
 export interface PlotConfig {
-  total_time_us: number;
-  overview_window_us: number;
-  zoom1_window_us: number;
-  zoom2_window_us: number;
-  zoom1_position: number;
-  zoom2_position: number;
+  total_time_s: number;
   selectedChannelData: any | null;
   selectedTrcData: any | null;
   selectedSegmentData: any | null;
@@ -23,7 +18,7 @@ export interface CacheEntry {
 
 export interface TimeStep {
   label: string;
-  value_us: number;
+  value_s: number;
 }
 
 // Data-related stores
@@ -44,12 +39,7 @@ export const selectedSegment: Writable<string> = writable("");
 
 // Plot configuration store
 export const plotConfig: Writable<PlotConfig> = writable({
-  total_time_us: 0,
-  overview_window_us: 0,
-  zoom1_window_us: 0,
-  zoom2_window_us: 0,
-  zoom1_position: 50,
-  zoom2_position: 50,
+  total_time_s: 0,
   selectedChannelData: null,
   selectedTrcData: null,
   selectedSegmentData: null,
@@ -94,12 +84,7 @@ export function resetAppState(): void {
   selectedTrc.set("");
   selectedSegment.set("");
   plotConfig.set({
-    total_time_us: 0,
-    overview_window_us: 0,
-    zoom1_window_us: 0,
-    zoom2_window_us: 0,
-    zoom1_position: 50,
-    zoom2_position: 50,
+    total_time_s: 0,
     selectedChannelData: null,
     selectedTrcData: null,
     selectedSegmentData: null,

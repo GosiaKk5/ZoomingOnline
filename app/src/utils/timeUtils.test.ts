@@ -33,13 +33,17 @@ describe("timeUtils", () => {
       const msSteps = steps.filter((s) => s.label.includes("ms"));
       expect(msSteps.length).toBeGreaterThan(0);
 
+      // Check for second steps
+      const sSteps = steps.filter((s) => s.label.includes("s") && !s.label.includes("µs") && !s.label.includes("ns") && !s.label.includes("ms"));
+      expect(sSteps.length).toBeGreaterThan(0);
+
       // Check sorting
       for (let i = 1; i < steps.length; i++) {
         const currentStep = steps[i];
         const previousStep = steps[i - 1];
         if (currentStep && previousStep) {
-          expect(currentStep.value_us).toBeGreaterThanOrEqual(
-            previousStep.value_us,
+          expect(currentStep.value_s).toBeGreaterThanOrEqual(
+            previousStep.value_s,
           );
         }
       }
@@ -49,7 +53,7 @@ describe("timeUtils", () => {
       generateTimeSteps();
       const steps = get(timeSteps);
 
-      const values = steps.map((s) => s.value_us);
+      const values = steps.map((s) => s.value_s);
       const uniqueValues = [...new Set(values)];
 
       expect(values.length).toBe(uniqueValues.length);
@@ -58,9 +62,10 @@ describe("timeUtils", () => {
 
   describe("formatTimeLabel", () => {
     it("should format time values correctly", () => {
-      expect(formatTimeLabel(0.001)).toBe("1 ns");
-      expect(formatTimeLabel(1)).toBe("1 µs");
-      expect(formatTimeLabel(1000)).toBe("1 ms");
+      expect(formatTimeLabel(1e-9)).toBe("1 ns");
+      expect(formatTimeLabel(1e-6)).toBe("1 µs");
+      expect(formatTimeLabel(1e-3)).toBe("1 ms");
+      expect(formatTimeLabel(1)).toBe("1 s");
     });
   });
 });

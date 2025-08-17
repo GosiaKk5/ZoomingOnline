@@ -6,6 +6,7 @@
  */
 
 import * as d3 from "d3";
+import { formatTime } from "./mathUtils.ts";
 
 // Type definitions
 export interface ChartMargin {
@@ -23,7 +24,7 @@ export interface PlotDataResult {
   chartHeight: number;
   horiz_interval: number;
   no_of_samples: number;
-  total_time_us: number;
+  total_time_s: number;
   adcToMv: (adc: number) => number;
   channel: number;
   trc: number;
@@ -36,7 +37,7 @@ export interface PlotDataResult {
 }
 
 export interface OverviewDataPoint {
-  time_us: number;
+  time_s: number;
   min_mv: number;
   max_mv: number;
 }
@@ -46,20 +47,17 @@ export interface TimeUnitInfo {
   timeUnitLabel: string;
 }
 
-// Constants for time conversions
-const S_TO_US_FACTOR = 1e6;
-
-// Threshold for switching to nanosecond display (in microseconds)
-const NANOSECOND_THRESHOLD_US = 0.5;
+// Threshold for switching to nanosecond display (in seconds)
+const NANOSECOND_THRESHOLD_S = 0.5e-6;
 
 /**
  * Helper function to determine appropriate time unit and label
  */
-function getTimeUnitInfo(timeSpanUs: number): TimeUnitInfo {
-  const useNanoseconds = timeSpanUs <= NANOSECOND_THRESHOLD_US;
+function getTimeUnitInfo(timeSpanS: number): TimeUnitInfo {
+  const useNanoseconds = timeSpanS <= NANOSECOND_THRESHOLD_S;
   const timeUnitLabel = useNanoseconds
     ? "Relative Time [ns]"
-    : "Relative Time [µs]";
+    : "Relative Time [s]";
   return { useNanoseconds, timeUnitLabel };
 }
 
@@ -114,18 +112,18 @@ export async function initializePlotData(
     // Function to convert ADC values to millivolts
     const adcToMilliVolts = (adc: number): number =>
       1000 * (adc * vertical_gain - vertical_offset);
-    const total_time_us = (no_of_samples - 1) * horiz_interval * S_TO_US_FACTOR;
+    const total_time_s = (no_of_samples - 1) * horiz_interval;
 
     console.log("⏰ Time calculation:");
-    console.log("  - S_TO_US_FACTOR:", S_TO_US_FACTOR);
+    console.log("  - horiz_interval:", horiz_interval);
     console.log(
-      "  - total_time_us calculation:",
-      `(${no_of_samples} - 1) * ${horiz_interval} * ${S_TO_US_FACTOR}`,
+      "  - total_time_s calculation:",
+      `(${no_of_samples} - 1) * ${horiz_interval}`,
     );
-    console.log("  - total_time_us result:", total_time_us);
+    console.log("  - total_time_s result:", total_time_s);
     console.log(
-      "  - total_time_us is valid:",
-      !isNaN(total_time_us) && isFinite(total_time_us),
+      "  - total_time_s is valid:",
+      !isNaN(total_time_s) && isFinite(total_time_s),
     );
 
     // Chart dimensions
@@ -167,14 +165,14 @@ export async function initializePlotData(
     console.log("🔄 Processing overview data...");
     const overviewData: OverviewDataPoint[] = Array.from(overviewMin).map(
       (min_val, i) => {
-        const time_us =
-          (i + 0.5) * downsampling_factor * horiz_interval * S_TO_US_FACTOR;
+        const time_s =
+          (i + 0.5) * downsampling_factor * horiz_interval;
         const maxVal = overviewMax[i];
         if (typeof maxVal === "undefined") {
           throw new Error(`Missing overview max value at index ${i}`);
         }
         return {
-          time_us,
+          time_s,
           min_mv: adcToMilliVolts(min_val),
           max_mv: adcToMilliVolts(maxVal),
         };
@@ -187,15 +185,15 @@ export async function initializePlotData(
 
     console.log("📈 Overview data processing complete:");
     console.log("  - overviewData length:", overviewData.length);
-    console.log("  - First data point time_us:", overviewData[0]?.time_us);
+    console.log("  - First data point time_s:", overviewData[0]?.time_s);
     console.log(
-      "  - Last data point time_us:",
-      overviewData[overviewData.length - 1]?.time_us,
+      "  - Last data point time_s:",
+      overviewData[overviewData.length - 1]?.time_s,
     );
-    console.log("  - Expected total_time_us:", total_time_us);
+    console.log("  - Expected total_time_s:", total_time_s);
     console.log(
       "  - Time range coverage:",
-      `${overviewData[0]?.time_us} - ${overviewData[overviewData.length - 1]?.time_us}`,
+      `${overviewData[0]?.time_s} - ${overviewData[overviewData.length - 1]?.time_s}`,
     );
     console.log("  - globalYMin:", globalYMin, "globalYMax:", globalYMax);
     console.log("  - overviewData sample (first 3):", overviewData.slice(0, 3));
@@ -209,7 +207,7 @@ export async function initializePlotData(
       chartHeight,
       horiz_interval,
       no_of_samples,
-      total_time_us,
+      total_time_s,
       adcToMv: adcToMilliVolts,
       channel,
       trc,
@@ -358,10 +356,16 @@ export function drawAxes(
   margin: ChartMargin,
   width: number,
 ): void {
+  // Create x-axis with better formatted time values
   svg
     .append("g")
     .attr("transform", `translate(0, ${height})`)
-    .call(d3.axisBottom(xScale).ticks(5).tickFormat(d3.format(".3f")));
+    .call(
+      d3.axisBottom(xScale).ticks(5).tickFormat((d) => {
+        const timeInSeconds = Number(d);
+        return formatTime(timeInSeconds);
+      })
+    );
 
   svg.append("g").call(d3.axisLeft(yScale).ticks(5));
 
