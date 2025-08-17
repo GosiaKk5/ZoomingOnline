@@ -25,7 +25,7 @@
 
     "allowJs": true,
     "checkJs": false,
-    
+
     /* Path mapping for cleaner imports */
     "baseUrl": ".",
     "paths": {
@@ -38,7 +38,7 @@
   },
   "include": [
     "src/**/*.js",
-    "src/**/*.ts", 
+    "src/**/*.ts",
     "src/**/*.svelte",
     "src/**/*.test.js",
     "src/**/*.test.ts"

@@ -35,8 +35,20 @@ app/
 cd app
 ```
 
+**Automated Setup (Recommended):**
+
+```bash
+./setup-dev.sh
+```
+
+**Manual Setup:**
+
 ```bash
 npm install
+```
+
+```bash
+npm run validate  # Verify setup
 ```
 
 ```bash
@@ -47,17 +59,30 @@ Open browser to http://localhost:5173
 
 ## 📦 Available Scripts
 
-| Command | Purpose | Usage |
-|---------|---------|-------|
-| `npm run dev` | Start development server | Local development with hot reload |
-| `npm run build` | Production build | Generates optimized build in `dist/` |
-| `npm run preview` | Preview production build | Test production build locally |
-| `npm run check` | TypeScript type checking | Validate types with svelte-check |
-| `npm run check:watch` | Watch mode type checking | Continuous type validation |
-| `npm run test:unit` | Run unit tests | Vitest-based unit tests |
-| `npm run test:headed` | Run E2E tests (headed) | Playwright browser tests with UI |
+| Command                | Purpose                  | Usage                                |
+| ---------------------- | ------------------------ | ------------------------------------ |
+| `npm run dev`          | Start development server | Local development with hot reload    |
+| `npm run build`        | Production build         | Generates optimized build in `dist/` |
+| `npm run preview`      | Preview production build | Test production build locally        |
+| `npm run check`        | TypeScript type checking | Validate types with svelte-check     |
+| `npm run check:watch`  | Watch mode type checking | Continuous type validation           |
+| `npm run lint`         | Run ESLint               | Check code quality and style         |
+| `npm run lint:fix`     | Fix ESLint issues        | Automatically fix linting problems   |
+| `npm run format`       | Format code              | Apply Prettier formatting            |
+| `npm run format:check` | Check formatting         | Verify code is properly formatted    |
+| `npm run validate`     | Run all quality checks   | Complete validation pipeline         |
+| `npm run test:unit`    | Run unit tests           | Vitest-based unit tests              |
+| `npm run test:headed`  | Run E2E tests (headed)   | Playwright browser tests with UI     |
 
 ## 🔧 Development Tools
+
+### Code Quality & Linting
+
+- **ESLint**: Comprehensive linting for TypeScript and Svelte files
+- **Prettier**: Consistent code formatting across the project
+- **GitHub Actions**: Continuous integration with quality checks
+
+See [../docs/linting.md](../docs/linting.md) for detailed linting setup and configuration.
 
 ### TypeScript Integration
 
@@ -149,18 +174,24 @@ The test suite is located in `tests/` and includes:
 ## 📁 Key Directories
 
 ### `src/`
+
 Contains the main Svelte application source code:
+
 - Components, stores, and application logic
 - Data visualization components
 - Zarr data loading utilities
 
 ### `static/`
+
 Static assets served directly:
+
 - Favicon, images, and other assets
 - Public files accessible at `/filename`
 
 ### `tests/`
+
 E2E test suite with Playwright:
+
 - Browser automation scripts
 - Test data and fixtures
 - Screenshot baselines
@@ -176,7 +207,7 @@ The frontend integrates with the Python backend through:
 const dataUrl = `${window.location.origin}${import.meta.env.BASE_URL}example.zarr`;
 
 // Load remote data in production
-const dataUrl = 'https://your-domain.com/dataset.zarr';
+const dataUrl = "https://your-domain.com/dataset.zarr";
 ```
 
 ### URL Parameters
@@ -307,32 +338,32 @@ npm run build -- --mode analyze
 export default {
   // Build configuration
   build: {
-    target: 'es2022',
-    sourcemap: true
+    target: "es2022",
+    sourcemap: true,
   },
-  
+
   // Development server
   server: {
     port: 5173,
-    host: true
-  }
-}
+    host: true,
+  },
+};
 ```
 
 ### Playwright Configuration (`playwright.config.js`)
 
 ```javascript
 export default {
-  testDir: './tests',
+  testDir: "./tests",
   timeout: 30 * 1000,
   fullyParallel: true,
-  
+
   projects: [
-    { name: 'chromium', use: devices['Desktop Chrome'] },
-    { name: 'firefox', use: devices['Desktop Firefox'] },
-    { name: 'webkit', use: devices['Desktop Safari'] }
-  ]
-}
+    { name: "chromium", use: devices["Desktop Chrome"] },
+    { name: "firefox", use: devices["Desktop Firefox"] },
+    { name: "webkit", use: devices["Desktop Safari"] },
+  ],
+};
 ```
 
 ## 🚀 Performance Considerations

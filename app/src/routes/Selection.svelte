@@ -133,7 +133,7 @@
         </div>
         
         <!-- Dataset Information Display -->
-        <DatasetInfo datasetInfo={datasetInfo} />
+        <DatasetInfo {datasetInfo} />
         
         <h3 class="text-xl font-semibold my-4 text-gray-800">Select Data Parameters</h3>
         
