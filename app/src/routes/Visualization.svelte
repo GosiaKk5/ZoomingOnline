@@ -71,7 +71,7 @@
     <div class="visualization-container">
         <div class="navigation">
             <div class="left-section">
-                <button class="back-button" on:click={handleGoBack}>
+                <button class="btn btn-secondary btn-sm" on:click={handleGoBack}>
                     ← Back to Selection
                 </button>
                 <div class="selection-info">
@@ -106,21 +106,6 @@
         background: white;
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
-
-    .back-button {
-        background-color: #6c757d;
-        color: white;
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 5px;
-        font-size: 0.875rem;
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-
-    .back-button:hover {
-        background-color: #5a6268;
     }
 
     .selection-info {

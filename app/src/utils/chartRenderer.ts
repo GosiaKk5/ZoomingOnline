@@ -7,8 +7,6 @@
 
 import * as d3 from 'd3';
 import { formatTimeFromMicroseconds } from './mathUtils.ts';
-import { getRawDataSlice } from './dataLoader.ts';
-import type { CacheEntry } from '../stores/appStore.ts';
 
 // Type definitions
 export interface ChartMargin {
@@ -51,13 +49,9 @@ export interface TimeUnitInfo {
 
 // Constants for time conversions
 const S_TO_US_FACTOR = 1e6;
-const S_TO_NS_FACTOR = 1e9;
 
 // Threshold for switching to nanosecond display (in microseconds)
 const NANOSECOND_THRESHOLD_US = 0.5;
-
-// Detail view threshold for decimation
-const DETAIL_THRESHOLD = 40000;
 
 /**
  * Helper function to determine appropriate time unit and label
@@ -378,146 +372,6 @@ export function drawLine<T>(
             .x(d => xScale(xAcc(d)))
             .y(d => yScale(yAcc(d)))
         );
-}
-
-/**
- * Add draggable zoom rectangle with position callback
- */
-export function addDragHandler(
-    target: d3.Selection<SVGRectElement, unknown, null, undefined>, 
-    width: number, 
-    onPositionChange?: (percentage: number) => void
-): void {
-    let startX: number, rectX: number, rectWidth: number;
-    
-    const drag = d3.drag<SVGRectElement, unknown>()
-        .on("start", function (event) {
-            startX = event.x;
-            rectX = parseFloat(target.attr("x"));
-            rectWidth = parseFloat(target.attr("width"));
-            target.classed("dragging", true);
-        })
-        .on("drag", function (event) {
-            const dx = event.x - startX;
-            let newX = rectX + dx;
-            
-            // Constrain to chart boundaries
-            newX = Math.max(0, Math.min(width - rectWidth, newX));
-            target.attr("x", newX);
-            
-            // Convert to percentage for callback
-            const centerX = newX + (rectWidth / 2);
-            const percentage = Math.round((centerX / width) * 100);
-            
-            if (onPositionChange) {
-                onPositionChange(percentage);
-            }
-        })
-        .on("end", function() {
-            target.classed("dragging", false);
-        });
-        
-    target.call(drag);
-}
-
-/**
- * Render detailed data for zoom charts
- */
-export async function renderDetailChart(
-    containerElement: HTMLElement, 
-    domain_us: [number, number], 
-    plotConfig: PlotDataResult, 
-    rawStoreObj: any, 
-    cacheObj: CacheEntry,
-    title: string
-): Promise<d3.Selection<SVGGElement, unknown, null, undefined>> {
-    const { horiz_interval, no_of_samples, adcToMv, channel, trc, segment, 
-            width, height, margin, fullWidth, chartHeight } = plotConfig;
-
-    // Calculate time span and determine units
-    const timeSpanUs = domain_us[1] - domain_us[0];
-    const { useNanoseconds, timeUnitLabel } = getTimeUnitInfo(timeSpanUs);
-
-    // Create SVG
-    const svg = createChartSVG(containerElement, title, margin, width, height, fullWidth, chartHeight);
-    
-    // Show loading text
-    const loadingText = svg.append("text")
-        .attr("class", "loading-text")
-        .attr("x", width / 2)
-        .attr("y", height / 2)
-        .text("Loading detail...");
-
-    // Calculate data indices for the visible region
-    const startIndex = Math.max(0, Math.floor(domain_us[0] / (horiz_interval * S_TO_US_FACTOR)));
-    const endIndex = Math.min(no_of_samples, Math.ceil(domain_us[1] / (horiz_interval * S_TO_US_FACTOR)));
-    const visibleSampleWidth = endIndex - startIndex;
-    
-    // Calculate relative time range
-    const relativeStartTime = 0;
-    const timeFactor = useNanoseconds ? S_TO_NS_FACTOR : S_TO_US_FACTOR;
-    const relativeEndTime = (endIndex - startIndex) * horiz_interval * timeFactor;
-    const relativeTimeRange: [number, number] = [relativeStartTime, relativeEndTime];
-
-    // Create scales
-    const xScale = d3.scaleLinear().domain(relativeTimeRange).range([0, width]);
-    const yScale = d3.scaleLinear().range([height, 0]);
-
-    try {
-        // For large data ranges, use decimation
-        if (visibleSampleWidth > DETAIL_THRESHOLD) {
-            const target_points = 4000;
-            const step = Math.max(1, Math.floor(visibleSampleWidth / target_points));
-            const detailOverviewData: OverviewDataPoint[] = [];
-            let yMin = Infinity, yMax = -Infinity;
-
-            for (let i = startIndex; i < endIndex; i += step) {
-                const chunkStart = i;
-                const chunkEnd = Math.min(i + step, endIndex);
-                const chunkData = await getRawDataSlice(rawStoreObj, cacheObj, channel, trc, segment, chunkStart, chunkEnd);
-                
-                let min_mv = Infinity, max_mv = -Infinity;
-                for (const val of chunkData) {
-                    const mv = adcToMv(val);
-                    if (mv < min_mv) min_mv = mv;
-                    if (mv > max_mv) max_mv = mv;
-                }
-                if (min_mv < yMin) yMin = min_mv;
-                if (max_mv > yMax) yMax = max_mv;
-                
-                const relative_time = (chunkStart - startIndex + (chunkEnd - chunkStart) / 2) * horiz_interval * timeFactor;
-                detailOverviewData.push({time_us: relative_time, min_mv, max_mv});
-            }
-            
-            loadingText.remove();
-            yScale.domain([yMin, yMax]).nice();
-            drawGridLines(svg, xScale, yScale, width, height);
-            drawArea(svg, detailOverviewData, xScale, yScale, d => d.time_us, d => d.min_mv, d => d.max_mv);
-
-        } else {
-            // For smaller ranges, show all data points
-            const chunkData = await getRawDataSlice(rawStoreObj, cacheObj, channel, trc, segment, startIndex, endIndex);
-            const detailData = Array.from(chunkData).map((v, i) => ({
-                time_us: i * horiz_interval * timeFactor,
-                voltage_mv: adcToMv(v)
-            }));
-            
-            loadingText.remove();
-            const extent = d3.extent(detailData, d => d.voltage_mv);
-            const domain = extent[0] !== undefined && extent[1] !== undefined ? extent : [0, 0];
-            yScale.domain(domain).nice();
-            drawGridLines(svg, xScale, yScale, width, height);
-            drawLine(svg, detailData, xScale, yScale, d => d.time_us, d => d.voltage_mv);
-        }
-        
-        drawAxes(svg, xScale, yScale, timeUnitLabel, height, margin, width);
-        
-    } catch (error) {
-        loadingText.text(`Error loading data: ${(error as Error).message}`);
-        console.error('Error rendering detail chart:', error);
-    }
-
-    return svg;
 }
 
 export { getTimeUnitInfo, formatTimeDuration };

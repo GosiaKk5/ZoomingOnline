@@ -1,5 +1,4 @@
 <script>
-    import { formatTimeFromMicroseconds, formatFileSize } from '../utils/mathUtils.ts';
     import { onMount } from 'svelte';
     import { 
         isLoading, 
@@ -18,6 +17,7 @@
     import { populateSelectors } from '../utils/uiManager.ts';
     import { push } from 'svelte-spa-router';
     import ShareButton from '../components/ShareButton.svelte';
+    import DatasetInfo from '../components/DatasetInfo.svelte';
 
     let channels = [];
     let trcFiles = [];
@@ -180,13 +180,13 @@
         <div class="error">
             <h3>Error</h3>
             <p>{$error}</p>
-            <button on:click={handleGoBack}>
+            <button class="btn btn-primary" on:click={handleGoBack}>
                 Try Again
             </button>
         </div>
     {:else if $isDataLoaded}
         <div class="navigation">
-            <button class="back-button" on:click={handleGoBack}>
+            <button class="btn btn-secondary btn-sm" on:click={handleGoBack}>
                 ← Back to Data Input
             </button>
             <ShareButton />
@@ -195,33 +195,7 @@
         <h3>Select Data Parameters</h3>
         
         <!-- File Information Display -->
-        <div class="file-info">
-            <h4>Dataset Information</h4>
-            <div class="info-grid">
-                <div class="info-item">
-                    <span class="info-label">Points per segment:</span>
-                    <span class="info-value">{fileInfo.pointsInSegment.toLocaleString()}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Time between points:</span>
-                    <span class="info-value">{formatTimeFromMicroseconds(fileInfo.timeBetweenPoints)}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Segment duration:</span>
-                    <span class="info-value">{formatTimeFromMicroseconds(fileInfo.segmentLength)}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Total dataset size:</span>
-                    <span class="info-value">{formatFileSize(fileInfo.totalDataSize)}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Data source:</span>
-                    <span class="info-value info-url" title={fileInfo.url}>
-                        {fileInfo.url.length > 60 ? '...' + fileInfo.url.slice(-60) : fileInfo.url}
-                    </span>
-                </div>
-            </div>
-        </div>
+        <DatasetInfo {fileInfo} />
         
         <div class="selection-controls">
             <div class="control">
@@ -253,7 +227,7 @@
         </div>
         
         <button 
-            class="plot-button"
+            class="btn btn-primary plot-button"
             on:click={handlePlotData}
             disabled={!$isDataReadyForPlot}
         >
@@ -279,75 +253,9 @@
         margin-bottom: 1rem;
     }
 
-    .back-button {
-        background-color: #6c757d;
-        color: white;
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 5px;
-        font-size: 0.875rem;
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-
-    .back-button:hover {
-        background-color: #5a6268;
-    }
-
     h3 {
         margin: 1rem 0;
         color: #333;
-    }
-
-    h4 {
-        margin: 0 0 0.5rem 0;
-        color: #555;
-        font-size: 1rem;
-        font-weight: 600;
-    }
-
-    .file-info {
-        background: #f8f9fa;
-        border: 1px solid #e9ecef;
-        border-radius: 6px;
-        padding: 1rem;
-        margin-bottom: 1.5rem;
-        text-align: left;
-    }
-
-    .info-grid {
-        display: grid;
-        gap: 0.5rem;
-        font-size: 0.875rem;
-    }
-
-    .info-item {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        align-items: center;
-        padding: 0.25rem 0;
-        border-bottom: 1px solid #e9ecef;
-    }
-
-    .info-item:last-child {
-        border-bottom: none;
-    }
-
-    .info-label {
-        font-weight: 500;
-        color: #495057;
-    }
-
-    .info-value {
-        color: #212529;
-        font-family: 'Courier New', monospace;
-        text-align: right;
-    }
-
-    .info-url {
-        word-break: break-all;
-        font-size: 0.75rem;
-        color: #007bff;
     }
 
     .plot-button {

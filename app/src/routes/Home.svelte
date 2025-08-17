@@ -89,7 +89,7 @@
     <div class="example-hint">
         <p>For testing, try the example dataset: 
             <button 
-                class="link-button" 
+                class="btn btn-link" 
                 on:click={loadExample}
                 disabled={$isLoading}
             >
@@ -106,6 +106,7 @@
             disabled={$isLoading}
         />
         <button 
+            class="btn btn-primary"
             on:click={handleLoadData}
             disabled={$isLoading || !inputUrl.trim()}
         >
@@ -165,48 +166,6 @@
 
     .example-hint p {
         margin: 0;
-    }
-
-    .link-button {
-        background: none;
-        border: none;
-        color: #007bff;
-        text-decoration: underline;
-        cursor: pointer;
-        font-size: inherit;
-        padding: 0;
-        margin: 0;
-    }
-
-    .link-button:hover:not(:disabled) {
-        color: #0056b3;
-        background: none;
-    }
-
-    .link-button:disabled {
-        color: #6c757d;
-        cursor: not-allowed;
-        text-decoration: none;
-    }
-
-    button {
-        padding: 0.5rem 1rem;
-        font-size: 1rem;
-        color: #fff;
-        background-color: #007bff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-
-    button:hover:not(:disabled) {
-        background-color: #0056b3;
-    }
-
-    button:disabled {
-        background-color: #6c757d;
-        cursor: not-allowed;
     }
 
     .error {

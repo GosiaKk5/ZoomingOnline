@@ -143,27 +143,11 @@ export function formatWithSI(value: number, unit = '', precision = 3): string {
     return formatted;
 }
 
-/**
- * Parse a formatted SI string back to numeric value
- * Note: This is a simplified implementation as math.js handles parsing internally
- */
-export function parseFromSI(siString: string): number {
-    try {
-        // Use math.js to parse the unit string
-        const unit = math.unit(siString);
-        return unit.toNumber();
-    } catch (error) {
-        console.warn('Failed to parse SI string:', siString, error);
-        return NaN;
-    }
-}
-
 export default {
     formatWithSI,
     formatTime,
     formatTimeFromMicroseconds,
     formatFileSize,
     formatFrequency,
-    formatVoltage,
-    parseFromSI
+    formatVoltage
 };
