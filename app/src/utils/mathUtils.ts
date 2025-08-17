@@ -12,38 +12,6 @@ import { create, all, type MathJsInstance } from "mathjs";
 const math = create(all!) as MathJsInstance;
 
 /**
- * Format time duration from microseconds using math.js
- * Common case for this application
- */
-export function formatTimeFromMicroseconds(
-  valueInMicroseconds: number,
-  precision = 3,
-): string {
-  // Convert microseconds to seconds for math.js
-  const valueInSeconds = valueInMicroseconds / 1e6;
-
-  // Handle special cases
-  if (!isFinite(valueInSeconds) || isNaN(valueInSeconds)) {
-    return `${valueInMicroseconds} µs`;
-  }
-
-  if (valueInSeconds === 0) {
-    return "0 s";
-  }
-
-  // Use math.js format with toBest to get the best SI unit
-  let formatted = math.format(math.unit(valueInSeconds, "s"), {
-    notation: "auto",
-    precision: precision,
-  });
-
-  // Fix the µs symbol (math.js uses 'us' instead of 'µs')
-  formatted = formatted.replace(" us", " µs");
-
-  return formatted;
-}
-
-/**
  * Format time duration with appropriate SI prefix
  * Optimized for time values (seconds as base unit)
  */
@@ -175,7 +143,6 @@ export function formatWithSI(value: number, unit = "", precision = 3): string {
 export default {
   formatWithSI,
   formatTime,
-  formatTimeFromMicroseconds,
   formatFileSize,
   formatFrequency,
   formatVoltage,

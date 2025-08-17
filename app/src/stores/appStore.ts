@@ -9,6 +9,30 @@ export interface PlotConfig {
   selectedChannelData: any | null;
   selectedTrcData: any | null;
   selectedSegmentData: any | null;
+  // Additional fields from PlotDataResult
+  margin?: {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  };
+  width?: number;
+  height?: number;
+  fullWidth?: number;
+  chartHeight?: number;
+  horiz_interval?: number;
+  no_of_samples?: number;
+  adcToMv?: (adc: number) => number;
+  channel?: number;
+  trc?: number;
+  segment?: number;
+  overviewData?: Array<{
+    time_s: number;
+    min_mv: number;
+    max_mv: number;
+  }>;
+  globalYMin?: number | undefined;
+  globalYMax?: number | undefined;
 }
 
 export interface CacheEntry {
