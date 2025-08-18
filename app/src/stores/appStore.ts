@@ -89,7 +89,10 @@ export const showCopyLink: Writable<boolean> = writable(false);
 
 // Zoom rectangle state stores
 export const zoomPosition: Writable<number> = writable(0.5); // Position as percentage (0-1) of total time
-export const zoomWidth: Writable<number> = writable(0.1); // Width as percentage (0-1) of total time
+export const zoomWidth: Writable<number | null> = writable(null); // Width as percentage (0-1) of total time - will be initialized from zoom level dropdown
+
+// Data version counter to detect when new data is loaded
+export const dataVersion: Writable<number> = writable(0);
 
 // Helper functions to reset state
 export function resetAppState(): void {
@@ -112,7 +115,10 @@ export function resetAppState(): void {
   lastChunkCache.set({ key: null, data: null });
   showCopyLink.set(false);
   zoomPosition.set(0.5);
-  zoomWidth.set(0.1);
+  zoomWidth.set(null);
+  
+  // Increment data version to signal new data loading
+  dataVersion.update(v => v + 1);
 }
 
 export function setLoadingState(loading: boolean): void {

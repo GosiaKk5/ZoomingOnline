@@ -14,6 +14,7 @@ import {
   lastChunkCache,
   setLoadingState,
   setError,
+  resetAppState,
   type CacheEntry,
 } from "../stores/appStore.ts";
 
@@ -22,6 +23,8 @@ import {
  */
 export async function loadZarrData(url: string): Promise<void> {
   try {
+    resetAppState();
+    
     setLoadingState(true);
 
     // Create HTTP store for remote access
