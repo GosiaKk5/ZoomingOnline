@@ -17,11 +17,6 @@ export interface ChartMargin {
 }
 
 export interface PlotDataResult {
-  margin: ChartMargin;
-  width: number;
-  height: number;
-  fullWidth: number;
-  chartHeight: number;
   horiz_interval: number;
   no_of_samples: number;
   total_time_s: number;
@@ -76,13 +71,6 @@ export async function initializePlotData(
       1000 * (adc * vertical_gain - vertical_offset);
     const total_time_s = (no_of_samples - 1) * horiz_interval;
 
-    // Chart dimensions
-    const margin: ChartMargin = { top: 40, right: 40, bottom: 50, left: 60 };
-    const fullWidth = 900;
-    const chartHeight = 300;
-    const width = fullWidth - margin.left - margin.right;
-    const height = chartHeight - margin.top - margin.bottom;
-
     // Load overview (downsampled) data
     const overviewSlice = await overviewStore.get([
       channel,
@@ -117,11 +105,6 @@ export async function initializePlotData(
     const globalYMax = d3.max(overviewData, (d) => d.max_mv);
 
     const result: PlotDataResult = {
-      margin,
-      width,
-      height,
-      fullWidth,
-      chartHeight,
       horiz_interval,
       no_of_samples,
       total_time_s,

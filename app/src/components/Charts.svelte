@@ -10,7 +10,8 @@
         zoomPosition,
         zoomWidth,
         dataVersion,
-        getDefaultZoomLevel
+        getDefaultZoomLevel,
+        appConfig
     } from '../stores/index.ts';
     import { parseSelectedIndex } from '../utils/uiManager.ts';
     import { 
@@ -113,8 +114,12 @@
 
     async function updateOverviewChart() {
         
-        const { width, height, total_time_s, overviewData, globalYMin, globalYMax,
-                margin, fullWidth, chartHeight } = $plotConfig;
+        const { total_time_s, overviewData, globalYMin, globalYMax } = $plotConfig;
+        
+        // Get chart dimensions from centralized configuration
+        const { margin, fullWidth, chartHeight } = $appConfig.chartConfig;
+        const width = fullWidth - margin.left - margin.right;
+        const height = chartHeight - margin.top - margin.bottom;
 
         if (!overviewData || overviewData.length === 0 || !width || !height || !margin) {
             console.error('❌ No overview data or dimensions available for rendering');
@@ -175,7 +180,12 @@
     function updateZoomRectangle() {
         if (!$plotConfig || !overviewContainer || $zoomWidth === null) return;
         
-        const { width, height, total_time_s } = $plotConfig;
+        const { total_time_s } = $plotConfig;
+        
+        // Get chart dimensions from centralized configuration
+        const { margin, fullWidth, chartHeight } = $appConfig.chartConfig;
+        const width = fullWidth - margin.left - margin.right;
+        const height = chartHeight - margin.top - margin.bottom;
         
         // Type assertion for the SVG selection since we know the structure
         const svg0 = d3.select(overviewContainer).select("svg g") as d3.Selection<SVGGElement, unknown, null, undefined>;

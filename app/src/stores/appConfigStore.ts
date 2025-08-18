@@ -11,6 +11,18 @@ export interface AppConfig {
   
   // Default values
   defaultZoomLevelIndex: number;
+  
+  // Chart configuration
+  chartConfig: {
+    margin: {
+      top: number;
+      right: number;
+      bottom: number;
+      left: number;
+    };
+    fullWidth: number;
+    chartHeight: number;
+  };
 }
 
 // Centralized configuration with readable defaults
@@ -18,7 +30,14 @@ const defaultConfig: AppConfig = {
   exampleDataUrl: `${window.location.origin}${(import.meta as any).env?.BASE_URL || '/'}static/example.zarr`,
   githubRepoUrl: "https://github.com/DataMedSci/ZoomingOnline",
   
-  defaultZoomLevelIndex: 3
+  defaultZoomLevelIndex: 3,
+  
+  // Chart dimensions and margins - moved from chartRenderer.ts
+  chartConfig: {
+    margin: { top: 40, right: 40, bottom: 50, left: 60 },
+    fullWidth: 900,
+    chartHeight: 300
+  }
 };
 
 // Private writable store

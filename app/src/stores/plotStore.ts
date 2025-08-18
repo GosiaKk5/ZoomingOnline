@@ -9,11 +9,6 @@ export interface PlotConfig {
   selectedChannelData: any | null;
   selectedTrcData: any | null;
   selectedSegmentData: any | null;
-  margin?: { top: number; right: number; bottom: number; left: number };
-  width?: number;
-  height?: number;
-  fullWidth?: number;
-  chartHeight?: number;
   horiz_interval?: number;
   no_of_samples?: number;
   adcToMv?: (adc: number) => number;
