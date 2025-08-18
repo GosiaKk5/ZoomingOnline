@@ -17,7 +17,8 @@ import {
   resetDataState,
   resetUIState,
   resetSelections,
-  resetPlotState,
+  resetPlotConfig,
+  resetZoomState,
   type CacheEntry,
 } from "../stores/index.ts";
 
@@ -28,7 +29,8 @@ function resetAppState(): void {
   resetDataState();
   resetUIState();
   resetSelections();
-  resetPlotState();
+  resetPlotConfig();
+  resetZoomState();
 }
 
 /**

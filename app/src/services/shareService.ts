@@ -55,8 +55,8 @@ export class ShareService {
       url.searchParams.set('zoomLevelIndex', zoomLevelIndex);
     }
     
-    // Ensure we're on the visualization route
-    return url.toString().replace(url.pathname, '/ZoomingOnline/#/visualization');
+    // Ensure we're on the selection route (where data browsing happens)
+    return url.toString().replace(url.pathname, '/ZoomingOnline/#/selection');
   }
 
   /**

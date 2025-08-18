@@ -5,7 +5,7 @@
  * and URL parameters, providing a clean API for URL management.
  */
 
-import type { PlotConfig } from "../stores/plotStore";
+import type { PlotConfig } from "../stores/plot/plotConfig";
 import { ZoomService } from "./zoomService";
 import { 
   updateUrlWithZoomParams, 

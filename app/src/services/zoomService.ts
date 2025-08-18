@@ -1,13 +1,12 @@
 /**
- * ZoomService - Business logic for zoom calculations and operations
+ * ZoomService - Pure business logic for zoom calculations
  * 
- * This service extracts zoom-related business logic from the store,
- * providing reusable functions for zoom calculations, conversions,
- * and level management.
+ * This service handles all zoom-related calculations without any store dependencies.
+ * It provides pure functions for converting between different zoom representations.
  */
 
-import type { PlotConfig } from "../stores/plotStore";
 import { generateZoomLevelsWithLabels } from "../utils/zoomLevels";
+import type { PlotConfig } from "../stores/plot/plotConfig";
 
 export class ZoomService {
   /**

@@ -2,7 +2,6 @@
  * Plot Store Index
  * 
  * Centralized exports for the refactored plot store modules.
- * This maintains backward compatibility while providing the new structure.
  */
 
 // Core stores
@@ -17,19 +16,7 @@ export { plotActions } from "./actions";
 export { ZoomService } from "../../services/zoomService";
 export { ZoomUrlService } from "../../services/zoomUrlService";
 
-// Legacy compatibility exports
-export {
-  plotConfig as default,
-  resetPlotConfig as resetPlotState,
-  updatePlotConfig
-} from "./plotConfig";
-
-export {
-  setZoomState,
-  resetZoomState as resetZoom
-} from "./zoomState";
-
-// Legacy function exports for backward compatibility
+// Utility functions for zoom level configuration
 export const getDefaultZoomLevelIndex = (totalLevels: number): number => {
   return Math.min(3, totalLevels - 1);
 };
