@@ -346,3 +346,119 @@ export function drawLine<T>(
         .y((d) => yScale(yAcc(d))),
     );
 }
+
+/**
+ * Draw a draggable zoom rectangle on the overview chart
+ * This rectangle represents the currently selected zoom region
+ */
+export function drawZoomRectangle(
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>,
+  xScale: d3.ScaleLinear<number, number>,
+  height: number,
+  zoomPosition: number,
+  zoomWidth: number,
+  totalTime: number,
+  onPositionChange: (newPosition: number) => void,
+): d3.Selection<SVGRectElement, unknown, null, undefined> {
+  
+  // Calculate rectangle bounds in time units with proper boundary constraints
+  const halfWidth = (zoomWidth * totalTime) / 2;
+  let centerTime = zoomPosition * totalTime;
+  
+  // Constrain the center position so rectangle edges don't go beyond plot boundaries
+  centerTime = Math.max(halfWidth, Math.min(totalTime - halfWidth, centerTime));
+  
+  const startTime = centerTime - halfWidth;
+  const endTime = centerTime + halfWidth;
+  
+  // Convert to pixel coordinates
+  const x = xScale(startTime);
+  const width = xScale(endTime) - x;
+  const chartWidth = xScale.range()[1] || 0;
+  
+  // Remove any existing zoom rectangle
+  svg.selectAll(".zoom-rect").remove();
+  svg.selectAll(".zoom-rect-hit-area").remove();
+  
+  // Create the visible rectangle
+  const rect = svg
+    .append("rect")
+    .attr("class", "zoom-rect")
+    .attr("x", x)
+    .attr("y", 0)
+    .attr("width", Math.max(width, 3)) // Minimum width of 3 pixels for visibility
+    .attr("height", height);
+  
+  // Enhanced small rectangle handling
+  const isVerySmallZoom = zoomWidth <= 0.02; // 2% or smaller
+  const minHitAreaWidth = isVerySmallZoom ? Math.max(chartWidth * 0.01, 40) : 20; // 1% of chart width or 40px minimum for very small zooms
+  
+  if (width < minHitAreaWidth) {
+    const hitAreaWidth = minHitAreaWidth;
+    let hitAreaX = x - (hitAreaWidth - width) / 2; // Center the hit area on the rectangle
+    
+    // Constrain hit area to chart bounds
+    hitAreaX = Math.max(0, Math.min(chartWidth - hitAreaWidth, hitAreaX));
+    
+    const hitArea = svg
+      .append("rect")
+      .attr("class", "zoom-rect-hit-area")
+      .attr("x", hitAreaX)
+      .attr("y", 0)
+      .attr("width", hitAreaWidth)
+      .attr("height", height);
+      
+    // Apply drag behavior to hit area for small rectangles
+    hitArea.call(createDragBehavior(xScale, totalTime, zoomWidth, onPositionChange));
+  }
+  
+  // Apply drag behavior to the main rectangle
+  rect.call(createDragBehavior(xScale, totalTime, zoomWidth, onPositionChange));
+  
+  return rect;
+}
+
+/**
+ * Create D3 drag behavior for the zoom rectangle with boundary constraints
+ */
+function createDragBehavior(
+  xScale: d3.ScaleLinear<number, number>,
+  totalTime: number,
+  zoomWidth: number,
+  onPositionChange: (newPosition: number) => void,
+) {
+  return d3.drag<SVGRectElement, unknown>()
+    .on("start", function() {
+      // Add dragging class for visual feedback
+      const parentElement = this.parentNode as SVGGElement;
+      if (parentElement) {
+        d3.select(parentElement).selectAll(".zoom-rect").classed("dragging", true);
+      }
+    })
+    .on("drag", function(event) {
+      // Get the mouse position in the chart coordinate system
+      const mouseX = event.x;
+      
+      // Convert back to time
+      const timeAtMouse = xScale.invert(mouseX);
+      
+      // Calculate the half-width in time units
+      const halfWidth = (zoomWidth * totalTime) / 2;
+      
+      // Constrain the center position so rectangle edges don't go beyond boundaries
+      const constrainedCenterTime = Math.max(halfWidth, Math.min(totalTime - halfWidth, timeAtMouse));
+      
+      // Convert to position percentage
+      const newPosition = constrainedCenterTime / totalTime;
+      
+      // Update the position
+      onPositionChange(newPosition);
+    })
+    .on("end", function() {
+      // Remove dragging class
+      const parentElement = this.parentNode as SVGGElement;
+      if (parentElement) {
+        d3.select(parentElement).selectAll(".zoom-rect").classed("dragging", false);
+      }
+    });
+}

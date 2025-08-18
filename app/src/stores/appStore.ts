@@ -87,6 +87,10 @@ export const currentDataUrl: Readable<string> = derived(
 // UI control stores
 export const showCopyLink: Writable<boolean> = writable(false);
 
+// Zoom rectangle state stores
+export const zoomPosition: Writable<number> = writable(0.5); // Position as percentage (0-1) of total time
+export const zoomWidth: Writable<number> = writable(0.1); // Width as percentage (0-1) of total time
+
 // Helper functions to reset state
 export function resetAppState(): void {
   zarrGroup.set(null);
@@ -107,6 +111,8 @@ export function resetAppState(): void {
   });
   lastChunkCache.set({ key: null, data: null });
   showCopyLink.set(false);
+  zoomPosition.set(0.5);
+  zoomWidth.set(0.1);
 }
 
 export function setLoadingState(loading: boolean): void {

@@ -129,6 +129,44 @@
   }
 }
 
+/* Zoom rectangle styles for interactive overview chart */
+@layer components {
+  .zoom-rect {
+    fill: rgba(239, 68, 68, 0.2); /* Semi-transparent red */
+    stroke: #dc2626; /* Red border */
+    stroke-width: 2px;
+    stroke-dasharray: 5, 5; /* Dashed border */
+    cursor: move;
+    pointer-events: all;
+    transition: fill 0.2s, stroke-width 0.2s;
+  }
+
+  .zoom-rect:hover {
+    fill: rgba(239, 68, 68, 0.3); /* Slightly more opaque on hover */
+    stroke-width: 2.5px;
+  }
+
+  .zoom-rect.dragging {
+    fill: rgba(239, 68, 68, 0.4); /* More opaque when dragging */
+    stroke-width: 3px;
+  }
+
+  /* Extended grabbable area for small rectangles */
+  .zoom-rect-hit-area {
+    fill: transparent;
+    cursor: move;
+    pointer-events: all;
+  }
+
+  /* Optional: Visual debug outline for hit areas (can be enabled for testing) */
+  .zoom-rect-hit-area.debug {
+    fill: rgba(255, 255, 0, 0.1);
+    stroke: yellow;
+    stroke-width: 1px;
+    stroke-dasharray: 2, 2;
+  }
+}
+
 /* Responsive modal adjustments */
 @layer utilities {
   @media (max-width: 768px) {

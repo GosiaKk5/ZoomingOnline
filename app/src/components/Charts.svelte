@@ -6,7 +6,9 @@
         zarrGroup,
         selectedChannel,
         selectedTrc,
-        selectedSegment
+        selectedSegment,
+        zoomPosition,
+        zoomWidth
     } from '../stores/appStore.ts';
     import { parseSelectedIndex } from '../utils/uiManager.ts';
     import { 
@@ -14,7 +16,8 @@
         createChartSVG, 
         drawAxes, 
         drawGridLines, 
-        drawArea
+        drawArea,
+        drawZoomRectangle
     } from '../utils/chartRenderer.ts';
     import ZoomControl from './ZoomControl.svelte';
     import * as d3 from 'd3';
@@ -41,6 +44,11 @@
         updateOverviewChart();
     }
     
+    // Update zoom rectangle when position or width changes
+    $: if ($plotConfig && overviewContainer && isInitialized && ($zoomPosition || $zoomWidth)) {
+        updateZoomRectangle();
+    }
+    
     // Update zoom control parameters when plot config changes
     $: if ($plotConfig) {
         const { total_time_s, horiz_interval } = $plotConfig;
@@ -48,6 +56,11 @@
             segmentDuration = total_time_s;
             // Extract actual time between points from data
             timeBetweenPoints = horiz_interval;
+            
+            // Set initial zoom width based on a reasonable default (10% of total time)
+            if ($zoomWidth === 0.1) { // Only set if still at default
+                zoomWidth.set(0.1);
+            }
         }
     }
     
@@ -108,6 +121,19 @@
             drawAxes(svg0, x0, y0, "Time", height, margin, width);
             drawGridLines(svg0, x0, y0, width, height);
             
+            // Draw the zoom rectangle
+            drawZoomRectangle(
+                svg0, 
+                x0, 
+                height, 
+                $zoomPosition, 
+                $zoomWidth, 
+                total_time_s,
+                (newPosition: number) => {
+                    zoomPosition.set(newPosition);
+                }
+            );
+            
             console.log('✅ Overview chart rendering completed');
             
         } catch (error) {
@@ -115,23 +141,55 @@
         }
     }
     
+    function updateZoomRectangle() {
+        if (!$plotConfig || !overviewContainer) return;
+        
+        const { width, height, total_time_s } = $plotConfig;
+        
+        // Type assertion for the SVG selection since we know the structure
+        const svg0 = d3.select(overviewContainer).select("svg g") as d3.Selection<SVGGElement, unknown, null, undefined>;
+        
+        if (svg0.empty()) return; // SVG not yet created
+        
+        const x0 = d3.scaleLinear().domain([0, total_time_s]).range([0, width || 0]);
+        
+        // Redraw the zoom rectangle with updated position/width
+        drawZoomRectangle(
+            svg0, 
+            x0, 
+            height || 0, 
+            $zoomPosition, 
+            $zoomWidth, 
+            total_time_s,
+            (newPosition: number) => {
+                zoomPosition.set(newPosition);
+            }
+        );
+    }
+    
     // Zoom control event handlers
     function handleZoomIn(newLevel: number) {
         selectedZoomLevel = newLevel;
         console.log('🔍 Zoom in to:', newLevel);
-        // TODO: Implement actual zooming logic
+        // Convert zoom level (time duration in seconds) to width percentage
+        const newWidth = newLevel / segmentDuration;
+        zoomWidth.set(Math.min(1, Math.max(0.001, newWidth))); // Clamp between 0.1% and 100%
     }
     
     function handleZoomOut(newLevel: number) {
         selectedZoomLevel = newLevel;
         console.log('🔍 Zoom out to:', newLevel);
-        // TODO: Implement actual zooming logic
+        // Convert zoom level (time duration in seconds) to width percentage
+        const newWidth = newLevel / segmentDuration;
+        zoomWidth.set(Math.min(1, Math.max(0.001, newWidth))); // Clamp between 0.1% and 100%
     }
     
     function handleZoomLevelChange(newLevel: number) {
         selectedZoomLevel = newLevel;
         console.log('🔍 Zoom level changed to:', newLevel);
-        // TODO: Implement actual zooming logic
+        // Convert zoom level (time duration in seconds) to width percentage
+        const newWidth = newLevel / segmentDuration;
+        zoomWidth.set(Math.min(1, Math.max(0.001, newWidth))); // Clamp between 0.1% and 100%
     }
 </script>
 
