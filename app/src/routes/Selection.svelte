@@ -13,7 +13,7 @@
         dataUrl,
         isDataReadyForPlot,
         showCopyLink
-    } from '../stores/appStore.ts';
+    } from '../stores/index.ts';
     import { populateSelectors } from '../utils/uiManager.ts';
     import { push } from 'svelte-spa-router';
     import ShareButton from '../components/ShareButton.svelte';

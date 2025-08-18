@@ -7,7 +7,7 @@
         selectedSegment,
         isLoading,
         isDataLoaded
-    } from '../stores/appStore.ts';
+    } from '../stores/index.ts';
     import { push } from 'svelte-spa-router';
     
     import Charts from '../components/Charts.svelte';

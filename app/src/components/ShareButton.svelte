@@ -1,6 +1,6 @@
 <script>
     import { MdShare, MdContentCopy, MdCheck } from 'svelte-icons/md';
-    import { showCopyLink, currentDataUrl } from '../stores/appStore.ts';
+    import { showCopyLink, currentDataUrl } from '../stores/index.ts';
     import Modal from './Modal.svelte';
     
     let showModal = false;

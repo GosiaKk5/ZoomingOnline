@@ -7,15 +7,16 @@
         error, 
         isDataLoaded,
         setLoadingState,
-        setError
-    } from '../stores/appStore.ts';
+        setError,
+        appConfig
+    } from '../stores/index.ts';
     import { loadZarrData } from '../utils/dataLoader.ts';
     import { push } from 'svelte-spa-router';
 
     let inputUrl = '';
 
-    // Construct the full example URL using the dedicated static route
-    $: exampleUrl = `${window.location.origin}${import.meta.env.BASE_URL}static/example.zarr`;
+    // Use the example URL from the centralized configuration
+    $: exampleUrl = $appConfig.exampleDataUrl;
 
     async function handleLoadData() {
         if (!inputUrl.trim()) {

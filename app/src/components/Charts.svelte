@@ -11,7 +11,7 @@
         zoomWidth,
         dataVersion,
         getDefaultZoomLevel
-    } from '../stores/appStore.ts';
+    } from '../stores/index.ts';
     import { parseSelectedIndex } from '../utils/uiManager.ts';
     import { 
         initializePlotData, 

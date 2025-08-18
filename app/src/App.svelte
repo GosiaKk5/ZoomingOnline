@@ -13,7 +13,7 @@
         selectedTrc,
         selectedSegment,
         showCopyLink
-    } from './stores/appStore.ts';
+    } from './stores/index.ts';
     import { loadZarrData } from './utils/dataLoader.ts';
     
     // Import components

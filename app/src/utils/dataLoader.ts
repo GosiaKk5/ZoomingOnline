@@ -14,9 +14,22 @@ import {
   lastChunkCache,
   setLoadingState,
   setError,
-  resetAppState,
+  resetDataState,
+  resetUIState,
+  resetSelections,
+  resetPlotState,
   type CacheEntry,
-} from "../stores/appStore.ts";
+} from "../stores/index.ts";
+
+/**
+ * Reset all application state (replacement for old resetAppState)
+ */
+function resetAppState(): void {
+  resetDataState();
+  resetUIState();
+  resetSelections();
+  resetPlotState();
+}
 
 /**
  * Load Zarr data from a remote URL

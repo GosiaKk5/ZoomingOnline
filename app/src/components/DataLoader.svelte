@@ -4,7 +4,7 @@
         dataUrl, 
         isLoading, 
         error, 
-        currentView, 
+        currentView,
         isDataLoaded,
         selectedChannel,
         selectedTrc,
@@ -13,8 +13,9 @@
         isDataReadyForPlot,
         showCopyLink,
         setLoadingState,
-        setError
-    } from '../stores/appStore.ts';
+        setError,
+        appConfig
+    } from '../stores/index.ts';
     import { loadZarrData } from '../utils/dataLoader.ts';
     import { populateSelectors } from '../utils/uiManager.ts';
 
@@ -23,8 +24,8 @@
     let trcFiles = [];
     let segments = [];
 
-    // Construct the full example URL that works both locally and on GitHub Pages
-    $: exampleUrl = `${window.location.origin}${import.meta.env.BASE_URL}example.zarr`;
+    // Use the example URL from the centralized configuration
+    $: exampleUrl = $appConfig.exampleDataUrl;
 
     // Reactive statements
     $: if ($rawStore) {
