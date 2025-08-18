@@ -3,6 +3,9 @@
  */
 import { writable, derived, type Writable, type Readable } from "svelte/store";
 
+// Configuration constants
+export const DEFAULT_ZOOM_LEVEL_INDEX = 3; // Fourth item from longest zoom levels (0-based index)
+
 // Type definitions for better type safety
 export interface PlotConfig {
   total_time_s: number;
@@ -93,6 +96,17 @@ export const zoomWidth: Writable<number | null> = writable(null); // Width as pe
 
 // Data version counter to detect when new data is loaded
 export const dataVersion: Writable<number> = writable(0);
+
+// Utility functions for zoom level configuration
+export function getDefaultZoomLevelIndex(totalLevels: number): number {
+  return Math.min(DEFAULT_ZOOM_LEVEL_INDEX, totalLevels - 1);
+}
+
+export function getDefaultZoomLevel(zoomLevelsWithLabels: Array<{ value: number; label: string }>): number | undefined {
+  if (zoomLevelsWithLabels.length === 0) return undefined;
+  const defaultIndex = getDefaultZoomLevelIndex(zoomLevelsWithLabels.length);
+  return zoomLevelsWithLabels[zoomLevelsWithLabels.length - 1 - defaultIndex]?.value;
+}
 
 // Helper functions to reset state
 export function resetAppState(): void {

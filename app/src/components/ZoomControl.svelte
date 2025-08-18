@@ -1,5 +1,6 @@
 <script lang="ts">
     import { generateZoomLevelsWithLabels } from '../utils/zoomLevels.ts';
+    import { getDefaultZoomLevel } from '../stores/appStore.ts';
     import { MdZoomIn, MdZoomOut } from 'svelte-icons/md';
     
     export let timeBetweenPoints: number;
@@ -14,10 +15,9 @@
         ? generateZoomLevelsWithLabels(timeBetweenPoints, segmentDuration) 
         : [];
     
-    // Set default zoom level to the fourth item from the longest zoom levels
+    // Set default zoom level using centralized configuration
     $: if (zoomLevelsWithLabels.length > 0 && selectedZoomLevel === undefined) {
-        const defaultIndex = Math.min(3, zoomLevelsWithLabels.length - 1); // Fourth item (index 3) or last item if less than 4 levels
-        selectedZoomLevel = zoomLevelsWithLabels[zoomLevelsWithLabels.length - 1 - defaultIndex]?.value;
+        selectedZoomLevel = getDefaultZoomLevel(zoomLevelsWithLabels);
     }
     
     $: currentLevelIndex = selectedZoomLevel !== undefined 

@@ -9,7 +9,8 @@
         selectedSegment,
         zoomPosition,
         zoomWidth,
-        dataVersion
+        dataVersion,
+        getDefaultZoomLevel
     } from '../stores/appStore.ts';
     import { parseSelectedIndex } from '../utils/uiManager.ts';
     import { 
@@ -136,12 +137,10 @@
             // Draw the zoom rectangle - initialize with default if needed
             let currentZoomWidth = $zoomWidth;
             if (currentZoomWidth === null && segmentDuration && timeBetweenPoints) {
-                // Calculate default width using same logic as ZoomControl component
-                // Generate zoom levels and pick 4th from longest (same as ZoomControl default)
+                // Calculate default width using centralized configuration
                 const zoomLevelsWithLabels = generateZoomLevelsWithLabels(timeBetweenPoints, segmentDuration);
                 if (zoomLevelsWithLabels.length > 0) {
-                    const defaultIndex = Math.min(3, zoomLevelsWithLabels.length - 1);
-                    const defaultZoomLevel = zoomLevelsWithLabels[zoomLevelsWithLabels.length - 1 - defaultIndex]?.value;
+                    const defaultZoomLevel = getDefaultZoomLevel(zoomLevelsWithLabels);
                     if (defaultZoomLevel) {
                         const defaultWidth = defaultZoomLevel / segmentDuration;
                         currentZoomWidth = Math.min(1, defaultWidth);
