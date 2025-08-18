@@ -54,11 +54,6 @@ export class ShareService {
       currentUrl.searchParams.set('zoomLevelIndex', zoomLevelIndex);
     }
     
-    // Ensure we're on the selection route - only update hash if it's different
-    if (!currentUrl.hash.includes('/selection')) {
-      currentUrl.hash = '#/selection';
-    }
-    
     return currentUrl.toString();
   }
 
