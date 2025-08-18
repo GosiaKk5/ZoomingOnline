@@ -52,7 +52,8 @@
     // Update URL with data parameter when route changes and data is loaded
     $: if ($location && $dataUrl) {
         const url = new URL(window.location);
-        if (!url.searchParams.has('data')) {
+        const currentDataParam = url.searchParams.get('data');
+        if (currentDataParam !== $dataUrl) {
             url.searchParams.set('data', $dataUrl);
             window.history.replaceState(null, '', url.toString());
         }

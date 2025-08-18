@@ -13,13 +13,13 @@ export class ShareService {
    * Generate a complete shareable URL with all parameters
    */
   static generateShareableUrl(): string {
-    const baseUrl = window.location.origin + window.location.pathname;
-    const url = new URL(baseUrl);
+    // Start with current URL to preserve the structure
+    const currentUrl = new URL(window.location.href);
     
     // Always include the data parameter if we have a dataset loaded
     const dataUrl = get(currentDataUrl);
     if (dataUrl) {
-      url.searchParams.set('data', dataUrl);
+      currentUrl.searchParams.set('data', dataUrl);
     }
     
     // Include selection parameters if they exist
@@ -29,34 +29,37 @@ export class ShareService {
     
     if (channel) {
       const channelIndex = this.getIndexFromDisplayName(channel);
-      url.searchParams.set('channel', channelIndex.toString());
+      currentUrl.searchParams.set('channel', channelIndex.toString());
     }
     
     if (trc) {
       const trcIndex = this.getIndexFromDisplayName(trc);
-      url.searchParams.set('trc', trcIndex.toString());
+      currentUrl.searchParams.set('trc', trcIndex.toString());
     }
     
     if (segment) {
       const segmentIndex = this.getIndexFromDisplayName(segment);
-      url.searchParams.set('segment', segmentIndex.toString());
+      currentUrl.searchParams.set('segment', segmentIndex.toString());
     }
     
     // Include current zoom parameters if they exist in the URL
-    const currentUrl = new URL(window.location.href);
     const zoomSample = currentUrl.searchParams.get('zoomSample');
     const zoomLevelIndex = currentUrl.searchParams.get('zoomLevelIndex');
     
     if (zoomSample) {
-      url.searchParams.set('zoomSample', zoomSample);
+      currentUrl.searchParams.set('zoomSample', zoomSample);
     }
     
     if (zoomLevelIndex) {
-      url.searchParams.set('zoomLevelIndex', zoomLevelIndex);
+      currentUrl.searchParams.set('zoomLevelIndex', zoomLevelIndex);
     }
     
-    // Ensure we're on the selection route (where data browsing happens)
-    return url.toString().replace(url.pathname, '/ZoomingOnline/#/selection');
+    // Ensure we're on the selection route - only update hash if it's different
+    if (!currentUrl.hash.includes('/selection')) {
+      currentUrl.hash = '#/selection';
+    }
+    
+    return currentUrl.toString();
   }
 
   /**
