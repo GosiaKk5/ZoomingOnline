@@ -56,7 +56,9 @@
 {/if}
 
 <Modal bind:show={showModal} title="Share Dataset" on:close={closeModal}>
-    <p class="text-gray-500 mb-6 text-sm leading-relaxed">Copy this URL to share the current dataset and visualization settings with others:</p>
+    <p class="text-gray-500 mb-6 text-sm leading-relaxed">
+        Copy this URL to share the current dataset, visualization settings, and zoom state with others:
+    </p>
     
     <div class="mb-6">
         <input 

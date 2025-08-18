@@ -3,6 +3,12 @@
  * Manages plot settings, zoom state, and visualization configuration
  */
 import { writable, derived, type Writable, type Readable } from "svelte/store";
+import { 
+  updateUrlWithZoomParams, 
+  clearZoomParamsFromUrl, 
+  getZoomParamsFromUrl,
+  validateZoomParams 
+} from "../utils/urlManager";
 
 export interface PlotConfig {
   total_time_s: number;
@@ -96,11 +102,75 @@ export function updatePlotConfig(config: Partial<PlotConfig>): void {
 export function setZoomState(position: number, width: number | null = null): void {
   zoomPosition.set(position);
   zoomWidth.set(width);
+  // Update URL with new zoom parameters
+  updateUrlWithZoomParams(position, width);
 }
 
 export function resetZoom(): void {
   zoomPosition.set(0.5);
   zoomWidth.set(null);
+  // Clear zoom parameters from URL
+  clearZoomParamsFromUrl();
+}
+
+/**
+ * Restore zoom state from URL parameters (called on app initialization)
+ */
+export function restoreZoomStateFromUrl(): boolean {
+  const { zoomPosition: urlPosition, zoomWidth: urlWidth } = getZoomParamsFromUrl();
+  
+  if (urlPosition !== undefined) {
+    const { position, width } = validateZoomParams(urlPosition, urlWidth || null);
+    
+    // Set zoom state without triggering URL update to avoid infinite loop
+    zoomPosition.set(position);
+    zoomWidth.set(width);
+    
+    console.log('🔄 Restored zoom state from URL:', { position, width });
+    return true;
+  }
+  
+  return false;
+}
+
+/**
+ * Update zoom position and sync with URL (for drag operations)
+ */
+export function updateZoomPosition(newPosition: number): void {
+  const currentWidth = getCurrentZoomWidth();
+  const { position } = validateZoomParams(newPosition, currentWidth);
+  
+  zoomPosition.set(position);
+  updateUrlWithZoomParams(position, currentWidth);
+}
+
+/**
+ * Update zoom width and sync with URL (for zoom level changes)
+ */
+export function updateZoomWidth(newWidth: number | null): void {
+  const currentPosition = getCurrentZoomPosition();
+  const { position, width } = validateZoomParams(currentPosition, newWidth);
+  
+  zoomWidth.set(width);
+  updateUrlWithZoomParams(position, width);
+}
+
+/**
+ * Get current zoom position value (for internal use)
+ */
+function getCurrentZoomPosition(): number {
+  let currentPosition = 0.5;
+  zoomPosition.subscribe(val => currentPosition = val)();
+  return currentPosition;
+}
+
+/**
+ * Get current zoom width value (for internal use)
+ */
+function getCurrentZoomWidth(): number | null {
+  let currentWidth: number | null = null;
+  zoomWidth.subscribe(val => currentWidth = val)();
+  return currentWidth;
 }
 
 // Utility functions for zoom level configuration

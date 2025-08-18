@@ -81,5 +81,8 @@ export {
   getDefaultZoomLevelIndex,
   getDefaultZoomLevel,
   calculateZoomBounds,
+  restoreZoomStateFromUrl,
+  updateZoomPosition,
+  updateZoomWidth,
   type PlotConfig
 } from './plotStore.ts';

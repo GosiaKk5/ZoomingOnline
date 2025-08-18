@@ -12,7 +12,8 @@
         selectedChannel,
         selectedTrc,
         selectedSegment,
-        showCopyLink
+        showCopyLink,
+        restoreZoomStateFromUrl
     } from './stores/index.ts';
     import { loadZarrData } from './utils/dataLoader.ts';
     
@@ -63,6 +64,7 @@
         url.searchParams.set('channel', getIndexFromDisplayName($selectedChannel));
         url.searchParams.set('trc', getIndexFromDisplayName($selectedTrc));
         url.searchParams.set('segment', getIndexFromDisplayName($selectedSegment));
+        // Note: zoom parameters are handled by the zoom state management in Charts.svelte
         window.history.replaceState(null, '', url.toString());
     }
 

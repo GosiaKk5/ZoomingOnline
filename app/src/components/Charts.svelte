@@ -11,7 +11,10 @@
         zoomWidth,
         dataVersion,
         getDefaultZoomLevel,
-        appConfig
+        appConfig,
+        updateZoomPosition,
+        updateZoomWidth,
+        restoreZoomStateFromUrl
     } from '../stores/index.ts';
     import { parseSelectedIndex } from '../utils/uiManager.ts';
     import { 
@@ -105,6 +108,12 @@
                 selectedSegmentData: null,
             });
             
+            // Try to restore zoom state from URL parameters
+            const wasRestored = restoreZoomStateFromUrl();
+            if (wasRestored) {
+                console.log('🔄 Zoom state restored from URL parameters');
+            }
+            
             isInitialized = true;
             
         } catch (error) {
@@ -165,7 +174,7 @@
                     currentZoomWidth as number, 
                     total_time_s,
                     (newPosition: number) => {
-                        zoomPosition.set(newPosition);
+                        updateZoomPosition(newPosition);
                     }
                 );
             }
@@ -203,7 +212,7 @@
             $zoomWidth as number, 
             total_time_s,
             (newPosition: number) => {
-                zoomPosition.set(newPosition);
+                updateZoomPosition(newPosition);
             }
         );
     }
@@ -214,7 +223,7 @@
         console.log('🔍 Zoom in to:', newLevel);
         // Convert zoom level (time duration in seconds) to width percentage
         const newWidth = newLevel / segmentDuration;
-        zoomWidth.set(Math.min(1, newWidth)); // Only clamp up to 100%, no minimum clamping
+        updateZoomWidth(Math.min(1, newWidth)); // Only clamp up to 100%, no minimum clamping
     }
     
     function handleZoomOut(newLevel: number) {
@@ -222,7 +231,7 @@
         console.log('🔍 Zoom out to:', newLevel);
         // Convert zoom level (time duration in seconds) to width percentage
         const newWidth = newLevel / segmentDuration;
-        zoomWidth.set(Math.min(1, newWidth)); // Only clamp up to 100%, no minimum clamping
+        updateZoomWidth(Math.min(1, newWidth)); // Only clamp up to 100%, no minimum clamping
     }
     
     function handleZoomLevelChange(newLevel: number) {
@@ -230,7 +239,7 @@
         console.log('🔍 Zoom level changed to:', newLevel);
         // Convert zoom level (time duration in seconds) to width percentage
         const newWidth = newLevel / segmentDuration;
-        zoomWidth.set(Math.min(1, newWidth)); // Only clamp up to 100%, no minimum clamping
+        updateZoomWidth(Math.min(1, newWidth)); // Only clamp up to 100%, no minimum clamping
     }
 </script>
 
