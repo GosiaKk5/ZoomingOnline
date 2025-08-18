@@ -1,11 +1,11 @@
 /**
  * URL parameter management for zoom state persistence
- * Handles syncing zoom position and width with URL parameters for shareable links
+ * Handles syncing zoom position (sample number) and width (dropdown index) with URL parameters for shareable links
  */
 
 export interface ZoomUrlParams {
-  zoomPosition: number | undefined;
-  zoomWidth: number | undefined;
+  zoomSample: number | undefined;  // Sample number at center of zoom rectangle
+  zoomLevelIndex: number | undefined;  // Index in the zoom level dropdown
 }
 
 /**
@@ -14,29 +14,29 @@ export interface ZoomUrlParams {
 export function getZoomParamsFromUrl(): ZoomUrlParams {
   const urlParams = new URLSearchParams(window.location.search);
   
-  const zoomPositionParam = urlParams.get('zoomPos');
-  const zoomWidthParam = urlParams.get('zoomWidth');
+  const zoomSampleParam = urlParams.get('zoomSample');
+  const zoomLevelIndexParam = urlParams.get('zoomLevelIndex');
   
   return {
-    zoomPosition: zoomPositionParam ? parseFloat(zoomPositionParam) : undefined,
-    zoomWidth: zoomWidthParam ? parseFloat(zoomWidthParam) : undefined
+    zoomSample: zoomSampleParam ? parseInt(zoomSampleParam, 10) : undefined,
+    zoomLevelIndex: zoomLevelIndexParam ? parseInt(zoomLevelIndexParam, 10) : undefined
   };
 }
 
 /**
  * Update URL with zoom parameters without triggering navigation
  */
-export function updateUrlWithZoomParams(zoomPosition: number, zoomWidth: number | null): void {
+export function updateUrlWithZoomParams(zoomSample: number, zoomLevelIndex: number | null): void {
   const url = new URL(window.location.href);
   
-  // Update zoom position (always present when zooming is active)
-  url.searchParams.set('zoomPos', zoomPosition.toFixed(6));
+  // Update zoom sample (always present when zooming is active)
+  url.searchParams.set('zoomSample', zoomSample.toString());
   
-  // Update zoom width (null means full width/no zoom)
-  if (zoomWidth !== null) {
-    url.searchParams.set('zoomWidth', zoomWidth.toFixed(6));
+  // Update zoom level index (null means default/no specific zoom level)
+  if (zoomLevelIndex !== null) {
+    url.searchParams.set('zoomLevelIndex', zoomLevelIndex.toString());
   } else {
-    url.searchParams.delete('zoomWidth');
+    url.searchParams.delete('zoomLevelIndex');
   }
   
   // Use replaceState to update URL without navigation
@@ -48,8 +48,8 @@ export function updateUrlWithZoomParams(zoomPosition: number, zoomWidth: number 
  */
 export function clearZoomParamsFromUrl(): void {
   const url = new URL(window.location.href);
-  url.searchParams.delete('zoomPos');
-  url.searchParams.delete('zoomWidth');
+  url.searchParams.delete('zoomSample');
+  url.searchParams.delete('zoomLevelIndex');
   window.history.replaceState(null, '', url.toString());
 }
 
@@ -58,31 +58,36 @@ export function clearZoomParamsFromUrl(): void {
  */
 export function hasZoomParamsInUrl(): boolean {
   const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.has('zoomPos') || urlParams.has('zoomWidth');
+  return urlParams.has('zoomSample') || urlParams.has('zoomLevelIndex');
 }
 
 /**
  * Validate zoom parameters are within acceptable ranges
  */
-export function validateZoomParams(zoomPosition: number, zoomWidth: number | null): { 
+export function validateZoomParams(
+  zoomSample: number, 
+  zoomLevelIndex: number | null, 
+  totalSamples: number, 
+  maxZoomLevelIndex: number
+): { 
   isValid: boolean; 
-  position: number; 
-  width: number | null 
+  sample: number; 
+  levelIndex: number | null 
 } {
-  // Clamp position between 0 and 1
-  const validPosition = Math.max(0, Math.min(1, zoomPosition));
+  // Clamp sample number between 0 and totalSamples-1
+  const validSample = Math.max(0, Math.min(totalSamples - 1, Math.round(zoomSample)));
   
-  // Clamp width between 0 and 1, or allow null
-  let validWidth = zoomWidth;
-  if (zoomWidth !== null) {
-    validWidth = Math.max(0, Math.min(1, zoomWidth));
+  // Clamp level index between 0 and maxZoomLevelIndex, or allow null
+  let validLevelIndex = zoomLevelIndex;
+  if (zoomLevelIndex !== null) {
+    validLevelIndex = Math.max(0, Math.min(maxZoomLevelIndex, Math.round(zoomLevelIndex)));
   }
   
-  const isValid = validPosition === zoomPosition && validWidth === zoomWidth;
+  const isValid = validSample === zoomSample && validLevelIndex === zoomLevelIndex;
   
   return {
     isValid,
-    position: validPosition,
-    width: validWidth
+    sample: validSample,
+    levelIndex: validLevelIndex
   };
 }

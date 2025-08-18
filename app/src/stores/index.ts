@@ -66,23 +66,4 @@ export {
 } from './selectionStore.ts';
 
 // Plot Configuration Store
-export {
-  plotConfig,
-  zoomPosition,
-  zoomWidth,
-  isPlotConfigReady,
-  zoomState,
-  hasPlotData,
-  plotSummary,
-  resetPlotState,
-  updatePlotConfig,
-  setZoomState,
-  resetZoom,
-  getDefaultZoomLevelIndex,
-  getDefaultZoomLevel,
-  calculateZoomBounds,
-  restoreZoomStateFromUrl,
-  updateZoomPosition,
-  updateZoomWidth,
-  type PlotConfig
-} from './plotStore.ts';
+export * from './plot/index.ts';

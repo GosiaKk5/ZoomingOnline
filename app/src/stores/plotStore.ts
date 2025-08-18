@@ -9,6 +9,7 @@ import {
   getZoomParamsFromUrl,
   validateZoomParams 
 } from "../utils/urlManager";
+import { generateZoomLevelsWithLabels } from "../utils/zoomLevels";
 
 export interface PlotConfig {
   total_time_s: number;
@@ -102,8 +103,8 @@ export function updatePlotConfig(config: Partial<PlotConfig>): void {
 export function setZoomState(position: number, width: number | null = null): void {
   zoomPosition.set(position);
   zoomWidth.set(width);
-  // Update URL with new zoom parameters
-  updateUrlWithZoomParams(position, width);
+  // Convert to sample/index and update URL
+  updateZoomUrlFromState();
 }
 
 export function resetZoom(): void {
@@ -114,19 +115,110 @@ export function resetZoom(): void {
 }
 
 /**
+ * Convert current zoom state to sample number and level index, then update URL
+ */
+function updateZoomUrlFromState(): void {
+  // Get current plot config to access sample and time information
+  let currentConfig: PlotConfig = {
+    total_time_s: 0,
+    selectedChannelData: null,
+    selectedTrcData: null,
+    selectedSegmentData: null,
+  };
+  const unsubscribe = plotConfig.subscribe(config => currentConfig = config);
+  unsubscribe();
+  
+  if (!currentConfig || !currentConfig.no_of_samples || !currentConfig.horiz_interval) {
+    return;
+  }
+  
+  let currentPosition = 0.5;
+  let currentWidth: number | null = null;
+  const unsubscribePos = zoomPosition.subscribe(val => currentPosition = val);
+  const unsubscribeWidth = zoomWidth.subscribe(val => currentWidth = val);
+  unsubscribePos();
+  unsubscribeWidth();
+  
+  // Convert position (0-1) to sample number
+  const sampleNumber = Math.round(currentPosition * (currentConfig.no_of_samples - 1));
+  
+  // Convert width to zoom level index (if width is set)
+  let zoomLevelIndex: number | null = null;
+  if (currentWidth !== null && currentConfig.total_time_s) {
+    const zoomLevels = generateZoomLevelsWithLabels(
+      currentConfig.horiz_interval, 
+      currentConfig.total_time_s
+    );
+    if (zoomLevels.length > 0 && zoomLevels[0]) {
+      const targetTimeSpan = currentWidth * currentConfig.total_time_s;
+      // Find closest zoom level
+      let closestIndex = 0;
+      let minDiff = Math.abs(zoomLevels[0].value - targetTimeSpan);
+      for (let i = 1; i < zoomLevels.length; i++) {
+        const level = zoomLevels[i];
+        if (level) {
+          const diff = Math.abs(level.value - targetTimeSpan);
+          if (diff < minDiff) {
+            minDiff = diff;
+            closestIndex = i;
+          }
+        }
+      }
+      zoomLevelIndex = closestIndex;
+    }
+  }
+  
+  updateUrlWithZoomParams(sampleNumber, zoomLevelIndex);
+}
+
+/**
  * Restore zoom state from URL parameters (called on app initialization)
  */
 export function restoreZoomStateFromUrl(): boolean {
-  const { zoomPosition: urlPosition, zoomWidth: urlWidth } = getZoomParamsFromUrl();
+  const { zoomSample, zoomLevelIndex } = getZoomParamsFromUrl();
   
-  if (urlPosition !== undefined) {
-    const { position, width } = validateZoomParams(urlPosition, urlWidth || null);
+  if (zoomSample !== undefined) {
+    // Get current plot config to convert sample number back to position
+    let currentConfig: PlotConfig = {
+      total_time_s: 0,
+      selectedChannelData: null,
+      selectedTrcData: null,
+      selectedSegmentData: null,
+    };
+    const unsubscribe = plotConfig.subscribe(config => currentConfig = config);
+    unsubscribe();
+    
+    if (!currentConfig || !currentConfig.no_of_samples || !currentConfig.horiz_interval) {
+      return false;
+    }
+    
+    const { sample, levelIndex } = validateZoomParams(
+      zoomSample, 
+      zoomLevelIndex || null, 
+      currentConfig.no_of_samples, 
+      getMaxZoomLevelIndex(currentConfig)
+    );
+    
+    // Convert sample number back to position (0-1)
+    const position = sample / (currentConfig.no_of_samples - 1);
+    
+    // Convert zoom level index back to width fraction
+    let width: number | null = null;
+    if (levelIndex !== null && currentConfig.total_time_s) {
+      const zoomLevels = generateZoomLevelsWithLabels(
+        currentConfig.horiz_interval, 
+        currentConfig.total_time_s
+      );
+      if (levelIndex < zoomLevels.length && zoomLevels[levelIndex]) {
+        width = zoomLevels[levelIndex].value / currentConfig.total_time_s;
+      }
+    }
     
     // Set zoom state without triggering URL update to avoid infinite loop
     zoomPosition.set(position);
     zoomWidth.set(width);
     
-    console.log('🔄 Restored zoom state from URL:', { position, width });
+    console.log('🔄 Restored zoom state from URL:', { sample, levelIndex, position, width });
     return true;
   }
   
@@ -134,43 +226,35 @@ export function restoreZoomStateFromUrl(): boolean {
 }
 
 /**
+ * Get maximum zoom level index for validation
+ */
+function getMaxZoomLevelIndex(config: PlotConfig): number {
+  if (!config.horiz_interval || !config.total_time_s) return 0;
+  const zoomLevels = generateZoomLevelsWithLabels(config.horiz_interval, config.total_time_s);
+  return Math.max(0, zoomLevels.length - 1);
+}
+
+/**
  * Update zoom position and sync with URL (for drag operations)
  */
 export function updateZoomPosition(newPosition: number): void {
-  const currentWidth = getCurrentZoomWidth();
-  const { position } = validateZoomParams(newPosition, currentWidth);
-  
-  zoomPosition.set(position);
-  updateUrlWithZoomParams(position, currentWidth);
+  // Validate and clamp position
+  const validPosition = Math.max(0, Math.min(1, newPosition));
+  zoomPosition.set(validPosition);
+  updateZoomUrlFromState();
 }
 
 /**
  * Update zoom width and sync with URL (for zoom level changes)
  */
 export function updateZoomWidth(newWidth: number | null): void {
-  const currentPosition = getCurrentZoomPosition();
-  const { position, width } = validateZoomParams(currentPosition, newWidth);
-  
-  zoomWidth.set(width);
-  updateUrlWithZoomParams(position, width);
-}
-
-/**
- * Get current zoom position value (for internal use)
- */
-function getCurrentZoomPosition(): number {
-  let currentPosition = 0.5;
-  zoomPosition.subscribe(val => currentPosition = val)();
-  return currentPosition;
-}
-
-/**
- * Get current zoom width value (for internal use)
- */
-function getCurrentZoomWidth(): number | null {
-  let currentWidth: number | null = null;
-  zoomWidth.subscribe(val => currentWidth = val)();
-  return currentWidth;
+  // Validate and clamp width
+  let validWidth = newWidth;
+  if (newWidth !== null) {
+    validWidth = Math.max(0, Math.min(1, newWidth));
+  }
+  zoomWidth.set(validWidth);
+  updateZoomUrlFromState();
 }
 
 // Utility functions for zoom level configuration

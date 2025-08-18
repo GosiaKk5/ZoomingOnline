@@ -13,7 +13,7 @@
         selectedTrc,
         selectedSegment,
         showCopyLink,
-        restoreZoomStateFromUrl
+        plotActions
     } from './stores/index.ts';
     import { loadZarrData } from './utils/dataLoader.ts';
     
