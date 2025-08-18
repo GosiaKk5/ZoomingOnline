@@ -11,10 +11,6 @@ export interface AppConfig {
   
   // Default values
   defaultZoomLevelIndex: number;
-  
-  // UI Configuration
-  maxRetries: number;
-  loadingTimeout: number;
 }
 
 // Centralized configuration with readable defaults
@@ -22,9 +18,7 @@ const defaultConfig: AppConfig = {
   exampleDataUrl: `${window.location.origin}${(import.meta as any).env?.BASE_URL || '/'}static/example.zarr`,
   githubRepoUrl: "https://github.com/DataMedSci/ZoomingOnline",
   
-  defaultZoomLevelIndex: 3,
-  maxRetries: 3,
-  loadingTimeout: 30000
+  defaultZoomLevelIndex: 3
 };
 
 // Private writable store
