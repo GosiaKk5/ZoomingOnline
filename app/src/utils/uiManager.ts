@@ -30,33 +30,42 @@ interface DataStore {
 export async function populateSelectors(
   store: DataStore | null,
 ): Promise<SelectorOptions> {
-  console.log("🎯 populateSelectors() called");
-  console.log("  - store parameter:", store);
-  console.log("  - store type:", typeof store);
-  console.log("  - store exists:", !!store);
+  const DEBUG_UI = false;
+  if (DEBUG_UI) {
+    console.log("🎯 populateSelectors() called");
+    console.log("  - store parameter:", store);
+    console.log("  - store type:", typeof store);
+    console.log("  - store exists:", !!store);
+  }
 
   if (!store) {
-    console.warn("⚠️ populateSelectors: No store provided");
+    if (DEBUG_UI) console.warn("⚠️ populateSelectors: No store provided");
     return { channels: [], trcFiles: [], segments: [] };
   }
 
   if (!store.shape) {
-    console.warn("⚠️ populateSelectors: Store has no shape property");
-    console.log("  - Available store properties:", Object.keys(store));
-    console.log("  - Store structure:", store);
+    if (DEBUG_UI) {
+      console.warn("⚠️ populateSelectors: Store has no shape property");
+      console.log("  - Available store properties:", Object.keys(store));
+      console.log("  - Store structure:", store);
+    }
     return { channels: [], trcFiles: [], segments: [] };
   }
 
-  console.log("📐 Store shape analysis:");
-  console.log("  - store.shape:", store.shape);
-  console.log("  - shape type:", typeof store.shape);
-  console.log("  - shape length:", store.shape?.length);
+  if (DEBUG_UI) {
+    console.log("📐 Store shape analysis:");
+    console.log("  - store.shape:", store.shape);
+    console.log("  - shape type:", typeof store.shape);
+    console.log("  - shape length:", store.shape?.length);
+  }
 
   const [channelCount, trcCount, segmentCount] = store.shape;
-  console.log("📊 Extracted dimensions:");
-  console.log("  - channelCount:", channelCount);
-  console.log("  - trcCount:", trcCount);
-  console.log("  - segmentCount:", segmentCount);
+  if (DEBUG_UI) {
+    console.log("📊 Extracted dimensions:");
+    console.log("  - channelCount:", channelCount);
+    console.log("  - trcCount:", trcCount);
+    console.log("  - segmentCount:", segmentCount);
+  }
 
   // Validate dimensions
   if (
@@ -64,12 +73,12 @@ export async function populateSelectors(
     typeof trcCount !== "number" ||
     typeof segmentCount !== "number"
   ) {
-    console.error("❌ Invalid dimensions from store shape");
+  if (DEBUG_UI) console.error("❌ Invalid dimensions from store shape");
     return { channels: [], trcFiles: [], segments: [] };
   }
 
   // Create arrays of options
-  console.log("🔨 Creating selector arrays...");
+  if (DEBUG_UI) console.log("🔨 Creating selector arrays...");
   const channels = Array.from(
     { length: channelCount },
     (_, i): string => `Channel ${i + 1}`,
@@ -83,13 +92,15 @@ export async function populateSelectors(
     (_, i): string => `Segment ${i + 1}`,
   );
 
-  console.log("✅ Generated selectors:");
-  console.log("  - channels:", channels);
-  console.log("  - trcFiles:", trcFiles);
-  console.log("  - segments:", segments);
+  if (DEBUG_UI) {
+    console.log("✅ Generated selectors:");
+    console.log("  - channels:", channels);
+    console.log("  - trcFiles:", trcFiles);
+    console.log("  - segments:", segments);
+  }
 
   const result: SelectorOptions = { channels, trcFiles, segments };
-  console.log("📤 Returning result:", result);
+  if (DEBUG_UI) console.log("📤 Returning result:", result);
 
   return result;
 }

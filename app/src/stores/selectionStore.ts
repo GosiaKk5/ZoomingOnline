@@ -10,6 +10,27 @@ export const selectedChannel: Writable<string> = writable("");
 export const selectedTrc: Writable<string> = writable("");
 export const selectedSegment: Writable<string> = writable("");
 
+// Numeric derived selections to avoid parsing in components
+function parseSelectedIndex(value: string): number | null {
+  const match = value?.match(/(\d+)$/);
+  return match && match[1] ? parseInt(match[1], 10) - 1 : null;
+}
+
+export const selectedChannelIndex: Readable<number | null> = derived(
+  [selectedChannel],
+  ([$selectedChannel]) => parseSelectedIndex($selectedChannel)
+);
+
+export const selectedTrcIndex: Readable<number | null> = derived(
+  [selectedTrc],
+  ([$selectedTrc]) => parseSelectedIndex($selectedTrc)
+);
+
+export const selectedSegmentIndex: Readable<number | null> = derived(
+  [selectedSegment],
+  ([$selectedSegment]) => parseSelectedIndex($selectedSegment)
+);
+
 // Derived selection states for better component integration
 export const isDataReadyForPlot: Readable<boolean> = derived(
   [selectedChannel, selectedTrc, selectedSegment, isDataLoaded],

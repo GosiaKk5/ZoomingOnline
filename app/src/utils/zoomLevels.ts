@@ -38,8 +38,12 @@ export function generateZoomLevels(lowerLimit: number, upperLimit: number): numb
         currentPower *= 10;
     }
 
-    // Ensure sorted unique values
-    return [...new Set(levels)].sort((a, b) => a - b);
+    // Ensure sorted unique values and clamp to half of upperLimit to avoid overly wide zooms
+    const epsilon = upperLimit * 1e-12; // tiny tolerance for floating point comparisons
+    const maxAllowed = upperLimit / 2 + epsilon;
+    return [...new Set(levels)]
+        .filter(v => v <= maxAllowed)
+        .sort((a, b) => a - b);
 }
 
 /**

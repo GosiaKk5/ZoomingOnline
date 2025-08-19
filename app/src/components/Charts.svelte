@@ -67,8 +67,10 @@
     // Initialize zoom width from default zoom level when zoom control is ready
     $: if (selectedZoomLevel !== undefined && segmentDuration && $zoomWidth === null) {
         // Convert default zoom level (time duration in seconds) to width percentage
-        const defaultWidth = selectedZoomLevel / segmentDuration;
-        zoomWidth.set(Math.min(1, defaultWidth)); // Only clamp up to 100%, no minimum clamping
+        const defaultWidth = plotActions.convertZoomLevelToWidth(selectedZoomLevel);
+        if (defaultWidth !== null) {
+            zoomWidth.set(defaultWidth);
+        }
     }
     
     // Reset component state when new data is loaded (detected by dataVersion change)
@@ -98,12 +100,9 @@
                 segmentIndex
             );
 
-            // Store the complete config including all PlotDataResult fields
+            // Store the complete config
             plotConfig.set({
-                ...config,
-                selectedChannelData: null, // These will be set later if needed
-                selectedTrcData: null,
-                selectedSegmentData: null,
+                ...config
             });
             
             // Try to restore zoom state from URL parameters
@@ -154,11 +153,13 @@
                 if (zoomLevelsWithLabels.length > 0) {
                     const defaultZoomLevel = getDefaultZoomLevel(zoomLevelsWithLabels);
                     if (defaultZoomLevel) {
-                        const defaultWidth = defaultZoomLevel / segmentDuration;
-                        currentZoomWidth = Math.min(1, defaultWidth);
+                        const defaultWidth = plotActions.convertZoomLevelToWidth(defaultZoomLevel);
+                        currentZoomWidth = defaultWidth ?? null;
                         
                         // Set the store value so it's consistent
-                        zoomWidth.set(currentZoomWidth);
+                        if (currentZoomWidth !== null) {
+                            zoomWidth.set(currentZoomWidth);
+                        }
                     }
                 }
             }
@@ -219,25 +220,25 @@
     function handleZoomIn(newLevel: number) {
         selectedZoomLevel = newLevel;
         console.log('🔍 Zoom in to:', newLevel);
-        // Convert zoom level (time duration in seconds) to width percentage
-        const newWidth = newLevel / segmentDuration;
-        plotActions.updateZoomWidth(Math.min(1, newWidth)); // Only clamp up to 100%, no minimum clamping
+    // Convert zoom level (time duration in seconds) to width percentage
+    const newWidth = plotActions.convertZoomLevelToWidth(newLevel);
+    if (newWidth !== null) plotActions.updateZoomWidth(newWidth);
     }
     
     function handleZoomOut(newLevel: number) {
         selectedZoomLevel = newLevel;
         console.log('🔍 Zoom out to:', newLevel);
-        // Convert zoom level (time duration in seconds) to width percentage
-        const newWidth = newLevel / segmentDuration;
-        plotActions.updateZoomWidth(Math.min(1, newWidth)); // Only clamp up to 100%, no minimum clamping
+    // Convert zoom level (time duration in seconds) to width percentage
+    const newWidth = plotActions.convertZoomLevelToWidth(newLevel);
+    if (newWidth !== null) plotActions.updateZoomWidth(newWidth);
     }
     
     function handleZoomLevelChange(newLevel: number) {
         selectedZoomLevel = newLevel;
         console.log('🔍 Zoom level changed to:', newLevel);
-        // Convert zoom level (time duration in seconds) to width percentage
-        const newWidth = newLevel / segmentDuration;
-        plotActions.updateZoomWidth(Math.min(1, newWidth)); // Only clamp up to 100%, no minimum clamping
+    // Convert zoom level (time duration in seconds) to width percentage
+    const newWidth = plotActions.convertZoomLevelToWidth(newLevel);
+    if (newWidth !== null) plotActions.updateZoomWidth(newWidth);
     }
 </script>
 

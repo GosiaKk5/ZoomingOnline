@@ -106,7 +106,7 @@ export class ZoomService {
     zoomLevelsWithLabels: Array<{ value: number; label: string }>
   ): number | undefined {
     if (zoomLevelsWithLabels.length === 0) return undefined;
-    const defaultIndex = this.getDefaultZoomLevelIndex(zoomLevelsWithLabels.length);
+  const defaultIndex = ZoomService.getDefaultZoomLevelIndex(zoomLevelsWithLabels.length);
     return zoomLevelsWithLabels[zoomLevelsWithLabels.length - 1 - defaultIndex]?.value;
   }
 
@@ -132,5 +132,13 @@ export class ZoomService {
   static validateWidth(width: number | null): number | null {
     if (width === null) return null;
     return Math.max(0, Math.min(1, width));
+  }
+
+  /**
+   * Convert an absolute timespan (seconds) to normalized width (0..1)
+   */
+  static timespanToWidth(timespan: number, totalTime: number): number {
+    if (!totalTime || timespan <= 0) return 0;
+    return Math.min(1, timespan / totalTime);
   }
 }

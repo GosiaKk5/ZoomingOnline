@@ -24,12 +24,11 @@ export const zoomState: Readable<{ position: number; width: number | null }> = d
 
 export const hasPlotData: Readable<boolean> = derived(
   [plotConfig],
-  ([$plotConfig]) => Boolean(
-    $plotConfig &&
-    $plotConfig.selectedChannelData &&
-    $plotConfig.selectedTrcData &&
-    $plotConfig.selectedSegmentData
-  )
+  ([$plotConfig]) => {
+    if (!$plotConfig) return false;
+    const data = $plotConfig.overviewData;
+    return Array.isArray(data) && data.length > 0;
+  }
 );
 
 export const plotSummary: Readable<{

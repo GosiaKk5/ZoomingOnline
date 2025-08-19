@@ -105,8 +105,7 @@ export const plotActions = {
   convertZoomLevelToWidth(zoomLevel: number): number | null {
     const config = get(plotConfig);
     if (!config.total_time_s) return null;
-    
-    return Math.min(1, zoomLevel / config.total_time_s);
+  return ZoomService.timespanToWidth(zoomLevel, config.total_time_s);
   },
 
   // Combined reset for complete cleanup
