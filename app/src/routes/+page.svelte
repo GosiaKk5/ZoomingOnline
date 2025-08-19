@@ -9,6 +9,7 @@
         isDataLoaded,
         setLoadingState,
         setError,
+        showCopyLink,
         appConfig
     } from '../stores/index.ts';
     import { loadZarrData } from '../services/dataService.ts';
@@ -29,6 +30,7 @@
             await loadZarrData(url);
             dataUrl.set(url);
             isDataLoaded.set(true);
+            showCopyLink.set(true);
             setError(null);
             
             // Navigate to selection with data parameter

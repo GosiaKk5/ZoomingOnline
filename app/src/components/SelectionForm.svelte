@@ -96,8 +96,8 @@
 
     .form-row {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: var(--padding-sm);
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: var(--padding-md);
     }
 
     .form-group {
