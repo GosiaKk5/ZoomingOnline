@@ -1,5 +1,5 @@
 <script>
-    import { onMount } from 'svelte';
+    import { onMount, onDestroy } from 'svelte';
     import { 
         isLoading, 
         error, 
@@ -15,7 +15,7 @@
         showCopyLink
     } from '../stores/index.ts';
     import { populateSelectors } from '../utils/uiManager.ts';
-    import { push } from 'svelte-spa-router';
+    import { push } from '../router.ts';
     import ShareButton from '../components/ShareButton.svelte';
     import DatasetInfo from '../components/DatasetInfo.svelte';
 
@@ -69,37 +69,59 @@
         }
     }
 
-    // Reactive statements - only populate once when rawStore becomes available
-    $: if ($rawStore && !selectorsPopulated) {
-        selectorsPopulated = true; // Set flag to prevent re-population
-        
-        populateSelectors($rawStore).then(data => {
-            channels = data.channels;
-            trcFiles = data.trcFiles;
-            segments = data.segments;
-            
-            // Set default values to first available option if not already set
-            if (channels.length > 0 && (!$selectedChannel || $selectedChannel === '')) {
-                selectedChannel.set(channels[0]);
+    let unsubscribeRaw;
+    onMount(() => {
+        unsubscribeRaw = rawStore.subscribe(async (raw) => {
+            if (raw && !selectorsPopulated) {
+                selectorsPopulated = true;
+                try {
+                    const data = await populateSelectors(raw);
+                    channels = data.channels;
+                    trcFiles = data.trcFiles;
+                    segments = data.segments;
+                    if (channels.length > 0 && (!$selectedChannel || $selectedChannel === '')) {
+                        selectedChannel.set(channels[0]);
+                    }
+                    if (trcFiles.length > 0 && (!$selectedTrc || $selectedTrc === '')) {
+                        selectedTrc.set(trcFiles[0]);
+                    }
+                    if (segments.length > 0 && (!$selectedSegment || $selectedSegment === '')) {
+                        selectedSegment.set(segments[0]);
+                    }
+                } catch (err) {
+                    selectorsPopulated = false;
+                }
             }
-            if (trcFiles.length > 0 && (!$selectedTrc || $selectedTrc === '')) {
-                selectedTrc.set(trcFiles[0]);
-            }
-            if (segments.length > 0 && (!$selectedSegment || $selectedSegment === '')) {
-                selectedSegment.set(segments[0]);
-            }            
-        }).catch(err => {
-            selectorsPopulated = false; // Reset flag on error so user can retry
         });
-    }
+    });
+    onDestroy(() => {
+        unsubscribeRaw && unsubscribeRaw();
+    });
 
-    // Show copy link when data is loaded
-    $: if ($isDataLoaded) {
-        showCopyLink.set(true);
-    }
+    // Show copy link when data is loaded (avoid side-effects in reactive blocks)
+    onMount(() => {
+        const unsub = isDataLoaded.subscribe((v) => {
+            if (v) showCopyLink.set(true);
+        });
+        return () => unsub && unsub();
+    });
 
+    import { updateQuery } from '../router.ts';
     function handlePlotData() {        
         if ($isDataReadyForPlot) {
+            // Sync selection params in URL explicitly
+            try {
+                const [ch, trc, seg] = [$selectedChannel, $selectedTrc, $selectedSegment];
+                const getIndexFromDisplayName = (displayName) => {
+                    const match = displayName?.match(/(\d+)$/);
+                    return match ? parseInt(match[1]) : 1;
+                };
+                updateQuery((url) => {
+                    url.searchParams.set('channel', getIndexFromDisplayName(ch));
+                    url.searchParams.set('trc', getIndexFromDisplayName(trc));
+                    url.searchParams.set('segment', getIndexFromDisplayName(seg));
+                });
+            } catch {}
             push('/visualization');
         } else {
             console.log('⚠️ Data not ready for plot');
@@ -111,7 +133,7 @@
     }
 </script>
 
-<div class="container-center">
+<div class="container-center" data-testid="selection-container">
     {#if $isLoading}
         <div class="loading">
             <p>Loading data selectors...</p>

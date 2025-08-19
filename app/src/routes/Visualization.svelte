@@ -1,5 +1,6 @@
 <script>
     import { onMount } from 'svelte';
+    import { get } from 'svelte/store';
     import { 
         isDataReadyForPlot,
         selectedChannel,
@@ -8,7 +9,7 @@
         isLoading,
         isDataLoaded
     } from '../stores/index.ts';
-    import { push } from 'svelte-spa-router';
+    import { push } from '../router.ts';
     
     import Charts from '../components/Charts.svelte';
     import ShareButton from '../components/ShareButton.svelte';
@@ -17,20 +18,24 @@
         push('/selection');
     }
 
-    // Redirect to selection if data is not ready (but allow time for loading on refresh)
-    let hasAttemptedLoad = false;
-    
-    $: if (!$isDataReadyForPlot && !$isLoading && hasAttemptedLoad && $isDataLoaded) {
-        // Only redirect if we've attempted to load, we're not currently loading,
-        // and we have loaded data but selections aren't ready
-        push('/selection');
-        push('/selection');
-    }
-    
-    // Track when we've attempted to load data to prevent premature redirects
-    $: if ($isDataLoaded || $isLoading) {
-        hasAttemptedLoad = true;
-    }
+    // Guard: if visualization isn't ready (no selections/data), navigate back to selection.
+    // Use lifecycle + subscriptions instead of reactive blocks to avoid Svelte 5 effect_orphan.
+    onMount(() => {
+        // Immediate check on mount
+        if (!get(isDataReadyForPlot) && !get(isLoading) && get(isDataLoaded)) {
+            push('/selection');
+            return; // no need to subscribe further if we already redirect
+        }
+
+        const unsubReady = isDataReadyForPlot.subscribe((ready) => {
+            if (!ready && !get(isLoading) && get(isDataLoaded)) {
+                push('/selection');
+            }
+        });
+        return () => {
+            unsubReady && unsubReady();
+        };
+    });
 </script>
 
 {#if $isDataReadyForPlot}

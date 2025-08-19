@@ -2,39 +2,49 @@ import { test, expect } from "@playwright/test";
 
 // Configure data source based on environment
 const useLocalData = process.env.USE_LOCAL_DATA === "true";
-const baseURL = "http://localhost:5173/ZoomingOnline/";
 
-const getDataUrl = () => {
+function getDataUrl(baseUrlFromConfig) {
   if (useLocalData) {
-    // Construct full URL for the static example file
-    return `${baseURL}static/example.zarr`;
-  } else {
-    return "https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr";
+    // Construct full URL for the static example file based on Playwright baseURL
+    return new URL("static/example.zarr", baseUrlFromConfig).toString();
   }
-};
+  return "https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr";
+}
 
 // // Increase timeouts for CI environment
 const TIMEOUT_CI = 10000; // 2 minutes for CI
 
 test.describe("ZoomingOnline Browser Tests", () => {
   test.beforeEach(async ({ page }) => {
+    page.on("console", (msg) => {
+      // eslint-disable-next-line no-console
+      console.log(`[browser:${msg.type()}]`, msg.text());
+    });
+    page.on("pageerror", (err) => {
+      // eslint-disable-next-line no-console
+      console.log(`[pageerror]`, err.message);
+    });
     // Log data source for debugging
-    const dataUrl = getDataUrl();
+    const base = new URL(await page.url(), "http://localhost:4173/ZoomingOnline/").toString();
+    const dataUrl = getDataUrl(base);
     console.log(`Using data source: ${dataUrl}`);
   });
 
   test("load dataset via URL parameter", async ({ page }) => {
-    const dataUrl = getDataUrl();
+    const base = new URL(await page.url(), "http://localhost:4173/ZoomingOnline/").toString();
+    const dataUrl = getDataUrl(base);
 
-    // Navigate to the app with a dataset URL parameter
-    await page.goto(`${baseURL}?data=${encodeURIComponent(dataUrl)}`);
+  // Navigate to the app with a dataset URL parameter
+  await page.goto(`/?data=${encodeURIComponent(dataUrl)}`);
+  // App should immediately switch to selection route and begin loading
+  await expect(page).toHaveURL(/\/selection/);
 
     // Wait for the data to load and charts to render
     await page.waitForTimeout(3000);
 
     // Wait for data to load - look for the selection interface with container-center class
     const selectionContainer = await page.locator(".container-center");
-    await expect(selectionContainer).toBeVisible({ timeout: TIMEOUT_CI });
+  await expect(selectionContainer).toBeVisible({ timeout: 30000 });
 
     // Verify that data controls are present and populated
     const channelSelect = page.locator("#channel-select");
@@ -48,10 +58,11 @@ test.describe("ZoomingOnline Browser Tests", () => {
   });
 
   test("Load dataset via input field", async ({ page }) => {
-    const dataUrl = getDataUrl();
+    const base = new URL(await page.url(), "http://localhost:4173/ZoomingOnline/").toString();
+    const dataUrl = getDataUrl(base);
 
     // Navigate to the app
-    await page.goto(baseURL);
+  await page.goto("/");
     await expect(page).toHaveTitle(
       "ZoomingOnline - Interactive Raw Data Analysis",
     );
@@ -112,9 +123,9 @@ test.describe("ZoomingOnline Browser Tests", () => {
     // Plot the selected data - use the button text instead of the removed CSS class
     await page.click('button:has-text("Plot Selected Data")');
 
-    // Wait for navigation to visualization page
-    await page.waitForURL("**/visualization", { timeout: 15000 });
-    console.log("Navigated to visualization page");
+  // Wait for SPA URL change to visualization page (no full page load on pushState)
+  await expect(page).toHaveURL(/\/visualization/);
+  console.log("Navigated to visualization page");
 
     // Wait for chart container to appear (it needs plotConfig to be ready) - use overview chart directly
     await page.waitForSelector("#overview-chart", { timeout: TIMEOUT_CI });

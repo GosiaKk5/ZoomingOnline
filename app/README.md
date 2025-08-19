@@ -37,10 +37,6 @@ cd app
 
 **Automated Setup (Recommended):**
 
-```bash
-./setup-dev.sh
-```
-
 **Manual Setup:**
 
 ```bash
@@ -60,6 +56,13 @@ Open browser to http://localhost:5173
 ## 📦 Available Scripts
 
 | Command                | Purpose                  | Usage                                |
+## Svelte 5 migration notes
+
+- Upgraded to Svelte 5, vite-plugin-svelte 4, and svelte-check 4.
+- Legacy Svelte 3/4 syntax continues to work; runes are disabled for now via `vite.config.js` (compilerOptions.runes = false) to support incremental migration.
+- Routing: the app now uses a tiny internal router (`src/router.ts`) instead of `svelte-spa-router` to avoid compatibility pitfalls under Svelte 5 and to respect the configured Vite base path (`/ZoomingOnline/`). Use `push('/selection')` to navigate and the `$path` store to render routes.
+- URL sync: Components should call the `updateQuery` helper to mutate URL search params without causing re-entrant route updates.
+- How to enable runes later: remove `compilerOptions.runes = false` in `vite.config.js` and migrate component-local state to `$state`, `$derived`, `$effect` progressively.
 | ---------------------- | ------------------------ | ------------------------------------ |
 | `npm run dev`          | Start development server | Local development with hot reload    |
 | `npm run build`        | Production build         | Generates optimized build in `dist/` |

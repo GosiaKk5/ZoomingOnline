@@ -1,5 +1,10 @@
 // @ts-check
 import { defineConfig } from "@playwright/test";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -36,16 +41,16 @@ export default defineConfig({
    * - Uses dev server locally for hot reload during development
    * - Uses preview server in CI for production-like testing
    */
-  webServer: process.env.CI
-    ? []
-    : [
-        {
-          command: process.env.CI ? "npm run preview" : "npm run dev",
-          url: "http://localhost:5173/ZoomingOnline/",
-          reuseExistingServer: !process.env.CI,
-        },
-      ],
+  // Serve the production build via Vite preview to ensure routing works with base path
+  webServer: [
+    {
+      command: "npm run preview -- --host --port 4173",
+      url: "http://localhost:4173/ZoomingOnline/",
+  cwd: __dirname,
+      reuseExistingServer: true,
+    },
+  ],
   use: {
-    baseURL: "http://localhost:5173/ZoomingOnline/",
+    baseURL: "http://localhost:4173/ZoomingOnline/",
   },
 });

@@ -1,8 +1,6 @@
 <script>
-    import { onMount } from 'svelte';
-    import Router from 'svelte-spa-router';
-    import { location } from 'svelte-spa-router';
-    import { push } from 'svelte-spa-router';
+    import { onMount, onDestroy } from 'svelte';
+    import { path, push, initRouter, updateQuery } from './router.ts';
     import { 
         dataUrl, 
         isDataLoaded, 
@@ -42,32 +40,11 @@
         return `${typeNames[type]} ${index}`;
     }
 
-    // Define routes - only for our app routes, not static files
-    const routes = {
-        '/': Home,
-        '/selection': Selection,
-        '/visualization': Visualization
-    };
+    // Initialize minimal router
+    initRouter();
 
-    // Update URL with data parameter when route changes and data is loaded
-    $: if ($location && $dataUrl) {
-        const url = new URL(window.location);
-        const currentDataParam = url.searchParams.get('data');
-        if (currentDataParam !== $dataUrl) {
-            url.searchParams.set('data', $dataUrl);
-            window.history.replaceState(null, '', url.toString());
-        }
-    }
-
-    // Update URL with selection parameters when they change (for visualization persistence)
-    $: if ($location === '/visualization' && $selectedChannel && $selectedTrc && $selectedSegment) {
-        const url = new URL(window.location);
-        url.searchParams.set('channel', getIndexFromDisplayName($selectedChannel));
-        url.searchParams.set('trc', getIndexFromDisplayName($selectedTrc));
-        url.searchParams.set('segment', getIndexFromDisplayName($selectedSegment));
-        // Note: zoom parameters are handled by the zoom state management in Charts.svelte
-        window.history.replaceState(null, '', url.toString());
-    }
+    // URL updates are handled explicitly at navigation points to avoid reactive loops under Svelte 5
+    let navigatedOnParam = false;
 
     async function checkAndLoadDataFromUrl() {
         // Check if a data URL was provided in the query parameters
@@ -76,6 +53,7 @@
         const urlChannelParam = urlParams.get('channel');
         const urlTrcParam = urlParams.get('trc');
         const urlSegmentParam = urlParams.get('segment');
+    console.log('[router] checkAndLoadDataFromUrl path=', $path, 'data=', urlDataParam, 'loaded=', $isDataLoaded, 'loading=', $isLoading);
         
         // Restore selection parameters if they exist and current values are empty
         if (urlChannelParam && (!$selectedChannel || $selectedChannel === '')) {
@@ -91,7 +69,15 @@
             selectedSegment.set(segmentDisplayName);
         }
         
-        if (urlDataParam && !$isDataLoaded && !$isLoading) {
+    if (urlDataParam) {
+            // Navigate to selection once so the user sees loading state (but don't bounce from data views)
+            if (!navigatedOnParam && $path !== '/selection' && $path !== '/visualization') {
+                console.log('🧭 Navigating to selection before loading (once)');
+                push('/selection');
+                navigatedOnParam = true;
+            }
+
+            if (!$isDataLoaded && !$isLoading) {
             console.log('🚀 App-level auto-loading data from URL parameter:', urlDataParam);
             
             setLoadingState(true);
@@ -104,11 +90,17 @@
                 isDataLoaded.set(true);
                 showCopyLink.set(true);
                 setError(null);
+
+                // Explicitly sync data URL param for shareable links
+                updateQuery((u) => {
+                    u.searchParams.set('data', urlDataParam);
+                });
                 
-                // If we're not on a valid route for loaded data, navigate to selection
-                if ($location === '/' || $location === '') {
-                    console.log('🧭 Navigating to selection route from home...');
+                // Ensure we're on a data view route after loading (one-time)
+                if (!navigatedOnParam && $path !== '/selection' && $path !== '/visualization') {
+                    console.log('🧭 Navigating to selection route... current path:', $path);
                     push('/selection');
+                    navigatedOnParam = true;
                 }
                 
             } catch (err) {
@@ -117,28 +109,44 @@
             } finally {
                 setLoadingState(false);
             }
-        } else if (!urlDataParam && ($location === '/selection' || $location === '/visualization')) {
+        }
+    } else if (!urlDataParam && !$isDataLoaded && ($path === '/selection' || $path === '/visualization')) {
             // If we're on selection/visualization route but no data param and no data loaded, go to home
-            console.log('🚨 No data parameter found and on ' + $location + ' route, redirecting to home');
+            console.log('🚨 No data parameter found and on ' + $path + ' route, redirecting to home');
             push('/');
         }
     }
 
     onMount(() => {
+        console.log('[router] onMount current path=', $path);
         // Check for data URL parameter on mount
         checkAndLoadDataFromUrl();
     });
 
     // Also check when the location changes (for browser back/forward)
-    $: if ($location !== undefined) {
-        checkAndLoadDataFromUrl();
-    }
+    let unsubscribePath;
+    onMount(() => {
+        unsubscribePath = path.subscribe(() => {
+            checkAndLoadDataFromUrl();
+        });
+    });
+    // Cleanup
+    onDestroy(() => {
+        unsubscribePath && unsubscribePath();
+    });
 </script>
 
 <main class="container">
     <Header />
-    
-    <Router {routes} />
+    {#if $path === '/'}
+        <Home />
+    {:else if $path === '/selection'}
+        <Selection />
+    {:else if $path === '/visualization'}
+        <Visualization />
+    {:else}
+        <Home />
+    {/if}
 </main>
 
 <style>

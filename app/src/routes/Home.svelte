@@ -11,7 +11,7 @@
         appConfig
     } from '../stores/index.ts';
     import { loadZarrData } from '../services/dataService.ts';
-    import { push } from 'svelte-spa-router';
+    import { push, updateQuery } from '../router.ts';
 
     let inputUrl = '';
 
@@ -31,6 +31,11 @@
             dataUrl.set(inputUrl);
             isDataLoaded.set(true);
             setError(null);
+            // Ensure the data URL is reflected in the address bar so the app
+            // doesn't redirect back to home when navigating to /selection
+            updateQuery((u) => {
+                u.searchParams.set('data', inputUrl);
+            });
             push('/selection');
             
         } catch (err) {
@@ -49,7 +54,8 @@
 
     function loadExample() {
         inputUrl = exampleUrl;
-        handleLoadData();
+        // Allow the input binding to update, then load
+        Promise.resolve().then(() => handleLoadData());
     }
 </script>
 

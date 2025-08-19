@@ -101,6 +101,7 @@ config.push(
   },
 
   // Svelte specific configuration
+  // Svelte 5 recommended rules
   ...svelte.configs["flat/recommended"],
   {
     files: ["**/*.svelte"],

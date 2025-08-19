@@ -1,7 +1,8 @@
 import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 
-export default {
-  // Consult https://svelte.dev/docs#compile-time-svelte-preprocess
-  // for more information about preprocessors
+// Svelte 5 still supports preprocess configuration the same way
+const config = {
   preprocess: vitePreprocess(),
 };
+
+export default config;
