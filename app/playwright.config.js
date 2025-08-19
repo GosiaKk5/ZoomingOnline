@@ -38,15 +38,13 @@ export default defineConfig({
   ],
   /**
    * Web server configuration for local testing
-   * - Uses dev server locally for hot reload during development
-   * - Uses preview server in CI for production-like testing
+   * SvelteKit dev/preview server with base path
    */
-  // Serve the production build via Vite preview to ensure routing works with base path
   webServer: [
     {
       command: "npm run preview -- --host --port 4173",
       url: "http://localhost:4173/ZoomingOnline/",
-  cwd: __dirname,
+      cwd: __dirname,
       reuseExistingServer: true,
     },
   ],
