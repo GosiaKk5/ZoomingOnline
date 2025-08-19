@@ -10,7 +10,7 @@
         setError,
         appConfig
     } from '../stores/index.ts';
-    import { loadZarrData } from '../utils/dataLoader.ts';
+    import { loadZarrData } from '../services/dataService.ts';
     import { push } from 'svelte-spa-router';
 
     let inputUrl = '';

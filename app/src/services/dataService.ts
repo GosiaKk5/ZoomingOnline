@@ -1,9 +1,8 @@
 /**
- * dataLoader.ts
+ * dataService.ts
  *
- * This module handles loading and retrieving Zarr-formatted data from a URL.
- * It provides functions to load remote data and efficiently retrieve slices
- * of the dataset with chunk-based caching using Svelte stores.
+ * Service for loading and retrieving Zarr-formatted data from a URL.
+ * Orchestrates store updates and provides data access helpers.
  */
 
 import { openGroup, openArray, slice, HTTPStore } from "zarr";
@@ -20,7 +19,7 @@ import {
   resetPlotConfig,
   resetZoomState,
   type CacheEntry,
-} from "../stores/index.ts";
+} from "../stores";
 
 /**
  * Reset all application state (replacement for old resetAppState)
@@ -91,14 +90,6 @@ export async function loadZarrData(url: string): Promise<void> {
 
 /**
  * Get a slice of raw data with efficient chunk caching
- * @param rawStoreObj - Raw store object
- * @param cacheObj - Cache object
- * @param ch - Channel index
- * @param trc - TRC index
- * @param seg - Segment index
- * @param start - Start sample index
- * @param end - End sample index
- * @returns Array of data points for the requested range
  */
 export async function getRawDataSlice(
   rawStoreObj: any,

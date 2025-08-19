@@ -15,7 +15,7 @@
         showCopyLink,
         plotActions
     } from './stores/index.ts';
-    import { loadZarrData } from './utils/dataLoader.ts';
+    import { loadZarrData } from './services/dataService.ts';
     
     // Import components
     import Header from './components/Header.svelte';

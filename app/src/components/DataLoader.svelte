@@ -16,7 +16,7 @@
         setError,
         appConfig
     } from '../stores/index.ts';
-    import { loadZarrData } from '../utils/dataLoader.ts';
+    import { loadZarrData } from '../services/dataService.ts';
     import { populateSelectors } from '../utils/uiManager.ts';
 
     let inputUrl = '';
