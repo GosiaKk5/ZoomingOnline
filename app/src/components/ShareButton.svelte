@@ -10,10 +10,8 @@
     
     // Update shareable URL when modal opens to ensure it includes all necessary parameters
     function openModal() {
-        // Always generate a complete URL with all required parameters
         shareableUrl = ShareService.generateShareableUrl();
         showModal = true;
-        console.log('📤 Generated shareable URL:', shareableUrl);
     }
     
     function closeModal() {
