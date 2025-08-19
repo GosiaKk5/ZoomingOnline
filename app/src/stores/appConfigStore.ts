@@ -27,7 +27,7 @@ export interface AppConfig {
 
 // Centralized configuration with readable defaults
 const defaultConfig: AppConfig = {
-  exampleDataUrl: `${window.location.origin}${(import.meta as any).env?.BASE_URL || '/'}static/example.zarr`,
+  exampleDataUrl: `${window.location.origin}${(import.meta as any).env?.BASE_URL || '/'}downloads/example.zarr`,
   githubRepoUrl: "https://github.com/DataMedSci/ZoomingOnline",
   
   defaultZoomLevelIndex: 3,

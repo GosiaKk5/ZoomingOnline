@@ -11,6 +11,7 @@ export default defineConfig({
       },
     }),
   ],
+  publicDir: "static",
   base: "/ZoomingOnline/",
   build: {
     outDir: "dist",
