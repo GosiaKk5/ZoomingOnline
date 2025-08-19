@@ -68,5 +68,23 @@ export {
   getSelectionValues
 } from './selectionStore.ts';
 
-// Plot Configuration Store
-export * from './plot/index.ts';
+// Plot stores (flattened)
+export * from './plotConfig';
+export * from './zoomState';
+export * from './derivedStores';
+export { plotActions } from './actions';
+import { ZoomService } from '../services/zoomService.ts';
+export { ZoomService };
+export { ZoomUrlService } from '../services/zoomUrlService.ts';
+
+// Convenience re-exports for components expecting named functions from stores
+export const getDefaultZoomLevelIndex = (totalLevels: number) =>
+  ZoomService.getDefaultZoomLevelIndex(totalLevels);
+export const getDefaultZoomLevel = (
+  zoomLevelsWithLabels: Array<{ value: number; label: string }>
+) => ZoomService.getDefaultZoomLevel(zoomLevelsWithLabels);
+export const calculateZoomBounds = (
+  position: number,
+  width: number | null,
+  totalTime: number
+) => ZoomService.calculateZoomBounds(position, width, totalTime);

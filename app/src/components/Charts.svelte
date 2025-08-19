@@ -22,7 +22,7 @@
         drawGridLines, 
         drawArea,
         drawZoomRectangle
-    } from '../utils/chartRenderer.ts';
+    } from '../renderers/chartRenderer.ts';
     import { generateZoomLevelsWithLabels } from '../utils/zoomLevels.ts';
     import ZoomControl from './ZoomControl.svelte';
     import * as d3 from 'd3';
