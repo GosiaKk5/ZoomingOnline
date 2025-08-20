@@ -33,19 +33,23 @@ export default defineConfig({
         screenshot: "only-on-failure",
         // Record trace only on failure
         trace: "on-first-retry",
+        // Increased timeouts for CI
+        actionTimeout: 15000,
+        navigationTimeout: 30000,
       },
     },
   ],
   /**
-   * Web server configuration for local testing
-   * SvelteKit dev/preview server with base path
+   * Web server configuration for local testing only
+   * In CI, the server is started manually for better control
    */
-  webServer: [
+  webServer: process.env.CI ? undefined : [
     {
       command: "npm run preview -- --host --port 4173",
       url: "http://localhost:4173/",
       cwd: __dirname,
       reuseExistingServer: true,
+      timeout: 30000,
     },
   ],
   use: {

@@ -54,26 +54,53 @@ jobs:
         working-directory: ./app
         run: npm run build
 
-      # Step 7: Install serve globally for serving the built app
-      - name: Install serve
-        run: npm install -g serve
-
-      # Step 8: Start the preview server in background
+      # Step 7: Start the preview server in background with proper logging
       - name: Start preview server
         working-directory: ./app
-        run: npm run preview -- --port 4173 --strictPort &
+        run: |
+          echo "Starting preview server..."
+          npm run preview -- --port 4173 --strictPort --host &
+          SERVER_PID=$!
+          echo "Preview server started with PID: $SERVER_PID"
+          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
       
-      # Step 9: Wait for server to be ready before running tests
-      - name: Wait for server to be ready
+      # Step 8: Wait for server to be ready and test static files
+      - name: Wait for server and verify static files
         working-directory: ./app
-        run: npx wait-on http://localhost:4173/
+        run: |
+          echo "Waiting for server to be ready..."
+          npx wait-on http://localhost:4173/ --timeout 30000 --interval 1000
+          
+          echo "Testing server response..."
+          curl -f http://localhost:4173/ || exit 1
+          
+          echo "Testing static zarr data availability..."
+          curl -f http://localhost:4173/downloads/example.zarr/.zarray || {
+            echo "ERROR: Zarr data not accessible"
+            ls -la static/downloads/example.zarr/
+            exit 1
+          }
+          
+          echo "Server is ready and serving static files correctly"
 
-      # Step 10: Run the actual browser tests
+      # Step 9: Run the actual browser tests with increased timeouts
       - name: Run browser tests with local data
         working-directory: ./app
-        run: USE_LOCAL_DATA=true npx playwright test --reporter=line
+        run: |
+          echo "Starting browser tests..."
+          echo "Environment variables:"
+          echo "  USE_LOCAL_DATA=$USE_LOCAL_DATA"
+          echo "  CI=$CI"
+          echo "Available processes:"
+          ps aux | grep -E "(vite|playwright|node)" | head -10
+          echo "Port 4173 status:"
+          lsof -i :4173 || echo "No process found on port 4173"
+          echo "Running tests..."
+          USE_LOCAL_DATA=true npx playwright test --reporter=line --timeout=120000
+        env:
+          USE_LOCAL_DATA: true
 
-      # Step 11: Upload test artifacts (reports, screenshots) if tests fail
+      # Step 10: Upload test artifacts (reports, screenshots) if tests fail
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()  # Upload even if tests fail
@@ -83,3 +110,12 @@ jobs:
             app/playwright-report/
             app/*.png
           retention-days: 30
+
+      # Step 11: Cleanup - stop the preview server
+      - name: Stop preview server
+        if: always()
+        run: |
+          if [ ! -z "$SERVER_PID" ]; then
+            echo "Stopping preview server with PID: $SERVER_PID"
+            kill $SERVER_PID || echo "Server already stopped"
+          fi
