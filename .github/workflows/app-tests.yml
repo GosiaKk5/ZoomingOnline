@@ -75,9 +75,8 @@ jobs:
           curl -f http://localhost:4173/ || exit 1
           
           echo "Testing static zarr data availability..."
-          curl -f http://localhost:4173/downloads/example.zarr/.zarray || {
+          curl -f http://localhost:4173/downloads/example.zarr/.zgroup || {
             echo "ERROR: Zarr data not accessible"
-            ls -la downloads/example.zarr/
             exit 1
           }
           
