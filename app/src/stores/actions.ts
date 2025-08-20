@@ -44,25 +44,40 @@ export const plotActions = {
 		// Update the store
 		zoomPosition.set(validPosition);
     
-		// Convert width to zoomLevelIndex for URL (simplified - you may need to adjust this logic)
-		const zoomLevelIndex = currentWidth !== null ? Math.round(currentWidth) : null;
+		// Convert width to zoomLevelIndex for URL - use proper conversion
+		let zoomLevelIndex: number | null = null;
+		if (currentWidth !== null && config.total_time_s && config.horiz_interval) {
+			zoomLevelIndex = ZoomService.findZoomLevelIndex(
+				currentWidth, 
+				config.total_time_s, 
+				config.horiz_interval
+			);
+		}
 		UrlService.updateZoomParams(validPosition, zoomLevelIndex);
     
-		console.log('🎯 Zoom position updated to sample:', validPosition);
+		console.log('🎯 Zoom position updated to sample:', validPosition, 'zoomLevelIndex:', zoomLevelIndex);
 	},
 
 	updateZoomWidth(newWidth: number | null): void {
 		const validWidth = ZoomService.validateWidth(newWidth);
 		const currentPosition = get(zoomPosition);
+		const config = get(plotConfig);
     
 		// Update the store
 		zoomWidth.set(validWidth);
     
-		// Convert width to zoomLevelIndex for URL (simplified - you may need to adjust this logic)
-		const zoomLevelIndex = validWidth !== null ? Math.round(validWidth) : null;
+		// Convert width to zoomLevelIndex for URL - use proper conversion
+		let zoomLevelIndex: number | null = null;
+		if (validWidth !== null && config.total_time_s && config.horiz_interval) {
+			zoomLevelIndex = ZoomService.findZoomLevelIndex(
+				validWidth, 
+				config.total_time_s, 
+				config.horiz_interval
+			);
+		}
 		UrlService.updateZoomParams(currentPosition, zoomLevelIndex);
     
-		console.log('🔍 Zoom width updated:', validWidth);
+		console.log('🔍 Zoom width updated:', validWidth, 'zoomLevelIndex:', zoomLevelIndex);
 	},
 
 	setZoomState(position: number, width: number | null): void {
@@ -74,11 +89,18 @@ export const plotActions = {
 		// Update the stores
 		setZoomState(validPosition, validWidth);
     
-		// Convert width to zoomLevelIndex for URL (simplified - you may need to adjust this logic)
-		const zoomLevelIndex = validWidth !== null ? Math.round(validWidth) : null;
+		// Convert width to zoomLevelIndex for URL - use proper conversion
+		let zoomLevelIndex: number | null = null;
+		if (validWidth !== null && config.total_time_s && config.horiz_interval) {
+			zoomLevelIndex = ZoomService.findZoomLevelIndex(
+				validWidth, 
+				config.total_time_s, 
+				config.horiz_interval
+			);
+		}
 		UrlService.updateZoomParams(validPosition, zoomLevelIndex);
     
-		console.log('🎯 Zoom state set to sample:', { position: validPosition, width: validWidth });
+		console.log('🎯 Zoom state set to sample:', { position: validPosition, width: validWidth, zoomLevelIndex });
 	},
 
 	resetZoom(): void {
@@ -95,7 +117,7 @@ export const plotActions = {
 		if (!zoomParams.useDefaults && (zoomParams.zoomSample !== null || zoomParams.zoomLevelIndex !== null)) {
 			// We have zoom parameters in URL - validate and use them
 			const totalSamples = config.no_of_samples || 1000; // Use no_of_samples from config
-			const maxZoomLevelIndex = 10; // You may need to adjust this based on your zoom levels
+			const maxZoomLevelIndex = ZoomService.getMaxZoomLevelIndex(config); // Use proper max calculation
 			
 			const zoomSample = zoomParams.zoomSample || 0;
 			const zoomLevelIndex = zoomParams.zoomLevelIndex;
@@ -108,10 +130,17 @@ export const plotActions = {
 			);
 			
 			if (validation.isValid) {
-				// Convert zoomLevelIndex back to width (simplified - you may need to adjust this logic)
-				const width = validation.levelIndex !== null ? validation.levelIndex : null;
+				// Convert zoomLevelIndex back to width - use proper conversion
+				let width: number | null = null;
+				if (validation.levelIndex !== null && config.total_time_s && config.horiz_interval) {
+					width = ZoomService.convertZoomLevelIndexToWidth(
+						validation.levelIndex,
+						config.total_time_s,
+						config.horiz_interval
+					);
+				}
 				setZoomState(validation.sample, width);
-				console.log('🔄 Zoom state restored from URL:', validation);
+				console.log('🔄 Zoom state restored from URL:', { sample: validation.sample, width, zoomLevelIndex: validation.levelIndex });
 				return true;
 			}
 		}

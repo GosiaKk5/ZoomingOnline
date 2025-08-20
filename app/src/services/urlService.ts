@@ -62,7 +62,7 @@ export class UrlService {
     
     const pathname = window.location.pathname;
     if (pathname.includes('/selection')) return 'selection';
-    if (pathname.includes('/plot')) return 'plot';
+    if (pathname.includes('/visualization')) return 'plot';
     return 'main';
   }
 
