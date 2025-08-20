@@ -77,7 +77,7 @@ jobs:
           echo "Testing static zarr data availability..."
           curl -f http://localhost:4173/downloads/example.zarr/.zarray || {
             echo "ERROR: Zarr data not accessible"
-            ls -la static/downloads/example.zarr/
+            ls -la downloads/example.zarr/
             exit 1
           }
           
