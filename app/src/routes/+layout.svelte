@@ -3,6 +3,7 @@
     import { page } from '$app/stores';
     import { goto } from '$app/navigation';
     import { base } from '$app/paths';
+    import { browser } from '$app/environment';
     import { 
         dataUrl, 
         isDataLoaded, 
@@ -65,7 +66,17 @@
             // Navigate to selection once so the user sees loading state
             if (!navigatedOnParam && $page.route.id !== '/selection' && $page.route.id !== '/visualization') {
                 console.log('🧭 Navigating to selection before loading (once)');
-                goto(`${base}/selection`);
+                // Preserve URL parameters when navigating
+                if (browser) {
+                    const currentParams = UrlService.getUrlParams();
+                    const selectionUrl = new URL(`${base}/selection`, window.location.origin);
+                    currentParams.forEach((value, key) => {
+                        selectionUrl.searchParams.set(key, value);
+                    });
+                    goto(selectionUrl.pathname + selectionUrl.search);
+                } else {
+                    goto(`${base}/selection`);
+                }
                 navigatedOnParam = true;
             }
 
@@ -86,7 +97,16 @@
                     // Ensure we're on a data view route after loading (one-time)
                     if (!navigatedOnParam && $page.route.id !== '/selection' && $page.route.id !== '/visualization') {
                         console.log('🧭 Navigating to selection route... current route:', $page.route.id);
-                        goto(`${base}/selection`);
+                        if (browser) {
+                            const currentParams = UrlService.getUrlParams();
+                            const selectionUrl = new URL(`${base}/selection`, window.location.origin);
+                            currentParams.forEach((value, key) => {
+                                selectionUrl.searchParams.set(key, value);
+                            });
+                            goto(selectionUrl.pathname + selectionUrl.search);
+                        } else {
+                            goto(`${base}/selection`);
+                        }
                         navigatedOnParam = true;
                     }
                     
