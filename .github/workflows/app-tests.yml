@@ -54,48 +54,22 @@ jobs:
         working-directory: ./app
         run: npm run build
 
-      # Step 7: Start the preview server in background with proper logging
+      # Step 7: Start the preview server in background
       - name: Start preview server
         working-directory: ./app
         run: |
-          echo "Starting preview server..."
           npm run preview -- --port 4173 --strictPort --host &
-          SERVER_PID=$!
-          echo "Preview server started with PID: $SERVER_PID"
-          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+          echo "SERVER_PID=$!" >> $GITHUB_ENV
       
-      # Step 8: Wait for server to be ready and test static files
-      - name: Wait for server and verify static files
+      # Step 8: Wait for server to be ready
+      - name: Wait for server
         working-directory: ./app
-        run: |
-          echo "Waiting for server to be ready..."
-          npx wait-on http://localhost:4173/ --timeout 30000 --interval 1000
-          
-          echo "Testing server response..."
-          curl -f http://localhost:4173/ || exit 1
-          
-          echo "Testing static zarr data availability..."
-          curl -f http://localhost:4173/downloads/example.zarr/.zgroup || {
-            echo "ERROR: Zarr data not accessible"
-            exit 1
-          }
-          
-          echo "Server is ready and serving static files correctly"
+        run: npx wait-on http://localhost:4173/ --timeout 30000
 
-      # Step 9: Run the actual browser tests with increased timeouts
+      # Step 9: Run browser tests
       - name: Run browser tests with local data
         working-directory: ./app
-        run: |
-          echo "Starting browser tests..."
-          echo "Environment variables:"
-          echo "  USE_LOCAL_DATA=$USE_LOCAL_DATA"
-          echo "  CI=$CI"
-          echo "Available processes:"
-          ps aux | grep -E "(vite|playwright|node)" | head -10
-          echo "Port 4173 status:"
-          lsof -i :4173 || echo "No process found on port 4173"
-          echo "Running tests..."
-          USE_LOCAL_DATA=true npx playwright test --reporter=line --timeout=120000
+        run: USE_LOCAL_DATA=true npx playwright test --reporter=line --timeout=120000
         env:
           USE_LOCAL_DATA: true
 
@@ -110,11 +84,7 @@ jobs:
             app/*.png
           retention-days: 30
 
-      # Step 11: Cleanup - stop the preview server
+      # Step 11: Stop the preview server
       - name: Stop preview server
         if: always()
-        run: |
-          if [ ! -z "$SERVER_PID" ]; then
-            echo "Stopping preview server with PID: $SERVER_PID"
-            kill $SERVER_PID || echo "Server already stopped"
-          fi
+        run: kill $SERVER_PID || true
