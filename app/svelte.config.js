@@ -14,11 +14,6 @@ const config = {
       strict: true
     }),
     
-    // Configure base path for deployment
-    paths: {
-      base: '/ZoomingOnline'
-    },
-    
     // Disable prerendering for SPA mode
     prerender: {
       entries: []

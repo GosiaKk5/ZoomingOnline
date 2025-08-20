@@ -7,7 +7,7 @@ function getDataUrl(baseUrlFromConfig) {
   if (useLocalData) {
     // Construct full URL for the static example file based on Playwright baseURL
     // Make sure baseUrlFromConfig is a valid URL
-    const baseUrl = baseUrlFromConfig || "http://localhost:4173/ZoomingOnline/";
+    const baseUrl = baseUrlFromConfig || "http://localhost:4173/";
     return new URL("downloads/example.zarr", baseUrl).toString();
   }
   return "https://s3.cloud.cyfronet.pl/zooming-online/1nA/1nA.zarr";
@@ -27,12 +27,12 @@ test.describe("ZoomingOnline Browser Tests", () => {
       console.log(`[pageerror]`, err.message);
     });
     // Log data source for debugging
-    const dataUrl = getDataUrl("http://localhost:4173/ZoomingOnline/");
+    const dataUrl = getDataUrl("http://localhost:4173/");
     console.log(`Using data source: ${dataUrl}`);
   });
 
   test("load dataset via URL parameter", async ({ page }) => {
-    const dataUrl = getDataUrl("http://localhost:4173/ZoomingOnline/");
+    const dataUrl = getDataUrl("http://localhost:4173/");
 
   // Navigate to the app with a dataset URL parameter
   await page.goto(`/?data=${encodeURIComponent(dataUrl)}`);
@@ -58,7 +58,7 @@ test.describe("ZoomingOnline Browser Tests", () => {
   });
 
   test("Load dataset via input field", async ({ page }) => {
-    const dataUrl = getDataUrl("http://localhost:4173/ZoomingOnline/");
+    const dataUrl = getDataUrl("http://localhost:4173/");
 
     // Navigate to the app
   await page.goto("/");

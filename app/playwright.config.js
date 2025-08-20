@@ -43,12 +43,12 @@ export default defineConfig({
   webServer: [
     {
       command: "npm run preview -- --host --port 4173",
-      url: "http://localhost:4173/ZoomingOnline/",
+      url: "http://localhost:4173/",
       cwd: __dirname,
       reuseExistingServer: true,
     },
   ],
   use: {
-    baseURL: "http://localhost:4173/ZoomingOnline/",
+    baseURL: "http://localhost:4173/",
   },
 });

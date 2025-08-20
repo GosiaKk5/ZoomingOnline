@@ -3,7 +3,6 @@
  * Contains all read-only configuration values, URLs, and default parameters
  */
 import { writable, readonly, type Writable, type Readable } from "svelte/store";
-import { base } from "$app/paths";
 
 export interface AppConfig {
   // URLs and endpoints
@@ -28,7 +27,7 @@ export interface AppConfig {
 
 // Centralized configuration with readable defaults
 const defaultConfig: AppConfig = {
-  exampleDataUrl: `${window.location.origin}${base}/downloads/example.zarr`,
+  exampleDataUrl: `${window.location.origin}/downloads/example.zarr`,
   githubRepoUrl: "https://github.com/DataMedSci/ZoomingOnline",
   
   defaultZoomLevelIndex: 3,

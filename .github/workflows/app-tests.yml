@@ -61,12 +61,12 @@ jobs:
       # Step 8: Start the preview server in background
       - name: Start preview server
         working-directory: ./app
-        run: npm run preview -- --port 5173 --strictPort &
+        run: npm run preview -- --port 4173 --strictPort &
       
       # Step 9: Wait for server to be ready before running tests
       - name: Wait for server to be ready
         working-directory: ./app
-        run: npx wait-on http://localhost:5173/ZoomingOnline/
+        run: npx wait-on http://localhost:4173/
 
       # Step 10: Run the actual browser tests
       - name: Run browser tests with local data
