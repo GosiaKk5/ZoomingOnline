@@ -3,7 +3,7 @@
  * Manages user selections for channel, TRC, and segment
  */
 import { writable, derived, type Writable, type Readable } from "svelte/store";
-import { isDataLoaded } from "./dataStore.ts";
+import { isDataLoaded } from "./dataStore";
 
 // Selection state stores
 export const selectedChannel: Writable<string> = writable("");

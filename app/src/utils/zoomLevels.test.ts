@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { 
     generateZoomLevels, 
     generateZoomLevelsWithLabels
-} from './zoomLevels.ts';
+} from './zoomLevels';
 
 describe('zoomLevels utilities', () => {
     describe('generateZoomLevels', () => {

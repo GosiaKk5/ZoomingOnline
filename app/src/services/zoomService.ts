@@ -122,8 +122,11 @@ export class ZoomService {
   /**
    * Validate and clamp zoom position
    */
-  static validatePosition(position: number): number {
-    return Math.max(0, Math.min(1, position));
+  /**
+   * Validate and clamp zoom position to valid sample number
+   */
+  static validatePosition(position: number, totalSamples: number = 1000): number {
+    return Math.max(0, Math.min(totalSamples - 1, Math.floor(position)));
   }
 
   /**

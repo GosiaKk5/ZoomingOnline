@@ -6,7 +6,7 @@
  */
 
 import * as d3 from "d3";
-import { formatTime } from "../utils/mathUtils.ts";
+import { formatTime } from "../utils/mathUtils";
 
 // Type definitions
 export interface ChartMargin {

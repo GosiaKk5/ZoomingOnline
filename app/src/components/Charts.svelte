@@ -13,8 +13,8 @@
         getDefaultZoomLevel,
         appConfig,
         plotActions
-    } from '../stores/index.ts';
-    import { parseSelectedIndex } from '../utils/uiManager.ts';
+    } from '../stores/index';
+    import { parseSelectedIndex } from '../utils/uiManager';
     import { 
         initializePlotData, 
         createChartSVG, 
@@ -22,8 +22,8 @@
         drawGridLines, 
         drawArea,
         drawZoomRectangle
-    } from '../renderers/chartRenderer.ts';
-    import { generateZoomLevelsWithLabels } from '../utils/zoomLevels.ts';
+    } from '../renderers/chartRenderer';
+    import { generateZoomLevelsWithLabels } from '../utils/zoomLevels';
     import ZoomControl from './ZoomControl.svelte';
     import * as d3 from 'd3';
 
@@ -109,6 +109,9 @@
             const wasRestored = plotActions.restoreZoomFromUrl();
             if (wasRestored) {
                 console.log('🔄 Zoom state restored from URL parameters');
+            } else {
+                // No URL parameters - initialize with default (middle of plot)
+                plotActions.initializeDefaultZoom();
             }
             
             isInitialized = true;
@@ -165,15 +168,20 @@
             }
             
             if (currentZoomWidth !== null) {
+                // Convert sample number to normalized position (0-1) for drawZoomRectangle
+                const totalSamples = $plotConfig?.no_of_samples || 1000;
+                const normalizedPosition = totalSamples > 1 ? $zoomPosition / (totalSamples - 1) : 0;
                 drawZoomRectangle(
                     svg0, 
                     x0, 
                     height, 
-                    $zoomPosition, 
+                    normalizedPosition, 
                     currentZoomWidth as number, 
                     total_time_s,
-                    (newPosition: number) => {
-                        plotActions.updateZoomPosition(newPosition);
+                    (newNormalizedPosition: number) => {
+                        // Convert normalized position back to sample number
+                        const newSample = totalSamples > 1 ? Math.round(newNormalizedPosition * (totalSamples - 1)) : 0;
+                        plotActions.updateZoomPosition(newSample);
                     }
                 );
             }
@@ -203,15 +211,20 @@
         const x0 = d3.scaleLinear().domain([0, total_time_s]).range([0, width || 0]);
         
         // Redraw the zoom rectangle with updated position/width
+        // Convert sample number to normalized position (0-1) for drawZoomRectangle
+        const totalSamples = $plotConfig?.no_of_samples || 1000;
+        const normalizedPosition = totalSamples > 1 ? $zoomPosition / (totalSamples - 1) : 0;
         drawZoomRectangle(
             svg0, 
             x0, 
             height || 0, 
-            $zoomPosition, 
+            normalizedPosition, 
             $zoomWidth as number, 
             total_time_s,
-            (newPosition: number) => {
-                plotActions.updateZoomPosition(newPosition);
+            (newNormalizedPosition: number) => {
+                // Convert normalized position back to sample number
+                const newSample = totalSamples > 1 ? Math.round(newNormalizedPosition * (totalSamples - 1)) : 0;
+                plotActions.updateZoomPosition(newSample);
             }
         );
     }

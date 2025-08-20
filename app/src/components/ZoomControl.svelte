@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { generateZoomLevelsWithLabels } from '../utils/zoomLevels.ts';
-    import { getDefaultZoomLevel } from '../stores/index.ts';
+    import { generateZoomLevelsWithLabels } from '../utils/zoomLevels';
+    import { getDefaultZoomLevel } from '../stores/index';
     import { MdZoomIn, MdZoomOut } from 'svelte-icons/md';
     
     export let timeBetweenPoints: number;

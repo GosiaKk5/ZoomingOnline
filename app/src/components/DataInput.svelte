@@ -26,13 +26,11 @@
         }
     }
     
-    // Load example URL
+    // Copy example URL to input field (don't auto-load)
     function loadExample() {
         inputUrl = exampleUrl;
-        // Allow the input binding to update, then dispatch load event
-        Promise.resolve().then(() => {
-            dispatch('load', { url: inputUrl });
-        });
+        // Just set the URL in the input field - don't automatically load
+        // The user needs to click "Load Data" button manually
     }
 </script>
 
@@ -47,6 +45,7 @@
                 class="btn-link" 
                 on:click={loadExample}
                 disabled={isLoading}
+                title="Click to copy example URL to input field"
             >
                 {exampleUrl}
             </button>

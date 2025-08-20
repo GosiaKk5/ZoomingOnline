@@ -8,7 +8,7 @@
 
 import { get } from "svelte/store";
 import { plotConfig, resetPlotConfig, updatePlotConfig, type PlotConfig } from "./plotConfig";
-import { zoomPosition, zoomWidth, setZoomState, resetZoomState } from "./zoomState";
+import { zoomPosition, zoomWidth, setZoomState, resetZoomState, setDefaultZoomPosition } from "./zoomState";
 import { ZoomService } from "../services/zoomService";
 import { UrlService } from "../services/urlService";
 
@@ -26,9 +26,19 @@ export const plotActions = {
 		console.log('🔧 Plot config updated:', config);
 	},
 
+	// Initialize default zoom position when plot data is available
+	initializeDefaultZoom(): void {
+		const config = get(plotConfig);
+		if (config.no_of_samples) {
+			setDefaultZoomPosition(config.no_of_samples);
+		}
+	},
+
 	// Zoom actions with URL synchronization
 	updateZoomPosition(newPosition: number): void {
-		const validPosition = ZoomService.validatePosition(newPosition);
+		const config = get(plotConfig);
+		const totalSamples = config.no_of_samples || 1000;
+		const validPosition = ZoomService.validatePosition(newPosition, totalSamples);
 		const currentWidth = get(zoomWidth);
     
 		// Update the store
@@ -38,7 +48,7 @@ export const plotActions = {
 		const zoomLevelIndex = currentWidth !== null ? Math.round(currentWidth) : null;
 		UrlService.updateZoomParams(validPosition, zoomLevelIndex);
     
-		console.log('🎯 Zoom position updated:', validPosition);
+		console.log('🎯 Zoom position updated to sample:', validPosition);
 	},
 
 	updateZoomWidth(newWidth: number | null): void {
@@ -56,7 +66,9 @@ export const plotActions = {
 	},
 
 	setZoomState(position: number, width: number | null): void {
-		const validPosition = ZoomService.validatePosition(position);
+		const config = get(plotConfig);
+		const totalSamples = config.no_of_samples || 1000;
+		const validPosition = ZoomService.validatePosition(position, totalSamples);
 		const validWidth = ZoomService.validateWidth(width);
     
 		// Update the stores
@@ -66,7 +78,7 @@ export const plotActions = {
 		const zoomLevelIndex = validWidth !== null ? Math.round(validWidth) : null;
 		UrlService.updateZoomParams(validPosition, zoomLevelIndex);
     
-		console.log('🎯 Zoom state set:', { position: validPosition, width: validWidth });
+		console.log('🎯 Zoom state set to sample:', { position: validPosition, width: validWidth });
 	},
 
 	resetZoom(): void {
@@ -106,11 +118,12 @@ export const plotActions = {
     
 		// Use defaults (user came from selection route)
 		if (zoomParams.useDefaults) {
-			// Set default zoom state - you can customize these values
-			const defaultPosition = 0;
+			// Calculate default position as middle of the plot based on data
+			const totalSamples = config.no_of_samples || 1000;
+			const defaultSample = Math.floor(totalSamples / 2);
 			const defaultWidth = null; // or some default width
-			setZoomState(defaultPosition, defaultWidth);
-			console.log('🔄 Zoom state set to defaults');
+			setZoomState(defaultSample, defaultWidth);
+			console.log(`🔄 Zoom state set to defaults: sample ${defaultSample} (middle of ${totalSamples} samples)`);
 			return true;
 		}
     
