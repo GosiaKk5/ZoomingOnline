@@ -10,7 +10,7 @@ export {
   resetConfig,
   getDefaultConfig,
   type AppConfig
-} from './appConfigStore.ts';
+} from './appConfigStore';
 
 // Data Management Store
 export {
@@ -29,7 +29,7 @@ export {
   updateCache,
   clearCache,
   type CacheEntry
-} from './dataStore.ts';
+} from './dataStore';
 
 // UI State Store
 export {
@@ -46,7 +46,7 @@ export {
   resetUIState,
   toggleCopyLink,
   showCopyLinkTemporarily
-} from './uiStore.ts';
+} from './uiStore';
 
 // Selection State Store
 export {
@@ -66,16 +66,16 @@ export {
   updateTrc,
   updateSegment,
   getSelectionValues
-} from './selectionStore.ts';
+} from './selectionStore';
 
 // Plot stores (flattened)
 export * from './plotConfig';
 export * from './zoomState';
 export * from './derivedStores';
 export { plotActions } from './actions';
-import { ZoomService } from '../services/zoomService.ts';
+import { ZoomService } from '../services/zoomService';
 export { ZoomService };
-export { ZoomUrlService } from '../services/zoomUrlService.ts';
+export { UrlService } from '../services/urlService';
 
 // Convenience re-exports for components expecting named functions from stores
 export const getDefaultZoomLevelIndex = (totalLevels: number) =>

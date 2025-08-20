@@ -12,7 +12,8 @@
         showCopyLink,
         appConfig
     } from '../stores/index.ts';
-    import { loadZarrData } from '../services/dataService.ts';
+    import { loadZarrData } from '../services/dataService';
+    import { UrlService } from '../services/urlService';
     import DataInput from '../components/DataInput.svelte';
     import LoadingState from '../components/LoadingState.svelte';
 
@@ -33,8 +34,11 @@
             showCopyLink.set(true);
             setError(null);
             
-            // Navigate to selection with data parameter
-            goto(`${base}/selection?data=${encodeURIComponent(url)}`);
+            // Use new URL service to set only data parameter and clear all others
+            UrlService.loadDataUrl(url);
+            
+            // Navigate to selection
+            goto(`${base}/selection`);
             
         } catch (err) {
             setError(err.message);

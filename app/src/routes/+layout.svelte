@@ -13,8 +13,9 @@
         selectedTrc,
         selectedSegment,
         showCopyLink
-    } from '../stores/index.ts';
-    import { loadZarrData } from '../services/dataService.ts';
+    } from '../stores/index';
+    import { loadZarrData } from '../services/dataService';
+    import { UrlService } from '../services/urlService';
     
     // Import components
     import Header from '../components/Header.svelte';
@@ -38,10 +39,11 @@
     let navigatedOnParam = false;
 
     async function checkAndLoadDataFromUrl() {
-        const urlDataParam = $page.url.searchParams.get('data');
-        const urlChannelParam = $page.url.searchParams.get('channel');
-        const urlTrcParam = $page.url.searchParams.get('trc');
-        const urlSegmentParam = $page.url.searchParams.get('segment');
+        const urlParams = UrlService.getUrlParams();
+        const urlDataParam = urlParams.get('data');
+        const urlChannelParam = urlParams.get('channel');
+        const urlTrcParam = urlParams.get('trc');
+        const urlSegmentParam = urlParams.get('segment');
         
         console.log('[layout] checkAndLoadDataFromUrl path=', $page.route.id, 'data=', urlDataParam, 'loaded=', $isDataLoaded, 'loading=', $isLoading);
         

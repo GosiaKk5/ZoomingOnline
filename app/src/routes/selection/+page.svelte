@@ -16,8 +16,9 @@
         dataUrl,
         isDataReadyForPlot,
         showCopyLink
-    } from '../../stores/index.ts';
-    import { populateSelectors } from '../../utils/uiManager.ts';
+    } from '../../stores/index';
+    import { populateSelectors } from '../../utils/uiManager';
+    import { UrlService } from '../../services/urlService';
     import ShareButton from '../../components/ShareButton.svelte';
     import DatasetInfo from '../../components/DatasetInfo.svelte';
     import SelectionForm from '../../components/SelectionForm.svelte';
@@ -27,6 +28,7 @@
     let trcFiles = [];
     let segments = [];
     let selectorsPopulated = false; // Flag to prevent infinite loop
+    let urlSelectionApplied = false; // Flag to track if URL selection has been applied
 
     // Dataset metadata
     let datasetInfo = {
@@ -79,22 +81,49 @@
             segments = data.segments;
             selectorsPopulated = true; // Set flag to prevent re-population
             
-            // Auto-select first available options if none are selected
-            if (!$selectedChannel && channels.length > 0) {
-                selectedChannel.set(channels[0]);
-            }
-            if (!$selectedTrc && trcFiles.length > 0) {
-                selectedTrc.set(trcFiles[0]);
-            }
-            if (!$selectedSegment && segments.length > 0) {
-                selectedSegment.set(segments[0]);
+            // Apply URL-based selection or use defaults
+            if (!urlSelectionApplied) {
+                applyUrlSelection();
+                urlSelectionApplied = true;
             }
         });
+    }
+
+    // Apply URL-based selection with fallback to first available
+    function applyUrlSelection() {
+        const urlSelection = UrlService.initializeSelectionFromUrl(channels, trcFiles, segments);
+        
+        // Set channel from URL or first available
+        if (urlSelection.channel) {
+            selectedChannel.set(urlSelection.channel);
+        } else if (!$selectedChannel && channels.length > 0) {
+            selectedChannel.set(channels[0]);
+        }
+        
+        // Set TRC from URL or first available
+        if (urlSelection.trc) {
+            selectedTrc.set(urlSelection.trc);
+        } else if (!$selectedTrc && trcFiles.length > 0) {
+            selectedTrc.set(trcFiles[0]);
+        }
+        
+        // Set segment from URL or first available
+        if (urlSelection.segment) {
+            selectedSegment.set(urlSelection.segment);
+        } else if (!$selectedSegment && segments.length > 0) {
+            selectedSegment.set(segments[0]);
+        }
+    }
+
+    // Update URL when selections change (after initial load)
+    $: if (selectorsPopulated && urlSelectionApplied && ($selectedChannel || $selectedTrc || $selectedSegment)) {
+        UrlService.updateSelections();
     }
 
     // Reset selectors when data changes 
     $: if (!$rawStore) {
         selectorsPopulated = false;
+        urlSelectionApplied = false;
         channels = [];
         trcFiles = [];
         segments = [];
@@ -103,25 +132,6 @@
     function handlePlotData() {
         goto(`${base}/visualization`);
     }
-
-    // Auto-select first available options if none are selected
-    onMount(() => {
-        const unsubscribe = isDataReadyForPlot.subscribe(ready => {
-            if (ready && !$selectedChannel && channels.length > 0) {
-                selectedChannel.set(channels[0]);
-            }
-            if (ready && !$selectedTrc && trcFiles.length > 0) {
-                selectedTrc.set(trcFiles[0]);
-            }
-            if (ready && !$selectedSegment && segments.length > 0) {
-                selectedSegment.set(segments[0]);
-            }
-        });
-
-        return () => {
-            unsubscribe();
-        };
-    });
 </script>
 
 <svelte:head>

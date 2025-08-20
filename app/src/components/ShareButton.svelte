@@ -1,7 +1,7 @@
 <script>
     import { MdShare, MdContentCopy, MdCheck } from 'svelte-icons/md';
-    import { showCopyLink, currentDataUrl } from '../stores/index.ts';
-    import { ShareService } from '../services/shareService.ts';
+    import { showCopyLink, currentDataUrl } from '../stores/index';
+    import { UrlService } from '../services/urlService';
     import Modal from './Modal.svelte';
     
     let showModal = false;
@@ -10,7 +10,7 @@
     
     // Update shareable URL when modal opens to ensure it includes all necessary parameters
     function openModal() {
-        shareableUrl = ShareService.generateShareableUrl();
+        shareableUrl = UrlService.generateShareUrl();
         showModal = true;
     }
     

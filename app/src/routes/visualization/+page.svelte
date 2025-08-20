@@ -10,7 +10,8 @@
         selectedSegment,
         isLoading,
         isDataLoaded
-    } from '../../stores/index.ts';
+    } from '../../stores/index';
+    import { UrlService } from '../../services/urlService';
     
     import Charts from '../../components/Charts.svelte';
     import ShareButton from '../../components/ShareButton.svelte';
