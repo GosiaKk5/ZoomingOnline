@@ -1,5 +1,5 @@
 <script>
-    import { onMount, onDestroy } from 'svelte';
+    import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
     import { page } from '$app/stores';
     import { base } from '$app/paths';
@@ -24,25 +24,65 @@
     import SelectionForm from '../../components/SelectionForm.svelte';
     import LoadingState from '../../components/LoadingState.svelte';
 
-    let channels = [];
-    let trcFiles = [];
-    let segments = [];
-    let selectorsPopulated = false; // Flag to prevent infinite loop
-    let urlSelectionApplied = false; // Flag to track if URL selection has been applied
+    // Local state using runes - component-specific data
+    let channels = $state([]);
+    let trcFiles = $state([]);
+    let segments = $state([]);
+    let selectorsPopulated = $state(false); // Flag to prevent infinite loop
+    let urlSelectionApplied = $state(false); // Flag to track if URL selection has been applied
 
-    // Dataset metadata
-    let datasetInfo = {
+    // Dataset metadata - local state
+    let datasetInfo = $state({
         pointsInSegment: 0,
         timeBetweenPoints: 0, // in seconds
         segmentLength: 0, // in seconds
         totalDataSize: 0,
         url: ''
-    };
+    });
 
-    // Calculate dataset metadata when data is available
-    $: if ($rawStore && $zarrGroup && $dataUrl) {
-        calculateDatasetInfo();
-    }
+    // Derived state for component logic
+    let shouldCalculateDatasetInfo = $derived($rawStore && $zarrGroup && $dataUrl);
+    let shouldPopulateSelectors = $derived($rawStore && !selectorsPopulated);
+    let shouldUpdateUrl = $derived(selectorsPopulated && urlSelectionApplied && ($selectedChannel || $selectedTrc || $selectedSegment));
+    let shouldResetSelectors = $derived(!$rawStore);
+
+    // Effects to handle reactive behaviors
+    $effect(() => {
+        if (shouldCalculateDatasetInfo) {
+            calculateDatasetInfo();
+        }
+    });
+
+    $effect(async () => {
+        if (shouldPopulateSelectors) {
+            const data = await populateSelectors($rawStore);
+            channels = data.channels;
+            trcFiles = data.trcFiles;
+            segments = data.segments;
+            selectorsPopulated = true;
+            
+            if (!urlSelectionApplied) {
+                applyUrlSelection();
+                urlSelectionApplied = true;
+            }
+        }
+    });
+
+    $effect(() => {
+        if (shouldUpdateUrl) {
+            UrlService.updateSelections();
+        }
+    });
+
+    $effect(() => {
+        if (shouldResetSelectors) {
+            selectorsPopulated = false;
+            urlSelectionApplied = false;
+            channels = [];
+            trcFiles = [];
+            segments = [];
+        }
+    });
 
     async function calculateDatasetInfo() {
         try {
@@ -73,22 +113,6 @@
         }
     }
 
-    // Reactive statement to populate selectors when raw data is available
-    $: if ($rawStore && !selectorsPopulated) {
-        populateSelectors($rawStore).then(data => {
-            channels = data.channels;
-            trcFiles = data.trcFiles;
-            segments = data.segments;
-            selectorsPopulated = true; // Set flag to prevent re-population
-            
-            // Apply URL-based selection or use defaults
-            if (!urlSelectionApplied) {
-                applyUrlSelection();
-                urlSelectionApplied = true;
-            }
-        });
-    }
-
     // Apply URL-based selection with fallback to first available
     function applyUrlSelection() {
         const urlSelection = UrlService.initializeSelectionFromUrl(channels, trcFiles, segments);
@@ -113,20 +137,6 @@
         } else if (!$selectedSegment && segments.length > 0) {
             selectedSegment.set(segments[0]);
         }
-    }
-
-    // Update URL when selections change (after initial load)
-    $: if (selectorsPopulated && urlSelectionApplied && ($selectedChannel || $selectedTrc || $selectedSegment)) {
-        UrlService.updateSelections();
-    }
-
-    // Reset selectors when data changes 
-    $: if (!$rawStore) {
-        selectorsPopulated = false;
-        urlSelectionApplied = false;
-        channels = [];
-        trcFiles = [];
-        segments = [];
     }
 
     function handlePlotData() {

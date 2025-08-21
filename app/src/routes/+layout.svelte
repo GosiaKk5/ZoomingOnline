@@ -20,7 +20,11 @@
     
     // Import components
     import Header from '../components/Header.svelte';
+    import ErrorBoundary from '../components/ErrorBoundary.svelte';
     import '../app.css';
+
+    // Layout children prop for Svelte 5
+    let { children } = $props();
 
     // Helper functions to convert between display names and numeric indices
     function getIndexFromDisplayName(displayName) {
@@ -129,16 +133,37 @@
         checkAndLoadDataFromUrl();
     });
 
-    // Watch for page changes
-    $: if ($page.url) {
-        checkAndLoadDataFromUrl();
+    // Watch for page changes using $effect instead of reactive statement
+    $effect(() => {
+        if ($page.url) {
+            checkAndLoadDataFromUrl();
+        }
+    });
+    
+    function handleLayoutError(error) {
+        console.error('Layout error:', error);
+        setError(error.message);
+    }
+
+    function handleRetryLayout() {
+        setError(null);
+        if (browser) {
+            // Navigate to home and try again
+            goto(`${base}/`);
+        }
     }
 </script>
 
-<main class="container">
-    <Header />
-    <slot />
-</main>
+<ErrorBoundary 
+    context="Application Layout"
+    onError={handleLayoutError}
+    onRetry={handleRetryLayout}
+>
+    <main class="container">
+        <Header />
+        {@render children()}
+    </main>
+</ErrorBoundary>
 
 <style>
     :global(body) {

@@ -5,7 +5,7 @@
 import { writable, derived, type Writable, type Readable } from "svelte/store";
 import { isDataLoaded } from "./dataStore";
 
-// Selection state stores
+// Selection state stores with proper typing
 export const selectedChannel: Writable<string> = writable("");
 export const selectedTrc: Writable<string> = writable("");
 export const selectedSegment: Writable<string> = writable("");

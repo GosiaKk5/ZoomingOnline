@@ -341,11 +341,21 @@ export function drawZoomRectangle(
   zoomWidth: number,
   totalTime: number,
   onPositionChange: (newPosition: number) => void,
+  onDragStart?: () => void,
+  onDragEnd?: () => void,
 ): d3.Selection<SVGRectElement, unknown, null, undefined> {
   
   // Calculate rectangle bounds in time units with proper boundary constraints
   const halfWidth = (zoomWidth * totalTime) / 2;
   let centerTime = zoomPosition * totalTime;
+  
+  console.log('📐 Rectangle bounds calculation:', {
+    zoomPosition,
+    totalTime,
+    centerTime: centerTime,
+    halfWidth,
+    zoomWidth
+  });
   
   // Constrain the center position so rectangle edges don't go beyond plot boundaries
   centerTime = Math.max(halfWidth, Math.min(totalTime - halfWidth, centerTime));
@@ -391,11 +401,11 @@ export function drawZoomRectangle(
       .attr("height", height);
       
     // Apply drag behavior to hit area for small rectangles
-    hitArea.call(createDragBehavior(xScale, totalTime, zoomWidth, onPositionChange));
+    hitArea.call(createDragBehavior(xScale, totalTime, zoomWidth, onPositionChange, onDragStart, onDragEnd));
   }
   
   // Apply drag behavior to the main rectangle
-  rect.call(createDragBehavior(xScale, totalTime, zoomWidth, onPositionChange));
+  rect.call(createDragBehavior(xScale, totalTime, zoomWidth, onPositionChange, onDragStart, onDragEnd));
   
   return rect;
 }
@@ -408,6 +418,8 @@ function createDragBehavior(
   totalTime: number,
   zoomWidth: number,
   onPositionChange: (newPosition: number) => void,
+  onDragStart?: () => void,
+  onDragEnd?: () => void,
 ) {
   return d3.drag<SVGRectElement, unknown>()
     .on("start", function() {
@@ -416,10 +428,20 @@ function createDragBehavior(
       if (parentElement) {
         d3.select(parentElement).selectAll(".zoom-rect").classed("dragging", true);
       }
+      // Call external drag start callback
+      if (onDragStart) {
+        onDragStart();
+      }
     })
     .on("drag", function(event) {
       // Get the mouse position in the chart coordinate system
       const mouseX = event.x;
+      
+      console.log('🖱️ Drag event:', {
+        mouseX,
+        xScaleDomain: xScale.domain(),
+        xScaleRange: xScale.range()
+      });
       
       // Convert back to time
       const timeAtMouse = xScale.invert(mouseX);
@@ -433,6 +455,14 @@ function createDragBehavior(
       // Convert to position percentage
       const newPosition = constrainedCenterTime / totalTime;
       
+      console.log('🖱️ Drag calculation:', {
+        timeAtMouse,
+        halfWidth,
+        constrainedCenterTime,
+        newPosition,
+        totalTime
+      });
+      
       // Update the position
       onPositionChange(newPosition);
     })
@@ -441,6 +471,10 @@ function createDragBehavior(
       const parentElement = this.parentNode as SVGGElement;
       if (parentElement) {
         d3.select(parentElement).selectAll(".zoom-rect").classed("dragging", false);
+      }
+      // Call external drag end callback
+      if (onDragEnd) {
+        onDragEnd();
       }
     });
 }

@@ -3,13 +3,32 @@
  * This file makes it easy to import stores from a single location
  */
 
+// Export store types
+export type {
+  ZarrGroup,
+  RawDataStore,
+  OverviewStore,
+  OverviewDataPoint,
+  CacheEntry,
+  UIState,
+  CurrentView,
+  SelectionState,
+  SelectionSummary,
+  PlotConfig,
+  ZoomLevel,
+  ZoomState,
+  AppConfig,
+  DerivedPlotData,
+  PlotActions,
+  StoreError
+} from '../types/stores';
+
 // Application Configuration Store
 export {
   appConfig,
   updateConfig,
   resetConfig,
-  getDefaultConfig,
-  type AppConfig
+  getDefaultConfig
 } from './appConfigStore';
 
 // Data Management Store
@@ -27,8 +46,7 @@ export {
   resetDataState,
   setDataLoaded,
   updateCache,
-  clearCache,
-  type CacheEntry
+  clearCache
 } from './dataStore';
 
 // UI State Store

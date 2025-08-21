@@ -56,13 +56,16 @@ Open browser to http://localhost:5173
 ## 📦 Available Scripts
 
 | Command                | Purpose                  | Usage                                |
-## Svelte 5 migration notes
+## Svelte 5 Features
 
-- Upgraded to Svelte 5, vite-plugin-svelte 4, and svelte-check 4.
-- Legacy Svelte 3/4 syntax continues to work; runes are disabled for now via `vite.config.js` (compilerOptions.runes = false) to support incremental migration.
-- Routing: the app now uses a tiny internal router (`src/router.ts`) instead of `svelte-spa-router` to avoid compatibility pitfalls under Svelte 5 and to respect the configured Vite base path (`/ZoomingOnline/`). Use `push('/selection')` to navigate and the `$path` store to render routes.
-- URL sync: Components should call the `updateQuery` helper to mutate URL search params without causing re-entrant route updates.
-- How to enable runes later: remove `compilerOptions.runes = false` in `vite.config.js` and migrate component-local state to `$state`, `$derived`, `$effect` progressively.
+- **Upgraded to Svelte 5** with `vite-plugin-svelte` 6+ and `svelte-check` 4+
+- **Runes enabled by default**: Uses modern Svelte 5 runes (`$state`, `$derived`, `$effect`) for component-local state
+- **Store compatibility**: Legacy Svelte 3/4 syntax still works alongside runes for global state management
+- **State management pattern**: 
+  - **Runes** for component-local state (reactive variables, computed values, effects)
+  - **Stores** for global state shared across components
+- **Routing**: Uses a custom internal router (`src/router.ts`) optimized for Svelte 5 with proper Vite base path support (`/ZoomingOnline/`)
+- **URL synchronization**: Components use the `updateQuery` helper for URL search parameter updates without re-entrant route changes
 | ---------------------- | ------------------------ | ------------------------------------ |
 | `npm run dev`          | Start development server | Local development with hot reload    |
 | `npm run build`        | Production build         | Generates optimized build in `dist/` |

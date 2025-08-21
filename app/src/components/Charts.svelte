@@ -12,7 +12,9 @@
         dataVersion,
         getDefaultZoomLevel,
         appConfig,
-        plotActions
+        plotActions,
+        isLoading,
+        error
     } from '../stores/index';
     import { parseSelectedIndex } from '../utils/uiManager';
     import { 
@@ -25,64 +27,169 @@
     } from '../renderers/chartRenderer';
     import { generateZoomLevelsWithLabels } from '../utils/zoomLevels';
     import ZoomControl from './ZoomControl.svelte';
+    import ChartErrorBoundary from './ChartErrorBoundary.svelte';
     import * as d3 from 'd3';
 
-    // Chart container elements
-    let overviewContainer: HTMLElement;
+    // Chart container elements - local component state
+    let overviewContainer = $state<HTMLElement | undefined>(undefined);
 
-    let isInitialized = false;
-    let currentDataVersion = 0;
+    // Local component state using runes
+    let isInitialized = $state(false);
+    let currentDataVersion = $state(0);
+    let chartError = $state<string | null>(null);
+    let isDragging = $state(false);
+    let wasRestoredFromUrl = $state(false);
     
-    // Zoom control properties - no defaults, will be set from data
-    let timeBetweenPoints: number;
-    let segmentDuration: number;
-    let selectedZoomLevel: number | undefined;
+    // Zoom control properties - local state
+    let timeBetweenPoints = $state<number | undefined>(undefined);
+    let segmentDuration = $state<number | undefined>(undefined);
+    let selectedZoomLevel = $state<number | undefined>(undefined);
 
-    // Initialize plot when data is ready
-    $: if ($rawStore && $zarrGroup && $overviewStore && 
-           $selectedChannel && $selectedTrc && $selectedSegment && 
-           !isInitialized) {
-        initializePlot();
-    }
+    // Derived state for reactive logic
+    let shouldInitializePlot = $derived(
+        $rawStore && $zarrGroup && $overviewStore && 
+        $selectedChannel && $selectedTrc && $selectedSegment && 
+        !isInitialized
+    );
+    
+    let shouldUpdateOverviewChart = $derived(
+        $plotConfig && overviewContainer && isInitialized
+    );
+    
+    let shouldUpdateZoomRectangle = $derived(
+        !isDragging && $plotConfig && overviewContainer && isInitialized && ($zoomPosition !== null || $zoomWidth !== null)
+    );
+    
+    let shouldUpdateZoomControlParams = $derived(
+        $plotConfig && $plotConfig.total_time_s && $plotConfig.horiz_interval
+    );
+    
+    let shouldInitializeZoomWidth = $derived(
+        selectedZoomLevel !== undefined && segmentDuration && $zoomWidth === null
+    );
+    
+    let shouldResetForNewData = $derived(
+        $dataVersion !== currentDataVersion
+    );
 
-    // Update charts when plot config is ready
-    $: if ($plotConfig && overviewContainer && isInitialized) {
-        updateOverviewChart();
-    }
+    // Effects to handle reactive behaviors
+    $effect(() => {
+        if (shouldInitializePlot) {
+            initializePlot();
+        }
+    });
+
+    $effect(() => {
+        if (shouldUpdateOverviewChart) {
+            updateOverviewChart();
+        }
+    });
     
-    // Update zoom rectangle when position or width changes
-    $: if ($plotConfig && overviewContainer && isInitialized && ($zoomPosition || $zoomWidth !== null)) {
-        updateZoomRectangle();
-    }
+    $effect(() => {
+        if (shouldUpdateZoomRectangle) {
+            updateZoomRectangle();
+        }
+    });
     
-    // Update zoom control parameters when plot config changes
-    $: if ($plotConfig) {
-        const { total_time_s, horiz_interval } = $plotConfig;
-        if (total_time_s && horiz_interval) {
+    // Initialize selectedZoomLevel when zoom control params are available
+    $effect(() => {
+        console.log('🔍 Checking zoom level initialization:', {
+            timeBetweenPoints,
+            segmentDuration,
+            selectedZoomLevel,
+            hasPlotConfig: !!$plotConfig,
+            plotConfigKeys: $plotConfig ? Object.keys($plotConfig) : []
+        });
+        
+        if (timeBetweenPoints && segmentDuration && selectedZoomLevel === undefined) {
+            const zoomLevelsWithLabels = generateZoomLevelsWithLabels(timeBetweenPoints, segmentDuration);
+            console.log('🔍 Generated zoom levels:', zoomLevelsWithLabels);
+            
+            if (zoomLevelsWithLabels.length > 0) {
+                const defaultZoomLevel = getDefaultZoomLevel(zoomLevelsWithLabels);
+                console.log('🔍 Default zoom level:', defaultZoomLevel);
+                
+                if (defaultZoomLevel) {
+                    selectedZoomLevel = defaultZoomLevel;
+                    console.log('✅ Set selectedZoomLevel to:', selectedZoomLevel);
+                    
+                    // Only initialize default zoom if this is the very first initialization
+                    // and position wasn't restored from URL
+                    if (plotActions.initializeDefaultZoom && !wasRestoredFromUrl && $zoomPosition === 0) {
+                        console.log('🎯 Initializing default zoom position (first time, no URL restore)');
+                        plotActions.initializeDefaultZoom();
+                    } else {
+                        console.log('🔄 Skipping default zoom - already positioned:', {
+                            wasRestoredFromUrl,
+                            zoomPosition: $zoomPosition
+                        });
+                    }
+                }
+            }
+        }
+    });
+
+    $effect(() => {
+        if (shouldUpdateZoomControlParams) {
+            const { total_time_s, horiz_interval } = $plotConfig;
             segmentDuration = total_time_s;
             timeBetweenPoints = horiz_interval;
+            
+            console.log('🔧 Zoom control params updated:', {
+                segmentDuration,
+                timeBetweenPoints,
+                selectedZoomLevel
+            });
+            
+            // Initialize selectedZoomLevel if not set
+            if (selectedZoomLevel === undefined && timeBetweenPoints && segmentDuration) {
+                const zoomLevelsWithLabels = generateZoomLevelsWithLabels(timeBetweenPoints, segmentDuration);
+                if (zoomLevelsWithLabels.length > 0) {
+                    const defaultZoomLevel = getDefaultZoomLevel(zoomLevelsWithLabels);
+                    if (defaultZoomLevel) {
+                        selectedZoomLevel = defaultZoomLevel;
+                        console.log('🔧 Initialized selectedZoomLevel:', selectedZoomLevel);
+                        
+                        // Only initialize default zoom if this is the very first initialization
+                        // and position wasn't restored from URL
+                        if (plotActions.initializeDefaultZoom && !wasRestoredFromUrl && $zoomPosition === 0) {
+                            console.log('🎯 Initializing default zoom position (first time, no URL restore)');
+                            plotActions.initializeDefaultZoom();
+                        } else {
+                            console.log('🔄 Skipping default zoom - already positioned:', {
+                                wasRestoredFromUrl,
+                                zoomPosition: $zoomPosition
+                            });
+                        }
+                    }
+                }
+            }
         }
-    }
+    });
     
-    // Initialize zoom width from default zoom level when zoom control is ready
-    $: if (selectedZoomLevel !== undefined && segmentDuration && $zoomWidth === null) {
-        // Convert default zoom level (time duration in seconds) to width percentage
-        const defaultWidth = plotActions.convertZoomLevelToWidth(selectedZoomLevel);
-        if (defaultWidth !== null) {
-            zoomWidth.set(defaultWidth);
+    $effect(() => {
+        if (shouldInitializeZoomWidth) {
+            // Convert default zoom level (time duration in seconds) to width percentage
+            const defaultWidth = plotActions.convertZoomLevelToWidth(selectedZoomLevel!);
+            if (defaultWidth !== null) {
+                zoomWidth.set(defaultWidth);
+            }
         }
-    }
+    });
     
-    // Reset component state when new data is loaded (detected by dataVersion change)
-    $: if ($dataVersion !== currentDataVersion) {
-        // Reset local state for new data
-        isInitialized = false;
-        selectedZoomLevel = undefined;
-        currentDataVersion = $dataVersion;
-    }
+    $effect(() => {
+        if (shouldResetForNewData) {
+            // Reset local state for new data
+            isInitialized = false;
+            selectedZoomLevel = undefined;
+            currentDataVersion = $dataVersion;
+        }
+    });
     
     async function initializePlot() {
         try {
+            chartError = null; // Clear any previous errors
+            
             const channelIndex = parseSelectedIndex($selectedChannel);
             const trcIndex = parseSelectedIndex($selectedTrc);
             const segmentIndex = parseSelectedIndex($selectedSegment);
@@ -108,6 +215,7 @@
             // Try to restore zoom state from URL parameters
             const wasRestored = plotActions.restoreZoomFromUrl();
             if (wasRestored) {
+                wasRestoredFromUrl = true;
                 console.log('🔄 Zoom state restored from URL parameters');
             } else {
                 // No URL parameters - initialize with default (middle of plot)
@@ -117,25 +225,26 @@
             isInitialized = true;
             
         } catch (error) {
-            // Error initializing plot
+            chartError = error instanceof Error ? error.message : 'Failed to initialize plot';
+            console.error('Error initializing plot:', error);
         }
     }
 
     async function updateOverviewChart() {
-        
-        const { total_time_s, overviewData, globalYMin, globalYMax } = $plotConfig;
-        
-        // Get chart dimensions from centralized configuration
-        const { margin, fullWidth, chartHeight } = $appConfig.chartConfig;
-        const width = fullWidth - margin.left - margin.right;
-        const height = chartHeight - margin.top - margin.bottom;
-
-        if (!overviewData || overviewData.length === 0 || !width || !height || !margin) {
-            console.error('❌ No overview data or dimensions available for rendering');
-            return;
-        }
-
         try {
+            if (!overviewContainer) return;
+            
+            const { total_time_s, overviewData, globalYMin, globalYMax } = $plotConfig;
+            
+            // Get chart dimensions from centralized configuration
+            const { margin, fullWidth, chartHeight } = $appConfig.chartConfig;
+            const width = fullWidth - margin.left - margin.right;
+            const height = chartHeight - margin.top - margin.bottom;
+
+            if (!overviewData || overviewData.length === 0 || !width || !height || !margin) {
+                throw new Error('No overview data or dimensions available for rendering');
+            }
+
             // Create scales for full overview
             const x0 = d3.scaleLinear().domain([0, total_time_s]).range([0, width]);
             const y0 = d3.scaleLinear().domain([globalYMin || 0, globalYMax || 0]).range([height, 0]).nice();
@@ -189,11 +298,19 @@
             console.log('✅ Overview chart rendering completed');
             
         } catch (error) {
+            chartError = error instanceof Error ? error.message : 'Failed to render chart';
             console.error('❌ Error in updateOverviewChart:', error);
         }
     }
     
     function updateZoomRectangle() {
+        console.log('🔧 updateZoomRectangle called', {
+            hasPlotConfig: !!$plotConfig,
+            hasOverviewContainer: !!overviewContainer,
+            zoomWidth: $zoomWidth,
+            zoomPosition: $zoomPosition
+        });
+        
         if (!$plotConfig || !overviewContainer || $zoomWidth === null) return;
         
         const { total_time_s } = $plotConfig;
@@ -206,7 +323,10 @@
         // Type assertion for the SVG selection since we know the structure
         const svg0 = d3.select(overviewContainer).select("svg g") as d3.Selection<SVGGElement, unknown, null, undefined>;
         
-        if (svg0.empty()) return; // SVG not yet created
+        if (svg0.empty()) {
+            console.log('🔧 SVG not found for zoom rectangle');
+            return; // SVG not yet created
+        }
         
         const x0 = d3.scaleLinear().domain([0, total_time_s]).range([0, width || 0]);
         
@@ -214,6 +334,18 @@
         // Convert sample number to normalized position (0-1) for drawZoomRectangle
         const totalSamples = $plotConfig?.no_of_samples || 1000;
         const normalizedPosition = totalSamples > 1 ? $zoomPosition / (totalSamples - 1) : 0;
+        
+        console.log('🔧 Drawing zoom rectangle', {
+            zoomPosition: $zoomPosition,
+            normalizedPosition,
+            zoomWidth: $zoomWidth,
+            totalSamples,
+            calculationCheck: {
+                divider: totalSamples - 1,
+                expected: `sample ${$zoomPosition} / ${totalSamples - 1} = ${normalizedPosition}`
+            }
+        });
+        
         drawZoomRectangle(
             svg0, 
             x0, 
@@ -222,9 +354,22 @@
             $zoomWidth as number, 
             total_time_s,
             (newNormalizedPosition: number) => {
+                console.log('🖱️ Zoom rectangle dragged', {
+                    newNormalizedPosition,
+                    totalSamples
+                });
                 // Convert normalized position back to sample number
                 const newSample = totalSamples > 1 ? Math.round(newNormalizedPosition * (totalSamples - 1)) : 0;
                 plotActions.updateZoomPosition(newSample);
+            },
+            // Pass drag state callbacks
+            () => {
+                console.log('🖱️ Drag started');
+                isDragging = true;
+            },
+            () => {
+                console.log('🖱️ Drag ended');
+                isDragging = false;
             }
         );
     }
@@ -233,58 +378,81 @@
     function handleZoomIn(newLevel: number) {
         selectedZoomLevel = newLevel;
         console.log('🔍 Zoom in to:', newLevel);
-    // Convert zoom level (time duration in seconds) to width percentage
-    const newWidth = plotActions.convertZoomLevelToWidth(newLevel);
-    if (newWidth !== null) plotActions.updateZoomWidth(newWidth);
+        // Convert zoom level (time duration in seconds) to width percentage
+        const newWidth = plotActions.convertZoomLevelToWidth(newLevel);
+        if (newWidth !== null) plotActions.updateZoomWidth(newWidth);
     }
     
     function handleZoomOut(newLevel: number) {
         selectedZoomLevel = newLevel;
         console.log('🔍 Zoom out to:', newLevel);
-    // Convert zoom level (time duration in seconds) to width percentage
-    const newWidth = plotActions.convertZoomLevelToWidth(newLevel);
-    if (newWidth !== null) plotActions.updateZoomWidth(newWidth);
+        // Convert zoom level (time duration in seconds) to width percentage
+        const newWidth = plotActions.convertZoomLevelToWidth(newLevel);
+        if (newWidth !== null) plotActions.updateZoomWidth(newWidth);
     }
     
     function handleZoomLevelChange(newLevel: number) {
         selectedZoomLevel = newLevel;
         console.log('🔍 Zoom level changed to:', newLevel);
-    // Convert zoom level (time duration in seconds) to width percentage
-    const newWidth = plotActions.convertZoomLevelToWidth(newLevel);
-    if (newWidth !== null) plotActions.updateZoomWidth(newWidth);
+        // Convert zoom level (time duration in seconds) to width percentage
+        const newWidth = plotActions.convertZoomLevelToWidth(newLevel);
+        if (newWidth !== null) plotActions.updateZoomWidth(newWidth);
+    }
+
+    function handleRetryChart() {
+        chartError = null;
+        isInitialized = false;
+        // Trigger re-initialization
+        if (shouldInitializePlot) {
+            initializePlot();
+        }
     }
 </script>
 
-{#if isInitialized && $plotConfig.total_time_s > 0}
-    <div class="bg-white p-8 rounded-lg shadow-md">
-        <div class="overview-section flex gap-6">
-            <!-- Overview Chart -->
-            <div class="overview-chart-container flex-1">
-                <div bind:this={overviewContainer} id="overview-chart" class="mb-10"></div>
-            </div>
-            
-            <!-- Zoom Control -->
-            <div class="zoom-control-container">
-                {#if timeBetweenPoints && segmentDuration}
-                    <ZoomControl
-                        {timeBetweenPoints}
-                        {segmentDuration}
-                        bind:selectedZoomLevel
-                        onZoomIn={handleZoomIn}
-                        onZoomOut={handleZoomOut}
-                        onZoomLevelChange={handleZoomLevelChange}
-                    />
-                {:else}
-                    <div class="zoom-control bg-white p-4 rounded-lg shadow-md">
-                        <div class="text-xs text-gray-500">
-                            Loading zoom controls...
+<ChartErrorBoundary 
+    chartName="Overview Chart"
+    isLoading={$isLoading}
+    hasDataError={Boolean($error)}
+    onRetryChart={handleRetryChart}
+>
+    {#if isInitialized && $plotConfig.total_time_s > 0 && !chartError}
+        <div class="bg-white p-8 rounded-lg shadow-md">
+            <div class="overview-section flex gap-6">
+                <!-- Overview Chart -->
+                <div class="overview-chart-container flex-1">
+                    <div bind:this={overviewContainer} id="overview-chart" class="mb-10"></div>
+                </div>
+                
+                <!-- Zoom Control -->
+                <div class="zoom-control-container">
+                    {#if timeBetweenPoints && segmentDuration && selectedZoomLevel !== undefined}
+                        <ZoomControl
+                            {timeBetweenPoints}
+                            {segmentDuration}
+                            selectedZoomLevel={selectedZoomLevel}
+                            onZoomIn={handleZoomIn}
+                            onZoomOut={handleZoomOut}
+                            onZoomLevelChange={handleZoomLevelChange}
+                        />
+                    {:else}
+                        <div class="zoom-control bg-white p-4 rounded-lg shadow-md">
+                            <div class="text-xs text-gray-500">
+                                Loading zoom controls...
+                            </div>
                         </div>
-                    </div>
-                {/if}
+                    {/if}
+                </div>
             </div>
         </div>
-    </div>
-{/if}
+    {:else if chartError}
+        <!-- Local chart error display -->
+        <div class="chart-error">
+            <h3>Chart Error</h3>
+            <p>{chartError}</p>
+            <button onclick={handleRetryChart}>Retry</button>
+        </div>
+    {/if}
+</ChartErrorBoundary>
 
 <style>
     .overview-section {

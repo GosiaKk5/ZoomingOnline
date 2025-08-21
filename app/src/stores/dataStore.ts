@@ -3,16 +3,20 @@
  * Handles Zarr data loading, caching, and data state management
  */
 import { writable, derived, type Writable, type Readable } from "svelte/store";
+import type { 
+  ZarrGroup, 
+  RawDataStore, 
+  OverviewStore, 
+  CacheEntry 
+} from "../types/stores";
 
-export interface CacheEntry {
-  key: string | null;
-  data: any | null;
-}
+// Re-export types for backward compatibility
+export type { CacheEntry };
 
-// Data-related stores
-export const zarrGroup: Writable<any | null> = writable(null);
-export const rawStore: Writable<any | null> = writable(null);
-export const overviewStore: Writable<any | null> = writable(null);
+// Data-related stores with proper typing
+export const zarrGroup: Writable<ZarrGroup | null> = writable(null);
+export const rawStore: Writable<RawDataStore | null> = writable(null);
+export const overviewStore: Writable<OverviewStore | null> = writable(null);
 export const dataUrl: Writable<string> = writable("");
 export const isDataLoaded: Writable<boolean> = writable(false);
 export const dataVersion: Writable<number> = writable(0);

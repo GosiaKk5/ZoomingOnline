@@ -3,12 +3,13 @@
  * Handles loading states, errors, and UI interaction states
  */
 import { writable, derived, type Writable, type Readable } from "svelte/store";
+import type { CurrentView } from "../types/stores";
 
-// UI state stores
+// UI state stores with proper typing
 export const isLoading: Writable<boolean> = writable(false);
 export const error: Writable<string | null> = writable(null);
 export const showCopyLink: Writable<boolean> = writable(false);
-export const currentView: Writable<string> = writable('input');
+export const currentView: Writable<CurrentView> = writable('home');
 
 // Derived UI states for better component integration
 export const hasError: Readable<boolean> = derived(
@@ -57,7 +58,7 @@ export function resetUIState(): void {
   isLoading.set(false);
   error.set(null);
   showCopyLink.set(false);
-  currentView.set('input');
+  currentView.set('home');
 }
 
 export function toggleCopyLink(): void {

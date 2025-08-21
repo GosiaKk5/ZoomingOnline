@@ -6,6 +6,7 @@
 
 import { get } from "svelte/store";
 import { browser } from "$app/environment";
+import { replaceState } from "$app/navigation";
 import { 
   currentDataUrl, 
   selectedChannel, 
@@ -36,7 +37,8 @@ export class UrlService {
         }
       });
       
-      window.history.replaceState({}, '', url.toString());
+      // Use SvelteKit's replaceState instead of history.replaceState
+      replaceState(url.toString(), {});
     } finally {
       this.isUpdating = false;
     }

@@ -140,8 +140,20 @@ export const plotActions = {
 					);
 				}
 				setZoomState(validation.sample, width);
-				console.log('🔄 Zoom state restored from URL:', { sample: validation.sample, width, zoomLevelIndex: validation.levelIndex });
+				console.log('🔄 Zoom state restored from URL:', { 
+					sample: validation.sample, 
+					width, 
+					zoomLevelIndex: validation.levelIndex,
+					originalZoomSample: zoomSample,
+					originalZoomLevelIndex: zoomParams.zoomLevelIndex
+				});
 				return true;
+			} else {
+				console.warn('❌ Invalid zoom parameters from URL:', {
+					zoomSample,
+					zoomLevelIndex,
+					validation
+				});
 			}
 		}
     

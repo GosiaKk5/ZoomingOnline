@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { MdCloudDownload } from 'svelte-icons/md';
+    // Use a simple SVG instead of the missing icon
     
     interface Props {
         inputUrl?: string;
@@ -74,7 +74,9 @@
                 disabled={isLoading || !inputUrl.trim()}
             >
                 <div class="w-4 h-4">
-                    <MdCloudDownload />
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                    </svg>
                 </div>
                 {isLoading ? 'Loading...' : 'Load Data'}
             </button>
