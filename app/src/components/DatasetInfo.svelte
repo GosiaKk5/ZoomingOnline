@@ -1,36 +1,54 @@
 <script>
     import { formatTime, formatFileSize } from '../utils/mathUtils.ts';
     
-    export let datasetInfo;
+    // Use Svelte 5 runes mode for props
+    const { datasetInfo } = $props();
+    
+    // Helper function to safely format numbers
+    function safeToLocaleString(value) {
+        return (value != null && !isNaN(value)) ? value.toLocaleString() : 'N/A';
+    }
+    
+    // Helper function to safely format time
+    function safeFormatTime(value) {
+        return (value != null && !isNaN(value)) ? formatTime(value) : 'N/A';
+    }
+    
+    // Helper function to safely format file size
+    function safeFormatFileSize(value) {
+        return (value != null && !isNaN(value)) ? formatFileSize(value) : 'N/A';
+    }
 </script>
 
+{#if datasetInfo}
 <div class="dataset-info">
     <h4>Dataset Information</h4>
     <div class="info-grid">
         <div class="info-item">
             <span class="info-label">Points per segment:</span>
-            <span class="info-value">{datasetInfo.pointsInSegment.toLocaleString()}</span>
+            <span class="info-value">{safeToLocaleString(datasetInfo.pointsInSegment)}</span>
         </div>
         <div class="info-item">
             <span class="info-label">Time between points:</span>
-            <span class="info-value">{formatTime(datasetInfo.timeBetweenPoints)}</span>
+            <span class="info-value">{safeFormatTime(datasetInfo.timeBetweenPoints)}</span>
         </div>
         <div class="info-item">
             <span class="info-label">Segment duration:</span>
-            <span class="info-value">{formatTime(datasetInfo.segmentLength)}</span>
+            <span class="info-value">{safeFormatTime(datasetInfo.segmentLength)}</span>
         </div>
         <div class="info-item">
             <span class="info-label">Total dataset size:</span>
-            <span class="info-value">{formatFileSize(datasetInfo.totalDataSize)}</span>
+            <span class="info-value">{safeFormatFileSize(datasetInfo.totalDataSize)}</span>
         </div>
         <div class="info-item">
             <span class="info-label">Data source:</span>
-            <span class="info-value info-url" title={datasetInfo.url}>
-                {datasetInfo.url.length > 60 ? '...' + datasetInfo.url.slice(-60) : datasetInfo.url}
+            <span class="info-value info-url" title={datasetInfo.url || 'N/A'}>
+                {datasetInfo.url && datasetInfo.url.length > 60 ? '...' + datasetInfo.url.slice(-60) : (datasetInfo.url || 'N/A')}
             </span>
         </div>
     </div>
 </div>
+{/if}
 
 <style>
     .dataset-info {

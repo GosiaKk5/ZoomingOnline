@@ -5,13 +5,12 @@
     import { base } from '$app/paths';
     import { 
         isDataReadyForPlot,
-        selectedChannel,
-        selectedTrc,
-        selectedSegment,
+        selectedChannelIndex,
+        selectedTrcIndex,
+        selectedSegmentIndex,
         isLoading,
         isDataLoaded
     } from '../../stores/index';
-    import { UrlService } from '../../services/urlService';
     
     import Charts from '../../components/Charts.svelte';
     import ShareButton from '../../components/ShareButton.svelte';
@@ -47,18 +46,18 @@
     <div class="w-full">
         <div class="flex justify-between items-center mb-4 p-6 bg-white rounded-lg shadow-md">
             <div class="flex items-center gap-4">
-                <button class="btn-primary btn-sm" on:click={handleGoBack}>
+                <button class="btn-primary btn-sm" onclick={handleGoBack}>
                     ← Back to Selection
                 </button>
                 <div class="flex items-center gap-2 text-sm text-gray-600">
                     <span class="font-semibold text-gray-800">Channel:</span>
-                    <span class="text-blue-600 font-medium">{$selectedChannel}</span>
+                    <span class="text-blue-600 font-medium">{$selectedChannelIndex + 1}</span>
                     <span class="text-gray-500 mx-1">|</span>
                     <span class="font-semibold text-gray-800">TRC:</span>
-                    <span class="text-blue-600 font-medium">{$selectedTrc}</span>
+                    <span class="text-blue-600 font-medium">{$selectedTrcIndex + 1}</span>
                     <span class="text-gray-500 mx-1">|</span>
                     <span class="font-semibold text-gray-800">Segment:</span>
-                    <span class="text-blue-600 font-medium">{$selectedSegment}</span>
+                    <span class="text-blue-600 font-medium">{$selectedSegmentIndex + 1}</span>
                 </div>
             </div>
             <ShareButton />

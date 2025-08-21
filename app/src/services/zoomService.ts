@@ -6,7 +6,7 @@
  */
 
 import { generateZoomLevelsWithLabels } from "../utils/zoomLevels";
-import type { PlotConfig } from "../stores/plotConfig";
+import type { PlotConfig } from "../types/stores";
 
 export class ZoomService {
   /**

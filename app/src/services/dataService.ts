@@ -7,29 +7,14 @@
 
 import { openGroup, openArray, slice, HTTPStore } from "zarr";
 import {
-  zarrGroup,
-  rawStore,
-  overviewStore,
-  lastChunkCache,
-  setLoadingState,
-  setError,
-  resetDataState,
-  resetUIState,
-  resetSelections,
-  resetPlotConfig,
-  resetZoomState,
-  type CacheEntry,
+  actions
 } from "../stores";
 
 /**
  * Reset all application state (replacement for old resetAppState)
  */
 function resetAppState(): void {
-  resetDataState();
-  resetUIState();
-  resetSelections();
-  resetPlotConfig();
-  resetZoomState();
+  actions.reset();
 }
 
 /**
@@ -39,7 +24,7 @@ export async function loadZarrData(url: string): Promise<void> {
   try {
     resetAppState();
     
-    setLoadingState(true);
+    actions.setLoading(true);
 
     // Create HTTP store for remote access
     const store = new HTTPStore(url);
@@ -75,15 +60,18 @@ export async function loadZarrData(url: string): Promise<void> {
     }
 
     // Update stores
-    zarrGroup.set(group);
-    rawStore.set(raw);
-    overviewStore.set(overview);
-    lastChunkCache.set({ key: null, data: null }); // Reset cache on new load
+    actions.setData({
+      zarrGroup: group,
+      rawStore: raw,
+      overviewStore: overview,
+      url: url,
+      isLoaded: true
+    });
 
-    setLoadingState(false);
+    actions.setLoading(false);
   } catch (error) {
-    setLoadingState(false); // Make sure to reset loading state on error
-    setError(`Failed to load Zarr data: ${(error as Error).message}`);
+    actions.setLoading(false); // Make sure to reset loading state on error
+    actions.setError(`Failed to load Zarr data: ${(error as Error).message}`);
     throw error;
   }
 }
@@ -93,7 +81,6 @@ export async function loadZarrData(url: string): Promise<void> {
  */
 export async function getRawDataSlice(
   rawStoreObj: any,
-  cacheObj: CacheEntry,
   ch: number,
   trc: number,
   seg: number,
@@ -108,29 +95,18 @@ export async function getRawDataSlice(
   const finalData = new Int16Array(end - start);
   let finalDataOffset = 0;
 
-  // Fetch data chunk by chunk, using cache when possible
+  // Fetch data chunk by chunk (simplified without cache for now)
   for (let i = startChunkIdx; i <= endChunkIdx; i++) {
-    const cacheKey = `${ch}-${trc}-${seg}-${i}`;
-    let chunkData: Int16Array;
-
-    // Check if we have this chunk in cache
-    if (cacheObj.key === cacheKey) {
-      chunkData = cacheObj.data as Int16Array;
-    } else {
-      // Otherwise fetch from remote store
-      const chunkStart = i * chunkSize;
-      const chunkEnd = Math.min((i + 1) * chunkSize, rawStoreObj.shape[3]);
-      const fetchedSlice = await rawStoreObj.get([
-        ch,
-        trc,
-        seg,
-        slice(chunkStart, chunkEnd),
-      ]);
-      chunkData = fetchedSlice.data as Int16Array;
-
-      // Update cache with this chunk
-      lastChunkCache.update(() => ({ key: cacheKey, data: chunkData }));
-    }
+    // Fetch from remote store
+    const chunkStart = i * chunkSize;
+    const chunkEnd = Math.min((i + 1) * chunkSize, rawStoreObj.shape[3]);
+    const fetchedSlice = await rawStoreObj.get([
+      ch,
+      trc,
+      seg,
+      slice(chunkStart, chunkEnd),
+    ]);
+    const chunkData = fetchedSlice.data as Int16Array;
 
     // Calculate the portion of this chunk needed for our result
     const reqStartInChunk = Math.max(0, start - i * chunkSize);
@@ -141,5 +117,6 @@ export async function getRawDataSlice(
     finalData.set(sliced, finalDataOffset);
     finalDataOffset += sliced.length;
   }
+  
   return finalData;
 }

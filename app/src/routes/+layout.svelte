@@ -1,22 +1,7 @@
 <script>
-    import { onMount, onDestroy } from 'svelte';
-    import { page } from '$app/stores';
-    import { goto } from '$app/navigation';
-    import { base } from '$app/paths';
-    import { browser } from '$app/environment';
     import { 
-        dataUrl, 
-        isDataLoaded, 
-        isLoading, 
-        setLoadingState, 
-        setError,
-        selectedChannel,
-        selectedTrc,
-        selectedSegment,
-        showCopyLink
+        setError
     } from '../stores/index';
-    import { loadZarrData } from '../services/dataService';
-    import { UrlService } from '../services/urlService';
     
     // Import components
     import Header from '../components/Header.svelte';
@@ -25,120 +10,6 @@
 
     // Layout children prop for Svelte 5
     let { children } = $props();
-
-    // Helper functions to convert between display names and numeric indices
-    function getIndexFromDisplayName(displayName) {
-        const match = displayName.match(/(\d+)$/);
-        return match ? parseInt(match[1]) : 1;
-    }
-
-    function getDisplayNameFromIndex(type, index) {
-        const typeNames = {
-            channel: 'Channel',
-            trc: 'TRC', 
-            segment: 'Segment'
-        };
-        return `${typeNames[type]} ${index}`;
-    }
-
-    let navigatedOnParam = false;
-
-    async function checkAndLoadDataFromUrl() {
-        const urlParams = UrlService.getUrlParams();
-        const urlDataParam = urlParams.get('data');
-        const urlChannelParam = urlParams.get('channel');
-        const urlTrcParam = urlParams.get('trc');
-        const urlSegmentParam = urlParams.get('segment');
-        
-        console.log('[layout] checkAndLoadDataFromUrl path=', $page.route.id, 'data=', urlDataParam, 'loaded=', $isDataLoaded, 'loading=', $isLoading);
-        
-        // Restore selection parameters if they exist and current values are empty
-        if (urlChannelParam && (!$selectedChannel || $selectedChannel === '')) {
-            const channelDisplayName = getDisplayNameFromIndex('channel', parseInt(urlChannelParam));
-            selectedChannel.set(channelDisplayName);
-        }
-        if (urlTrcParam && (!$selectedTrc || $selectedTrc === '')) {
-            const trcDisplayName = getDisplayNameFromIndex('trc', parseInt(urlTrcParam));
-            selectedTrc.set(trcDisplayName);
-        }
-        if (urlSegmentParam && (!$selectedSegment || $selectedSegment === '')) {
-            const segmentDisplayName = getDisplayNameFromIndex('segment', parseInt(urlSegmentParam));
-            selectedSegment.set(segmentDisplayName);
-        }
-        
-        if (urlDataParam) {
-            // Navigate to selection once so the user sees loading state
-            if (!navigatedOnParam && $page.route.id !== '/selection' && $page.route.id !== '/visualization') {
-                console.log('🧭 Navigating to selection before loading (once)');
-                // Preserve URL parameters when navigating
-                if (browser) {
-                    const currentParams = UrlService.getUrlParams();
-                    const selectionUrl = new URL(`${base}/selection`, window.location.origin);
-                    currentParams.forEach((value, key) => {
-                        selectionUrl.searchParams.set(key, value);
-                    });
-                    goto(selectionUrl.pathname + selectionUrl.search);
-                } else {
-                    goto(`${base}/selection`);
-                }
-                navigatedOnParam = true;
-            }
-
-            if (!$isDataLoaded && !$isLoading) {
-                console.log('🚀 Layout-level auto-loading data from URL parameter:', urlDataParam);
-                
-                setLoadingState(true);
-                
-                try {
-                    console.log('🔄 Calling loadZarrData from Layout...');
-                    await loadZarrData(urlDataParam);
-                    console.log('✅ loadZarrData completed successfully');
-                    dataUrl.set(urlDataParam);
-                    isDataLoaded.set(true);
-                    showCopyLink.set(true);
-                    setError(null);
-                    
-                    // Ensure we're on a data view route after loading (one-time)
-                    if (!navigatedOnParam && $page.route.id !== '/selection' && $page.route.id !== '/visualization') {
-                        console.log('🧭 Navigating to selection route... current route:', $page.route.id);
-                        if (browser) {
-                            const currentParams = UrlService.getUrlParams();
-                            const selectionUrl = new URL(`${base}/selection`, window.location.origin);
-                            currentParams.forEach((value, key) => {
-                                selectionUrl.searchParams.set(key, value);
-                            });
-                            goto(selectionUrl.pathname + selectionUrl.search);
-                        } else {
-                            goto(`${base}/selection`);
-                        }
-                        navigatedOnParam = true;
-                    }
-                    
-                } catch (err) {
-                    console.error('❌ Error during layout-level data loading:', err);
-                    setError(err.message);
-                } finally {
-                    setLoadingState(false);
-                }
-            }
-        } else if (!urlDataParam && !$isDataLoaded && ($page.route.id === '/selection' || $page.route.id === '/visualization')) {
-            // If we're on selection/visualization route but no data param and no data loaded, go to home
-            console.log('🚨 No data parameter found and on ' + $page.route.id + ' route, redirecting to home');
-            goto('/');
-        }
-    }
-
-    onMount(() => {
-        console.log('[layout] onMount current route=', $page.route.id);
-        checkAndLoadDataFromUrl();
-    });
-
-    // Watch for page changes using $effect instead of reactive statement
-    $effect(() => {
-        if ($page.url) {
-            checkAndLoadDataFromUrl();
-        }
-    });
     
     function handleLayoutError(error) {
         console.error('Layout error:', error);
@@ -147,10 +18,6 @@
 
     function handleRetryLayout() {
         setError(null);
-        if (browser) {
-            // Navigate to home and try again
-            goto(`${base}/`);
-        }
     }
 </script>
 

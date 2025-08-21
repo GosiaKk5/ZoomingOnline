@@ -77,19 +77,19 @@ export async function populateSelectors(
     return { channels: [], trcFiles: [], segments: [] };
   }
 
-  // Create arrays of options
+  // Create arrays of options - using just numbers
   if (DEBUG_UI) console.log("🔨 Creating selector arrays...");
   const channels = Array.from(
     { length: channelCount },
-    (_, i): string => `Channel ${i + 1}`,
+    (_, i): string => `${i + 1}`,
   );
   const trcFiles = Array.from(
     { length: trcCount },
-    (_, i): string => `TRC ${i + 1}`,
+    (_, i): string => `${i + 1}`,
   );
   const segments = Array.from(
     { length: segmentCount },
-    (_, i): string => `Segment ${i + 1}`,
+    (_, i): string => `${i + 1}`,
   );
 
   if (DEBUG_UI) {
@@ -115,13 +115,13 @@ export function createShareableUrl(dataUrl: string): string {
 }
 
 /**
- * Extract the numeric index from a formatted selector value
- * (e.g., "Channel 1" -> 0, "TRC 3" -> 2)
+ * Extract the numeric index from a numeric selector value
+ * (e.g., "1" -> 0, "3" -> 2)
  */
 export function parseSelectedIndex(value: string | null): number | null {
   if (!value) return null;
-  const match = value.match(/(\d+)$/);
-  return match && match[1] ? parseInt(match[1]) - 1 : null;
+  const numericValue = parseInt(value);
+  return isNaN(numericValue) ? null : numericValue - 1;
 }
 
 /**

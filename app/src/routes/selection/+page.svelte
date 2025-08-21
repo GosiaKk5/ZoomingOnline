@@ -1,260 +1,212 @@
 <script>
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
-    import { page } from '$app/stores';
     import { base } from '$app/paths';
+    import MdError from 'svelte-icons/md/MdError.svelte';
+    import MdCheckCircle from 'svelte-icons/md/MdCheckCircle.svelte';
     import { 
-        isLoading, 
-        error, 
-        isDataLoaded,
-        selectedChannel,
-        selectedTrc,
-        selectedSegment,
-        rawStore,
-        overviewStore,
-        zarrGroup,
-        dataUrl,
+        appState, 
+        actions,
+        isDataReady,
         isDataReadyForPlot,
-        showCopyLink
-    } from '../../stores/index';
-    import { populateSelectors } from '../../utils/uiManager';
-    import { UrlService } from '../../services/urlService';
+        selectorOptions,
+        dataState,
+        uiState
+    } from '../../stores/appState';
     import ShareButton from '../../components/ShareButton.svelte';
     import DatasetInfo from '../../components/DatasetInfo.svelte';
     import SelectionForm from '../../components/SelectionForm.svelte';
     import LoadingState from '../../components/LoadingState.svelte';
 
-    // Local state using runes - component-specific data
-    let channels = $state([]);
-    let trcFiles = $state([]);
-    let segments = $state([]);
-    let selectorsPopulated = $state(false); // Flag to prevent infinite loop
-    let urlSelectionApplied = $state(false); // Flag to track if URL selection has been applied
+    // Simple local state using Svelte 5 runes
+    let hasInitialized = $state(false);
+    let datasetInfo = $state(null);
 
-    // Dataset metadata - local state
-    let datasetInfo = $state({
-        pointsInSegment: 0,
-        timeBetweenPoints: 0, // in seconds
-        segmentLength: 0, // in seconds
-        totalDataSize: 0,
-        url: ''
-    });
+    // Reactive state using Svelte 5 derived runes
+    let state = $derived($appState);
+    let options = $derived($selectorOptions);
+    let dataReady = $derived($isDataReady);
+    let plotReady = $derived($isDataReadyForPlot);
+    let loading = $derived($uiState.isLoading);
+    let error = $derived($uiState.error);
 
-    // Derived state for component logic
-    let shouldCalculateDatasetInfo = $derived($rawStore && $zarrGroup && $dataUrl);
-    let shouldPopulateSelectors = $derived($rawStore && !selectorsPopulated);
-    let shouldUpdateUrl = $derived(selectorsPopulated && urlSelectionApplied && ($selectedChannel || $selectedTrc || $selectedSegment));
-    let shouldResetSelectors = $derived(!$rawStore);
-
-    // Effects to handle reactive behaviors
-    $effect(() => {
-        if (shouldCalculateDatasetInfo) {
-            calculateDatasetInfo();
-        }
-    });
-
-    $effect(async () => {
-        if (shouldPopulateSelectors) {
-            const data = await populateSelectors($rawStore);
-            channels = data.channels;
-            trcFiles = data.trcFiles;
-            segments = data.segments;
-            selectorsPopulated = true;
-            
-            if (!urlSelectionApplied) {
-                applyUrlSelection();
-                urlSelectionApplied = true;
-            }
-        }
-    });
-
-    $effect(() => {
-        if (shouldUpdateUrl) {
-            UrlService.updateSelections();
-        }
-    });
-
-    $effect(() => {
-        if (shouldResetSelectors) {
-            selectorsPopulated = false;
-            urlSelectionApplied = false;
-            channels = [];
-            trcFiles = [];
-            segments = [];
-        }
-    });
-
+    // Calculate dataset info when data is ready
     async function calculateDatasetInfo() {
         try {
+            if (!$dataState.rawStore?.shape || !$dataState.zarrGroup) {
+                return;
+            }
+            
             // Get basic info from rawStore shape
-            const shape = $rawStore.shape;
+            const shape = $dataState.rawStore.shape;
             const pointsInSegment = shape[3]; // Last dimension is time samples
             
             // Get attributes from zarr group
-            const attrs = await $zarrGroup.attrs.asObject();
+            const attrs = await $dataState.zarrGroup.attrs.asObject();
+            
+            // Calculate timing info
+            const horizInterval = attrs.horiz_interval || 0;
+            const timeBetweenPoints = horizInterval / 1000; // Convert to seconds
+            const segmentLength = pointsInSegment * timeBetweenPoints;
             
             // Calculate total data size
             const rawDataElements = shape.reduce((a, b) => a * b, 1);
-            const overviewElements = $overviewStore ? $overviewStore.shape.reduce((a, b) => a * b, 1) : 0;
+            const overviewElements = $dataState.overviewStore ? $dataState.overviewStore.shape.reduce((a, b) => a * b, 1) : 0;
             const totalElements = rawDataElements + overviewElements;
             const elementSizeBytes = 2; // int16 = 2 bytes
             const totalDataSize = totalElements * elementSizeBytes;
             
             // Update dataset info
             datasetInfo = {
-                pointsInSegment: pointsInSegment,
-                timeBetweenPoints: attrs.horiz_interval || 0,
-                segmentLength: pointsInSegment * (attrs.horiz_interval || 0),
-                totalDataSize: totalDataSize,
-                url: $dataUrl
+                pointsInSegment,
+                timeBetweenPoints,
+                segmentLength,
+                totalDataSize,
+                url: $dataState.url
             };
         } catch (error) {
             console.error('Error calculating dataset info:', error);
+            datasetInfo = null;
         }
     }
 
-    // Apply URL-based selection with fallback to first available
-    function applyUrlSelection() {
-        const urlSelection = UrlService.initializeSelectionFromUrl(channels, trcFiles, segments);
-        
-        // Set channel from URL or first available
-        if (urlSelection.channel) {
-            selectedChannel.set(urlSelection.channel);
-        } else if (!$selectedChannel && channels.length > 0) {
-            selectedChannel.set(channels[0]);
+    // Effect to calculate dataset info when data becomes available
+    $effect(() => {
+        if ($dataState.rawStore?.shape && $dataState.zarrGroup && !datasetInfo) {
+            calculateDatasetInfo();
         }
+    });
+
+    // Selection values for the form (convert from indices) using Svelte 5 runes
+    let selectedChannel = $derived(`${state.selection.channelIndex + 1}`);
+    let selectedTrc = $derived(`${state.selection.trcIndex + 1}`);
+    let selectedSegment = $derived(`${state.selection.segmentIndex + 1}`);
+
+    // Handle selection changes using Svelte 5 approach
+    async function handleSelectionChange(event) {
+        const { field, value } = event.detail;
+        const index = parseInt(value) - 1; // Convert to 0-based index
         
-        // Set TRC from URL or first available
-        if (urlSelection.trc) {
-            selectedTrc.set(urlSelection.trc);
-        } else if (!$selectedTrc && trcFiles.length > 0) {
-            selectedTrc.set(trcFiles[0]);
-        }
-        
-        // Set segment from URL or first available
-        if (urlSelection.segment) {
-            selectedSegment.set(urlSelection.segment);
-        } else if (!$selectedSegment && segments.length > 0) {
-            selectedSegment.set(segments[0]);
+        switch (field) {
+            case 'channel':
+                actions.updateSelection({ channelIndex: index });
+                break;
+            case 'trc':
+                actions.updateSelection({ trcIndex: index });
+                break;
+            case 'segment':
+                actions.updateSelection({ segmentIndex: index });
+                break;
         }
     }
 
-    function handlePlotData() {
-        goto(`${base}/visualization`);
+    // Handle plot navigation using Svelte 5 approach
+    async function handlePlot() {
+        if (plotReady) {
+            await goto(`${base}/visualization`);
+        } else {
+            actions.setError('Data not ready for plotting');
+        }
     }
+
+    // Handle loading different dataset using Svelte 5 approach
+    async function handleLoadDifferentDataset() {
+        actions.resetData();
+        await goto(`${base}/`);
+    }
+
+    // Initialize on mount using Svelte 5 approach
+    onMount(() => {
+        if (!dataReady) {
+            goto(`${base}/`);
+            return;
+        }
+        
+        hasInitialized = true;
+    });
 </script>
 
 <svelte:head>
     <title>Data Selection - ZoomingOnline</title>
+    <meta name="description" content="Select channel, TRC, and segment for data visualization" />
 </svelte:head>
 
-<LoadingState 
-    isLoading={$isLoading}
-    error={$error}
-    showRetryButton={false}
-    on:back={() => goto(`${base}/`)}
-/>
+<div class="container mx-auto px-4 py-8 max-w-4xl">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                Select Data Parameters
+            </h1>
+            <p class="text-gray-600">
+                Choose the channel, TRC file, and segment to visualize from your dataset.
+            </p>
+        </div>
+        <ShareButton />
+    </div>
 
-{#if !$isLoading && !$error && !$isDataLoaded}
-    <LoadingState 
-        isLoading={false}
-        error="No Data Loaded"
-        errorTitle="No Data Loaded"
-        loadingMessage="Please load a dataset first."
-        showRetryButton={false}
-        on:back={() => goto(`${base}/`)}
-    />
-{:else if !$isLoading && !$error && $isDataLoaded}
-    <div class="container-center">
-        <div class="selection-header">
-            <div class="flex items-center gap-4">
-                <h2>Data Selection</h2>
+    {#if loading}
+        <LoadingState message="Processing dataset..." />
+    {:else if error}
+        <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+            <div class="flex items-center mb-2">
+                <div class="w-5 h-5 text-red-600 mr-2">
+                    <MdError />
+                </div>
+                <h3 class="text-red-800 font-medium">Error Loading Dataset</h3>
             </div>
-            {#if $showCopyLink}
-                <ShareButton />
+            <p class="text-red-700 mb-4">{error}</p>
+            <button class="btn-secondary btn-sm" onclick={handleLoadDifferent}>
+                ← Try Different Dataset
+            </button>
+        </div>
+    {:else if dataReady}
+        <div class="space-y-6">
+            {#if datasetInfo}
+                <DatasetInfo datasetInfo={datasetInfo} />
+            {:else}
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <p class="text-yellow-800">Loading dataset information...</p>
+                </div>
+            {/if}
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Selection Parameters</h2>
+                
+                <SelectionForm 
+                    channels={options.channels}
+                    trcFiles={options.trcFiles}
+                    segments={options.segments}
+                    {selectedChannel}
+                    {selectedTrc}
+                    {selectedSegment}
+                    isDataReadyForPlot={plotReady}
+                    on:selectionChange={handleSelectionChange}
+                    on:plot={handlePlot}
+                    on:loadDifferent={handleLoadDifferentDataset}
+                />
+            </div>
+
+            {#if plotReady}
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <div class="w-5 h-5 text-green-600 mr-2">
+                            <MdCheckCircle />
+                        </div>
+                        <span class="text-green-800 font-medium">Ready to plot data</span>
+                    </div>
+                </div>
             {/if}
         </div>
-
-        {#if datasetInfo.url}
-            <div class="dataset-info-wrapper">
-                <DatasetInfo {datasetInfo} />
-            </div>
-        {/if}
-
-        <SelectionForm 
-            {channels}
-            {trcFiles}
-            {segments}
-            bind:selectedChannel={$selectedChannel}
-            bind:selectedTrc={$selectedTrc}
-            bind:selectedSegment={$selectedSegment}
-            isDataReadyForPlot={$isDataReadyForPlot}
-            on:plot={handlePlotData}
-            on:loadDifferent={() => goto(`${base}/`)}
-        />
-    </div>
-{/if}
+    {/if}
+</div>
 
 <style>
-    .container-center {
-        background: white;
-        border-radius: var(--border-radius-lg);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        padding: var(--padding-lg);
-        margin-bottom: var(--padding-md);
+    .container {
+        animation: fadeIn 0.3s ease-in-out;
     }
-
-    .flex {
-        display: flex;
-    }
-
-    .items-center {
-        align-items: center;
-    }
-
-    .gap-4 {
-        gap: 1rem;
-    }
-
-    .selection-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--padding-lg);
-        padding: 1.5rem;
-        background: white;
-        border-radius: var(--border-radius-lg);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        border: 1px solid #e9ecef;
-    }
-
-    .selection-header h2 {
-        margin: 0;
-        color: var(--color-primary);
-        font-size: 1.5rem;
-        font-weight: 600;
-    }
-
-    .dataset-info-wrapper {
-        margin: 1.5rem 0;
-        padding: 1rem;
-        background: #f8f9fa;
-        border-radius: var(--border-radius-md);
-        border: 1px solid #e9ecef;
-    }
-
-    /* Responsive design */
-    @media (max-width: 768px) {
-        .selection-header {
-            flex-direction: column;
-            gap: 1rem;
-            text-align: center;
-            padding: 1rem;
-        }
-
-        .dataset-info-wrapper {
-            margin: 1rem 0;
-            padding: 0.75rem;
-        }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 </style>

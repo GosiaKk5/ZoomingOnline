@@ -1,54 +1,50 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
     import { base } from '$app/paths';
+    import { browser } from '$app/environment';
     import { 
-        dataUrl, 
         isLoading, 
         error, 
-        isDataLoaded,
-        setLoadingState,
-        setError,
-        showCopyLink,
-        appConfig
+        actions
     } from '../stores/index';
     import { loadZarrData } from '../services/dataService';
-    import { UrlService } from '../services/urlService';
     import DataInput from '../components/DataInput.svelte';
     import LoadingState from '../components/LoadingState.svelte';
 
     let inputUrl = $state('');
 
-    // Use the example URL from the centralized configuration
-    let exampleUrl = $derived($appConfig.exampleDataUrl);
+    // Use example.zarr served from static/downloads directory - convert to full URL
+    let exampleUrl = $derived(() => {
+        if (browser) {
+            return new URL('/downloads/example.zarr', window.location.origin).toString();
+        }
+        return '/downloads/example.zarr'; // Fallback for SSR
+    });
 
     async function handleLoadData(event: { url: string }) {
         const url = event.url;
         
-        setLoadingState(true);
+        actions.setLoading(true);
         
         try {
             await loadZarrData(url);
-            dataUrl.set(url);
-            isDataLoaded.set(true);
-            showCopyLink.set(true);
-            setError('');
-            
-            // Use new URL service to set only data parameter and clear all others
-            UrlService.loadDataUrl(url);
+            actions.setData({ url, isLoaded: true });
+            actions.setUI({ showCopyLink: true });
+            actions.setError('');
             
             // Navigate to selection
             goto(`${base}/selection`);
             
         } catch (err: any) {
-            setError(err.message);
+            actions.setError(err.message);
         } finally {
-            setLoadingState(false);
+            actions.setLoading(false);
         }
     }
 
     function handleBack() {
         // Reset error state when going back
-        setError('');
+        actions.setError('');
     }
 </script>
 
@@ -58,7 +54,7 @@
 
 <DataInput 
     bind:inputUrl={inputUrl}
-    exampleUrl={exampleUrl}
+    exampleUrl={exampleUrl()}
     isLoading={$isLoading}
     onload={handleLoadData}
 />

@@ -1,5 +1,5 @@
 <script lang="ts">
-    // Use a simple SVG instead of the missing icon
+    import MdCloudDownload from 'svelte-icons/md/MdCloudDownload.svelte';
     
     interface Props {
         inputUrl?: string;
@@ -35,8 +35,11 @@
     // Copy example URL to input field (don't auto-load)
     function loadExample() {
         inputUrl = exampleUrl;
-        // Just set the URL in the input field - don't automatically load
-        // The user needs to click "Load Data" button manually
+    }
+    
+    // Load example data directly
+    function loadExampleData() {
+        onload?.({ url: exampleUrl });
     }
 </script>
 
@@ -46,16 +49,25 @@
     </div>
     
     <div class="example-hint">
-        <p>For testing, try the example dataset: 
+        <p>For testing, try the example dataset:</p>
+        <div class="flex gap-2 justify-center mt-2">
             <button 
-                class="btn-link" 
+                class="btn-secondary btn-sm" 
                 onclick={loadExample}
                 disabled={isLoading}
                 title="Click to copy example URL to input field"
             >
-                {exampleUrl}
+                Copy Example URL
             </button>
-        </p>
+            <button 
+                class="btn-primary btn-sm" 
+                onclick={loadExampleData}
+                disabled={isLoading}
+                title="Load example dataset directly"
+            >
+                Load Example Data
+            </button>
+        </div>
     </div>
     
     <div class="w-full max-w-2xl mx-auto">
@@ -74,9 +86,7 @@
                 disabled={isLoading || !inputUrl.trim()}
             >
                 <div class="w-4 h-4">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
-                    </svg>
+                    <MdCloudDownload />
                 </div>
                 {isLoading ? 'Loading...' : 'Load Data'}
             </button>

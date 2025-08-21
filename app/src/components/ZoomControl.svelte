@@ -1,6 +1,6 @@
 <script lang="ts">
     import { generateZoomLevelsWithLabels } from '../utils/zoomLevels';
-    import { getDefaultZoomLevel } from '../stores/index';
+    import { ZoomService } from '../stores/index';
     import { MdZoomIn, MdZoomOut } from 'svelte-icons/md';
 
     interface Props {
@@ -31,7 +31,7 @@
     // Set default zoom level using centralized configuration
     $effect(() => {
         if (zoomLevelsWithLabels.length > 0 && selectedZoomLevel === undefined) {
-            selectedZoomLevel = getDefaultZoomLevel(zoomLevelsWithLabels);
+            selectedZoomLevel = ZoomService.getDefaultZoomLevel(zoomLevelsWithLabels);
         }
     });
     

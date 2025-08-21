@@ -1,17 +1,32 @@
 <script>
     import { createEventDispatcher } from 'svelte';
     
-    // Props following Svelte 5 style
-    export let channels = [];
-    export let trcFiles = [];
-    export let segments = [];
-    export let selectedChannel = '';
-    export let selectedTrc = '';
-    export let selectedSegment = '';
-    export let isDataReadyForPlot = false;
+    // Use Svelte 5 runes mode for props
+    const { 
+        channels = [], 
+        trcFiles = [], 
+        segments = [], 
+        selectedChannel = '', 
+        selectedTrc = '', 
+        selectedSegment = '', 
+        isDataReadyForPlot = false 
+    } = $props();
     
     // Event dispatcher for Svelte 5 compatibility
     const dispatch = createEventDispatcher();
+    
+    // Handle selection changes
+    function handleChannelChange(event) {
+        dispatch('selectionChange', { field: 'channel', value: event.target.value });
+    }
+    
+    function handleTrcChange(event) {
+        dispatch('selectionChange', { field: 'trc', value: event.target.value });
+    }
+    
+    function handleSegmentChange(event) {
+        dispatch('selectionChange', { field: 'segment', value: event.target.value });
+    }
     
     // Handle plot button click
     function handlePlotData() {
@@ -30,7 +45,8 @@
             <label for="channel-select">Channel:</label>
             <select 
                 id="channel-select" 
-                bind:value={selectedChannel} 
+                value={selectedChannel} 
+                onchange={handleChannelChange}
                 class="form-control"
             >
                 <option value="">Select Channel</option>
@@ -44,7 +60,8 @@
             <label for="trc-select">TRC File:</label>
             <select 
                 id="trc-select" 
-                bind:value={selectedTrc} 
+                value={selectedTrc} 
+                onchange={handleTrcChange}
                 class="form-control"
             >
                 <option value="">Select TRC File</option>
@@ -58,7 +75,8 @@
             <label for="segment-select">Segment:</label>
             <select 
                 id="segment-select" 
-                bind:value={selectedSegment} 
+                value={selectedSegment} 
+                onchange={handleSegmentChange}
                 class="form-control"
             >
                 <option value="">Select Segment</option>
@@ -73,14 +91,14 @@
         <button 
             class="btn-primary btn-sm"
             disabled={!isDataReadyForPlot}
-            on:click={handlePlotData}
+            onclick={handlePlotData}
         >
             Plot Selected Data
         </button>
 
         <button 
             class="btn-secondary btn-sm"
-            on:click={handleLoadDifferent}
+            onclick={handleLoadDifferent}
         >
             ← Load Different Dataset
         </button>

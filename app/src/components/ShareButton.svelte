@@ -1,7 +1,6 @@
 <script>
     import { MdShare, MdContentCopy, MdCheck } from 'svelte-icons/md';
-    import { showCopyLink, currentDataUrl } from '../stores/index';
-    import { UrlService } from '../services/urlService';
+    import { showCopyLink, dataUrl } from '../stores/index';
     import Modal from './Modal.svelte';
     
     // Local component state using runes
@@ -9,9 +8,9 @@
     let isCopied = $state(false);
     let shareableUrl = $state('');
     
-    // Update shareable URL when modal opens to ensure it includes all necessary parameters
+    // Use current URL when modal opens
     function openModal() {
-        shareableUrl = UrlService.generateShareUrl();
+        shareableUrl = window.location.href;
         showModal = true;
     }
     
@@ -57,7 +56,7 @@
     </button>
 {/if}
 
-<Modal bind:show={showModal} title="Share Dataset" on:close={closeModal}>
+<Modal bind:show={showModal} title="Share Dataset" onclose={closeModal}>
     <p class="text-gray-500 mb-6 text-sm leading-relaxed">
         Copy this URL to share the current dataset, visualization settings, and zoom state with others:
     </p>

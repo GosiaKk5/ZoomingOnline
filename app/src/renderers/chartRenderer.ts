@@ -51,19 +51,26 @@ export async function initializePlotData(
     // Extract metadata from Zarr attributes
     console.log("📝 Extracting Zarr attributes...");
     const attrs = await zarrGroup.attrs.asObject();
+    console.log("📊 Available attributes:", Object.keys(attrs));
 
     const horiz_interval = attrs.horiz_interval as number;
     const vertical_gains = attrs.vertical_gains as number[][][];
     const vertical_offsets = attrs.vertical_offsets as number[][][];
-    const vertical_gain = vertical_gains[channel]?.[trc];
-    const vertical_offset = vertical_offsets[channel]?.[trc];
 
-    if (
-      typeof vertical_gain !== "number" ||
-      typeof vertical_offset !== "number"
-    ) {
-      throw new Error("Invalid vertical gain or offset values");
+    // Defensive checks for vertical_gains and vertical_offsets
+    if (!vertical_gains) {
+      console.warn("⚠️ vertical_gains not found in attributes, using default value 1.0");
     }
+    if (!vertical_offsets) {
+      console.warn("⚠️ vertical_offsets not found in attributes, using default value 0.0");
+    }
+
+    // Safely extract gains and offsets with fallback values
+    const vertical_gain = (vertical_gains?.[channel]?.[trc] ?? 1.0) as number;
+    const vertical_offset = (vertical_offsets?.[channel]?.[trc] ?? 0.0) as number;
+
+    console.log(`📏 Using vertical_gain: ${vertical_gain}, vertical_offset: ${vertical_offset} for channel ${channel}, trc ${trc}`);
+    
     const no_of_samples = rawStore.shape[3] as number;
 
     // Function to convert ADC values to millivolts
