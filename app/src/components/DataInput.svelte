@@ -81,14 +81,12 @@
         />
         <div class="flex justify-center">
             <button 
-                class="btn-primary flex items-center gap-2"
+                class="btn-primary btn-sm flex items-center gap-2"
                 onclick={handleLoadData}
                 disabled={isLoading || !inputUrl.trim()}
             >
-                <div class="w-4 h-4">
-                    <CloudDownload />
-                </div>
-                {isLoading ? 'Loading...' : 'Load Data'}
+                <CloudDownload class="w-4 h-4"/>
+                <span>{isLoading ? 'Loading...' : 'Load Data'}</span>
             </button>
         </div>
     </div>

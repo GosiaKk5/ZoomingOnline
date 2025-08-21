@@ -1,5 +1,5 @@
 <script>
-    import { Github } from 'lucide-svelte';
+    import { Bug } from 'lucide-svelte';
 </script>
 
 <header class="bg-white px-8 py-4 rounded-lg shadow-md mb-4 flex items-center justify-between">
@@ -12,7 +12,7 @@
             class="flex items-center gap-2 no-underline text-gray-600 text-sm hover:text-gray-800 transition-colors"
         >
             <div class="w-5 h-5">
-                <Github />
+                <Bug strokeWidth={1} />
             </div>
             Repository
         </a>

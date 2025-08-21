@@ -48,11 +48,9 @@
 </script>
 
 {#if $showCopyLink}
-    <button class="btn-primary btn-sm" onclick={openModal}>
-        <div class="w-4 h-4">
-            <Share2 />
-        </div>
-        Share
+    <button class="btn-primary btn-sm flex gap-2 items-center" onclick={openModal}>
+        <Share2  class="w-4 h-4" />
+        <span>Share</span>
     </button>
 {/if}
 
