@@ -34,39 +34,56 @@
     async function calculateDatasetInfo() {
         try {
             if (!$dataState.rawStore?.shape || !$dataState.zarrGroup) {
+                console.log('calculateDatasetInfo: Missing rawStore shape or zarrGroup');
                 return;
             }
             
             // Get basic info from rawStore shape
             const shape = $dataState.rawStore.shape;
-            const pointsInSegment = shape[3]; // Last dimension is time samples
+            const pointsInSegment = shape[3] || 0; // Last dimension is time samples
             
-            // Get attributes from zarr group
-            const attrs = await $dataState.zarrGroup.attrs.asObject();
+            // Get attributes from zarr group with defensive access
+            let attrs = {};
+            try {
+                attrs = await $dataState.zarrGroup.attrs.asObject() || {};
+            } catch (attrError) {
+                console.log('Could not load zarr attributes:', attrError);
+                attrs = {};
+            }
             
-            // Calculate timing info
-            const horizInterval = attrs.horiz_interval || 0;
-            const timeBetweenPoints = horizInterval / 1000; // Convert to seconds
-            const segmentLength = pointsInSegment * timeBetweenPoints;
+            // Calculate timing info with safe defaults
+            const horizInterval = attrs.horiz_interval || attrs.horizontal_interval || 1000; // Default 1ms
+            const timeBetweenPoints = horizInterval ? (horizInterval / 1000) : 0.001; // Convert to seconds
+            const segmentLength = (pointsInSegment && timeBetweenPoints) ? (pointsInSegment * timeBetweenPoints) : 0;
             
-            // Calculate total data size
-            const rawDataElements = shape.reduce((a, b) => a * b, 1);
-            const overviewElements = $dataState.overviewStore ? $dataState.overviewStore.shape.reduce((a, b) => a * b, 1) : 0;
+            // Calculate total data size with safe access
+            const rawDataElements = shape && Array.isArray(shape) ? shape.reduce((a, b) => (a || 1) * (b || 1), 1) : 0;
+            const overviewElements = ($dataState.overviewStore?.shape && Array.isArray($dataState.overviewStore.shape)) 
+                ? $dataState.overviewStore.shape.reduce((a, b) => (a || 1) * (b || 1), 1) : 0;
             const totalElements = rawDataElements + overviewElements;
             const elementSizeBytes = 2; // int16 = 2 bytes
             const totalDataSize = totalElements * elementSizeBytes;
             
-            // Update dataset info
+            // Update dataset info with safe values
             datasetInfo = {
-                pointsInSegment,
-                timeBetweenPoints,
-                segmentLength,
-                totalDataSize,
-                url: $dataState.url
+                pointsInSegment: pointsInSegment || 0,
+                timeBetweenPoints: timeBetweenPoints || 0,
+                segmentLength: segmentLength || 0,
+                totalDataSize: totalDataSize || 0,
+                url: $dataState.url || 'Unknown'
             };
+            
+            console.log('Dataset info calculated:', datasetInfo);
         } catch (error) {
             console.error('Error calculating dataset info:', error);
-            datasetInfo = null;
+            // Provide fallback info
+            datasetInfo = {
+                pointsInSegment: 0,
+                timeBetweenPoints: 0,
+                segmentLength: 0,
+                totalDataSize: 0,
+                url: $dataState.url || 'Unknown'
+            };
         }
     }
 

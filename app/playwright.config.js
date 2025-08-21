@@ -43,16 +43,8 @@ export default defineConfig({
    * Web server configuration for local testing only
    * In CI, the server is started manually for better control
    */
-  webServer: process.env.CI ? undefined : [
-    {
-      command: "npm run preview -- --host --port 4173",
-      url: "http://localhost:4173/",
-      cwd: __dirname,
-      reuseExistingServer: true,
-      timeout: 30000,
-    },
-  ],
+  webServer: undefined, // Don't auto-start server, use existing one
   use: {
-    baseURL: "http://localhost:4173/",
+    baseURL: "http://localhost:5173/",
   },
 });
