@@ -2,29 +2,46 @@
     import { generateZoomLevelsWithLabels } from '../utils/zoomLevels';
     import { getDefaultZoomLevel } from '../stores/index';
     import { MdZoomIn, MdZoomOut } from 'svelte-icons/md';
-    
-    export let timeBetweenPoints: number;
-    export let segmentDuration: number;
-    export let selectedZoomLevel: number | undefined = undefined;
-    export let onZoomIn: (newLevel: number) => void = () => {};
-    export let onZoomOut: (newLevel: number) => void = () => {};
-    export let onZoomLevelChange: (newLevel: number) => void = () => {};
 
-    // Generate zoom levels based on current parameters
-    $: zoomLevelsWithLabels = timeBetweenPoints && segmentDuration 
-        ? generateZoomLevelsWithLabels(timeBetweenPoints, segmentDuration) 
-        : [];
-    
-    // Set default zoom level using centralized configuration
-    $: if (zoomLevelsWithLabels.length > 0 && selectedZoomLevel === undefined) {
-        selectedZoomLevel = getDefaultZoomLevel(zoomLevelsWithLabels);
+    interface Props {
+        timeBetweenPoints: number;
+        segmentDuration: number;
+        selectedZoomLevel?: number;
+        onZoomIn?: (newLevel: number) => void;
+        onZoomOut?: (newLevel: number) => void;
+        onZoomLevelChange?: (newLevel: number) => void;
     }
     
-    $: currentLevelIndex = selectedZoomLevel !== undefined 
-        ? zoomLevelsWithLabels.findIndex(level => level.value === selectedZoomLevel)
-        : -1;
-    $: canZoomIn = currentLevelIndex > 0;
-    $: canZoomOut = currentLevelIndex < zoomLevelsWithLabels.length - 1 && currentLevelIndex >= 0;
+    let { 
+        timeBetweenPoints,
+        segmentDuration,
+        selectedZoomLevel = $bindable(undefined),
+        onZoomIn = () => {},
+        onZoomOut = () => {},
+        onZoomLevelChange = () => {}
+    }: Props = $props();
+
+    // Generate zoom levels based on current parameters
+    let zoomLevelsWithLabels = $derived(
+        timeBetweenPoints && segmentDuration 
+            ? generateZoomLevelsWithLabels(timeBetweenPoints, segmentDuration) 
+            : []
+    );
+    
+    // Set default zoom level using centralized configuration
+    $effect(() => {
+        if (zoomLevelsWithLabels.length > 0 && selectedZoomLevel === undefined) {
+            selectedZoomLevel = getDefaultZoomLevel(zoomLevelsWithLabels);
+        }
+    });
+    
+    let currentLevelIndex = $derived(
+        selectedZoomLevel !== undefined 
+            ? zoomLevelsWithLabels.findIndex(level => level.value === selectedZoomLevel)
+            : -1
+    );
+    let canZoomIn = $derived(currentLevelIndex > 0);
+    let canZoomOut = $derived(currentLevelIndex < zoomLevelsWithLabels.length - 1 && currentLevelIndex >= 0);
 
     function handleZoomIn() {
         if (canZoomIn && currentLevelIndex > 0) {
@@ -61,7 +78,7 @@
             class="zoom-button zoom-in btn-sm"
             class:disabled={!canZoomIn}
             disabled={!canZoomIn}
-            on:click={handleZoomIn}
+            onclick={handleZoomIn}
             title="Zoom In (decrease time span)"
         >
             <div class="w-4 h-4">
@@ -74,7 +91,7 @@
             class="zoom-button zoom-out btn-sm"
             class:disabled={!canZoomOut}
             disabled={!canZoomOut}
-            on:click={handleZoomOut}
+            onclick={handleZoomOut}
             title="Zoom Out (increase time span)"
         >
             <div class="w-4 h-4">
@@ -93,7 +110,7 @@
             id="zoomLevelSelect"
             class="zoom-select form-select text-sm w-full"
             value={selectedZoomLevel}
-            on:change={handleDropdownChange}
+            onchange={handleDropdownChange}
         >
             {#each zoomLevelsWithLabels as zoomLevel}
                 <option value={zoomLevel.value}>

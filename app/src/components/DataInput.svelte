@@ -1,26 +1,32 @@
-<script>
+<script lang="ts">
     import { MdCloudDownload } from 'svelte-icons/md';
-    import { createEventDispatcher } from 'svelte';
     
-    // Props following Svelte 5 style
-    export let inputUrl = '';
-    export let exampleUrl = '';
-    export let isLoading = false;
-    export let placeholder = '';
+    interface Props {
+        inputUrl?: string;
+        exampleUrl?: string;
+        isLoading?: boolean;
+        placeholder?: string;
+        onload?: (data: { url: string }) => void;
+    }
     
-    // Event dispatcher for Svelte 5 compatibility
-    const dispatch = createEventDispatcher();
+    let { 
+        inputUrl = $bindable(''),
+        exampleUrl = '',
+        isLoading = false,
+        placeholder = '',
+        onload
+    }: Props = $props();
     
     // Handle form submission
     function handleLoadData() {
         if (!inputUrl.trim()) {
             return;
         }
-        dispatch('load', { url: inputUrl });
+        onload?.({ url: inputUrl });
     }
     
     // Handle Enter key in input field
-    function handleKeyPress(event) {
+    function handleKeyPress(event: KeyboardEvent) {
         if (event.key === 'Enter') {
             handleLoadData();
         }
@@ -43,7 +49,7 @@
         <p>For testing, try the example dataset: 
             <button 
                 class="btn-link" 
-                on:click={loadExample}
+                onclick={loadExample}
                 disabled={isLoading}
                 title="Click to copy example URL to input field"
             >
@@ -58,13 +64,13 @@
             class="form-control font-mono text-sm text-gray-900 bg-gray-50 border-2 border-gray-300 focus:border-blue-500 focus:bg-white w-full mb-4"
             bind:value={inputUrl}
             placeholder={placeholder || exampleUrl}
-            on:keypress={handleKeyPress}
+            onkeypress={handleKeyPress}
             disabled={isLoading}
         />
         <div class="flex justify-center">
             <button 
                 class="btn-primary flex items-center gap-2"
-                on:click={handleLoadData}
+                onclick={handleLoadData}
                 disabled={isLoading || !inputUrl.trim()}
             >
                 <div class="w-4 h-4">

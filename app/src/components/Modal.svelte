@@ -1,23 +1,26 @@
-<script>
+<script lang="ts">
     import { MdClose } from 'svelte-icons/md';
-    import { createEventDispatcher } from 'svelte';
 
-    export let show = false;
-    export let title = '';
-    
-    const dispatch = createEventDispatcher();
+    interface Props {
+        show?: boolean;
+        title?: string;
+        onclose?: () => void;
+        children?: import('svelte').Snippet;
+    }
+
+    let { show = $bindable(false), title = '', onclose, children }: Props = $props();
     
     function handleClose() {
-        dispatch('close');
+        onclose?.();
     }
     
-    function handleKeydown(event) {
+    function handleKeydown(event: KeyboardEvent) {
         if (event.key === 'Escape') {
             handleClose();
         }
     }
     
-    function handleBackdropClick(event) {
+    function handleBackdropClick(event: MouseEvent) {
         if (event.target === event.currentTarget) {
             handleClose();
         }
@@ -29,20 +32,20 @@
         class="modal-backdrop" 
         role="button"
         tabindex="0"
-        on:click={handleBackdropClick}
-        on:keydown={handleKeydown}
+        onclick={handleBackdropClick}
+        onkeydown={handleKeydown}
     >
         <div class="modal-content" role="dialog" aria-labelledby="modal-title">
             <div class="modal-header">
                 <h2 id="modal-title" class="modal-title">{title}</h2>
-                <button class="btn-close" on:click={handleClose} aria-label="Close modal">
+                <button class="btn-close" onclick={handleClose} aria-label="Close modal">
                     <div class="w-5 h-5">
                         <MdClose />
                     </div>
                 </button>
             </div>
             <div class="modal-body">
-                <slot />
+                {@render children?.()}
             </div>
         </div>
     </div>

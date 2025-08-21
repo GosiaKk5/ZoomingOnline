@@ -1,25 +1,36 @@
-<script>
-    import { createEventDispatcher } from 'svelte';
+<script lang="ts">
+    interface Props {
+        isLoading?: boolean;
+        error?: string;
+        loadingMessage?: string;
+        errorTitle?: string;
+        showRetryButton?: boolean;
+        showBackButton?: boolean;
+        retryText?: string;
+        backText?: string;
+        onretry?: () => void;
+        onback?: () => void;
+    }
     
-    // Props following Svelte 5 style
-    export let isLoading = false;
-    export let error = '';
-    export let loadingMessage = 'Loading data...';
-    export let errorTitle = 'Error Loading Data';
-    export let showRetryButton = true;
-    export let showBackButton = true;
-    export let retryText = 'Try Again';
-    export let backText = '← Back to Home';
-    
-    // Event dispatcher for Svelte 5 compatibility
-    const dispatch = createEventDispatcher();
+    let { 
+        isLoading = false,
+        error = '',
+        loadingMessage = 'Loading data...',
+        errorTitle = 'Error Loading Data',
+        showRetryButton = true,
+        showBackButton = true,
+        retryText = 'Try Again',
+        backText = '← Back to Home',
+        onretry,
+        onback
+    }: Props = $props();
     
     function handleRetry() {
-        dispatch('retry');
+        onretry?.();
     }
     
     function handleBack() {
-        dispatch('back');
+        onback?.();
     }
 </script>
 
@@ -34,12 +45,12 @@
         <p>{error}</p>
         <div class="error-actions">
             {#if showRetryButton}
-                <button class="btn-secondary" on:click={handleRetry}>
+                <button class="btn-secondary" onclick={handleRetry}>
                     {retryText}
                 </button>
             {/if}
             {#if showBackButton}
-                <button class="btn-secondary" on:click={handleBack}>
+                <button class="btn-secondary" onclick={handleBack}>
                     {backText}
                 </button>
             {/if}

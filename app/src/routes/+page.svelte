@@ -1,6 +1,5 @@
-<script>
+<script lang="ts">
     import { goto } from '$app/navigation';
-    import { page } from '$app/stores';
     import { base } from '$app/paths';
     import { 
         dataUrl, 
@@ -11,19 +10,19 @@
         setError,
         showCopyLink,
         appConfig
-    } from '../stores/index.ts';
+    } from '../stores/index';
     import { loadZarrData } from '../services/dataService';
     import { UrlService } from '../services/urlService';
     import DataInput from '../components/DataInput.svelte';
     import LoadingState from '../components/LoadingState.svelte';
 
-    let inputUrl = '';
+    let inputUrl = $state('');
 
     // Use the example URL from the centralized configuration
-    $: exampleUrl = $appConfig.exampleDataUrl;
+    let exampleUrl = $derived($appConfig.exampleDataUrl);
 
-    async function handleLoadData(event) {
-        const url = event.detail.url;
+    async function handleLoadData(event: { url: string }) {
+        const url = event.url;
         
         setLoadingState(true);
         
@@ -32,7 +31,7 @@
             dataUrl.set(url);
             isDataLoaded.set(true);
             showCopyLink.set(true);
-            setError(null);
+            setError('');
             
             // Use new URL service to set only data parameter and clear all others
             UrlService.loadDataUrl(url);
@@ -40,7 +39,7 @@
             // Navigate to selection
             goto(`${base}/selection`);
             
-        } catch (err) {
+        } catch (err: any) {
             setError(err.message);
         } finally {
             setLoadingState(false);
@@ -49,7 +48,7 @@
 
     function handleBack() {
         // Reset error state when going back
-        setError(null);
+        setError('');
     }
 </script>
 
@@ -61,14 +60,14 @@
     bind:inputUrl={inputUrl}
     exampleUrl={exampleUrl}
     isLoading={$isLoading}
-    on:load={handleLoadData}
+    onload={handleLoadData}
 />
 
 <LoadingState 
     isLoading={$isLoading}
-    error={$error}
+    error={$error ?? ''}
     showRetryButton={false}
-    on:back={handleBack}
+    onback={handleBack}
 />
 
 <!-- No styles needed - using component styles -->

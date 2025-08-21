@@ -168,8 +168,7 @@ export function createChartSVG(
   // Clear existing content
   d3.select(containerElement).selectAll("*").remove();
 
-  const svg = d3
-    .select(containerElement)
+  const svg = d3.select(containerElement)
     .append("svg")
     .attr("viewBox", `0 0 ${fullWidth} ${chartHeight}`)
     .append("g")
