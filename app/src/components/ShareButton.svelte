@@ -1,12 +1,12 @@
-<script lang="ts">
+<script>
     import { MdShare, MdContentCopy, MdCheck } from 'svelte-icons/md';
     import { showCopyLink, currentDataUrl } from '../stores/index';
     import { UrlService } from '../services/urlService';
     import Modal from './Modal.svelte';
     
-    let showModal = $state(false);
-    let isCopied = $state(false);
-    let shareableUrl = $state('');
+    let showModal = false;
+    let isCopied = false;
+    let shareableUrl = '';
     
     // Update shareable URL when modal opens to ensure it includes all necessary parameters
     function openModal() {
@@ -48,7 +48,7 @@
 </script>
 
 {#if $showCopyLink}
-    <button class="btn-primary btn-sm" onclick={openModal}>
+    <button class="btn-primary btn-sm" on:click={openModal}>
         <div class="w-4 h-4">
             <MdShare />
         </div>
@@ -56,7 +56,7 @@
     </button>
 {/if}
 
-<Modal bind:show={showModal} title="Share Dataset" onclose={closeModal}>
+<Modal bind:show={showModal} title="Share Dataset" on:close={closeModal}>
     <p class="text-gray-500 mb-6 text-sm leading-relaxed">
         Copy this URL to share the current dataset, visualization settings, and zoom state with others:
     </p>
@@ -67,7 +67,7 @@
             class="form-control w-full font-mono text-sm text-gray-900 bg-gray-50 border-2 border-gray-300" 
             value={shareableUrl} 
             readonly
-            onfocus={(e) => (e.target as HTMLInputElement).select()}
+            on:focus={(e) => e.target.select()}
         />
     </div>
     
@@ -75,7 +75,7 @@
         class="flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-medium transition-all duration-200 mx-auto"
         class:btn-success={isCopied}
         class:btn-primary={!isCopied}
-        onclick={copyToClipboard}
+        on:click={copyToClipboard}
     >
         <div class="w-4 h-4">
             {#if isCopied}
