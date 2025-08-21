@@ -1,5 +1,6 @@
 <script lang="ts">
     import { MdClose } from 'svelte-icons/md';
+    import { onMount, onDestroy } from 'svelte';
 
     interface Props {
         show?: boolean;
@@ -11,6 +12,7 @@
     let { show = $bindable(false), title = '', onclose, children }: Props = $props();
     
     function handleClose() {
+        show = false;
         onclose?.();
     }
     
@@ -25,6 +27,23 @@
             handleClose();
         }
     }
+
+    // Document-level escape key handler
+    function handleDocumentKeydown(event: KeyboardEvent) {
+        if (event.key === 'Escape' && show) {
+            event.preventDefault();
+            event.stopPropagation();
+            handleClose();
+        }
+    }
+
+    onMount(() => {
+        document.addEventListener('keydown', handleDocumentKeydown);
+    });
+
+    onDestroy(() => {
+        document.removeEventListener('keydown', handleDocumentKeydown);
+    });
 </script>
 
 {#if show}
