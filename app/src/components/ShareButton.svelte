@@ -1,5 +1,5 @@
 <script>
-    import { MdShare, MdContentCopy, MdCheck } from 'svelte-icons/md';
+    import { Share2, Copy, Check } from 'lucide-svelte';
     import { showCopyLink, dataUrl } from '../stores/index';
     import Modal from './Modal.svelte';
     
@@ -50,7 +50,7 @@
 {#if $showCopyLink}
     <button class="btn-primary btn-sm" onclick={openModal}>
         <div class="w-4 h-4">
-            <MdShare />
+            <Share2 />
         </div>
         Share
     </button>
@@ -79,9 +79,9 @@
     >
         <div class="w-4 h-4">
             {#if isCopied}
-                <MdCheck />
+                <Check />
             {:else}
-                <MdContentCopy />
+                <Copy />
             {/if}
         </div>
         <span class="copy-text">{isCopied ? 'Copied!' : 'Copy URL'}</span>

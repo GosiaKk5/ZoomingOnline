@@ -6,7 +6,7 @@
 -->
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
-  import MdError from 'svelte-icons/md/MdError.svelte';
+  import { AlertCircle } from 'lucide-svelte';
   import type { StoreError } from '../types/stores';
   
   interface Props {
@@ -123,7 +123,7 @@
       <!-- Error Icon -->
       <div class="error-icon">
         <div class="w-12 h-12">
-          <MdError />
+          <AlertCircle />
         </div>
       </div>
       

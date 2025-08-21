@@ -2,8 +2,7 @@
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
     import { base } from '$app/paths';
-    import MdError from 'svelte-icons/md/MdError.svelte';
-    import MdCheckCircle from 'svelte-icons/md/MdCheckCircle.svelte';
+    import { AlertCircle, CheckCircle } from 'lucide-svelte';
     import { 
         appState, 
         actions,
@@ -167,7 +166,7 @@
         <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
             <div class="flex items-center mb-2">
                 <div class="w-5 h-5 text-red-600 mr-2">
-                    <MdError />
+                    <AlertCircle />
                 </div>
                 <h3 class="text-red-800 font-medium">Error Loading Dataset</h3>
             </div>
@@ -207,7 +206,7 @@
                 <div class="bg-green-50 border border-green-200 rounded-lg p-4">
                     <div class="flex items-center">
                         <div class="w-5 h-5 text-green-600 mr-2">
-                            <MdCheckCircle />
+                            <CheckCircle />
                         </div>
                         <span class="text-green-800 font-medium">Ready to plot data</span>
                     </div>

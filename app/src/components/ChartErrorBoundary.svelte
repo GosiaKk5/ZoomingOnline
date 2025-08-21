@@ -5,8 +5,7 @@
   Provides chart-specific error recovery options.
 -->
 <script lang="ts">
-  import MdError from 'svelte-icons/md/MdError.svelte';
-  import MdWarning from 'svelte-icons/md/MdWarning.svelte';
+  import { AlertCircle, AlertTriangle } from 'lucide-svelte';
 
   interface Props {
     /** Chart name for error context */
@@ -74,7 +73,7 @@
     <div class="error-content">
       <div class="error-icon">
         <div class="w-6 h-6">
-          <MdError />
+          <AlertCircle />
         </div>
       </div>
       <h3>Data Loading Error</h3>
@@ -94,7 +93,7 @@
     <div class="error-content">
       <div class="error-icon">
         <div class="w-6 h-6">
-          <MdWarning />
+          <AlertTriangle />
         </div>
       </div>
       <h3>Chart Rendering Error</h3>

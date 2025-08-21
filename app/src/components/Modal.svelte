@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount, onDestroy } from 'svelte';
-    import MdClose from 'svelte-icons/md/MdClose.svelte';
+    import { X } from 'lucide-svelte';
 
     interface Props {
         show?: boolean;

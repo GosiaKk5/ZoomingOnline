@@ -1,7 +1,7 @@
 <script lang="ts">
     import { generateZoomLevelsWithLabels } from '../utils/zoomLevels';
     import { ZoomService } from '../stores/index';
-    import { MdZoomIn, MdZoomOut } from 'svelte-icons/md';
+    import { ZoomIn, ZoomOut } from 'lucide-svelte';
 
     interface Props {
         timeBetweenPoints: number;
@@ -82,7 +82,7 @@
             title="Zoom In (decrease time span)"
         >
             <div class="w-4 h-4">
-                <MdZoomIn />
+                <ZoomIn />
             </div>
             In
         </button>
@@ -95,7 +95,7 @@
             title="Zoom Out (increase time span)"
         >
             <div class="w-4 h-4">
-                <MdZoomOut />
+                <ZoomOut />
             </div>
             Out
         </button>

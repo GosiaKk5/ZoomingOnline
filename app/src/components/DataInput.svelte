@@ -1,5 +1,5 @@
 <script lang="ts">
-    import MdCloudDownload from 'svelte-icons/md/MdCloudDownload.svelte';
+    import { CloudDownload } from 'lucide-svelte';
     
     interface Props {
         inputUrl?: string;
@@ -86,7 +86,7 @@
                 disabled={isLoading || !inputUrl.trim()}
             >
                 <div class="w-4 h-4">
-                    <MdCloudDownload />
+                    <CloudDownload />
                 </div>
                 {isLoading ? 'Loading...' : 'Load Data'}
             </button>
