@@ -58,20 +58,18 @@ jobs:
       - name: Start preview server
         working-directory: ./app
         run: |
-          npm run preview -- --port 4173 --strictPort --host &
+          npm run preview -- --port 5173 --strictPort --host &
           echo "SERVER_PID=$!" >> $GITHUB_ENV
       
       # Step 8: Wait for server to be ready
       - name: Wait for server
         working-directory: ./app
-        run: npx wait-on http://localhost:4173/ --timeout 30000
+        run: npx wait-on http://localhost:5173/ --timeout 10000
 
       # Step 9: Run browser tests
       - name: Run browser tests with local data
         working-directory: ./app
-        run: USE_LOCAL_DATA=true npx playwright test --reporter=line --timeout=120000
-        env:
-          USE_LOCAL_DATA: true
+        run: npx playwright test --reporter=line --timeout=30000
 
       # Step 10: Upload test artifacts (reports, screenshots) if tests fail
       - name: Upload test results

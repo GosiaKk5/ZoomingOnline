@@ -50,7 +50,7 @@ test.describe("ZoomingOnline App Flow", () => {
     console.log("✅ Successfully redirected to selection page");
 
     // Wait for data to load
-    await page.waitForTimeout(5000);
+    await page.waitForTimeout(3000);
     
     // Step 5: Check if dataset information is visible 
     console.log("📍 Step 5: Checking dataset information");
@@ -85,7 +85,7 @@ test.describe("ZoomingOnline App Flow", () => {
       const loadingTextElements = await page.locator('text="Loading"').count();
       if (loadingElements > 0 || loadingTextElements > 0) {
         console.log("⏳ Page still in loading state, waiting longer...");
-        await page.waitForTimeout(10000);
+        await page.waitForTimeout(5000);
       }
 
       // Try again after waiting
@@ -112,7 +112,7 @@ test.describe("ZoomingOnline App Flow", () => {
       .or(page.locator('select[id*="channel"]'))
       .or(page.locator('select').first());
       
-    await expect(channelSelect).toBeVisible({ timeout: 10000 });
+    await expect(channelSelect).toBeVisible({ timeout: 5000 });
     console.log("✅ Channel selection dropdown found");
 
     // Step 8: Select a channel
@@ -147,13 +147,13 @@ test.describe("ZoomingOnline App Flow", () => {
     console.log("📍 Step 11: Clicking plot button");
     
     // Wait a moment for selections to propagate
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
     
     // Check the button state
     const plotButton = page.locator('button')
       .filter({ hasText: /Plot Selected Data|Plot Data|Visualize/i });
     
-    await expect(plotButton).toBeVisible({ timeout: 5000 });
+    await expect(plotButton).toBeVisible({ timeout: 1000 });
     
     // Debug: Check if button is enabled
     const isEnabled = await plotButton.isEnabled();
@@ -172,19 +172,19 @@ test.describe("ZoomingOnline App Flow", () => {
       }
     }
     
-    await expect(plotButton).toBeEnabled({ timeout: 10000 });
+    await expect(plotButton).toBeEnabled({ timeout: 5000 });
     await plotButton.click();
     console.log("✅ Plot button clicked");
 
     // Step 12: Wait for visualization page
     console.log("📍 Step 12: Waiting for visualization page");
-    await expect(page).toHaveURL(/\/visualization/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/visualization/, { timeout: 5000 });
     console.log("✅ Successfully navigated to visualization page");
 
     // Step 13: Wait for chart to render
     console.log("📍 Step 13: Waiting for chart to render");
     const chartContainer = page.locator('#chart-container, .chart-container, svg');
-    await expect(chartContainer.first()).toBeVisible({ timeout: 10000 });
+    await expect(chartContainer.first()).toBeVisible({ timeout: 5000 });
     console.log("✅ Chart rendered successfully");
 
     // Final verification
@@ -206,7 +206,7 @@ test.describe("ZoomingOnline App Flow", () => {
     
     // Should show error message
     const errorMessage = page.locator('.error, .bg-red-50, [class*="error"]');
-    await expect(errorMessage.first()).toBeVisible({ timeout: 10000 });
+    await expect(errorMessage.first()).toBeVisible({ timeout: 5000 });
     
     console.log("✅ Error handling test passed");
   });
@@ -222,13 +222,13 @@ test.describe("ZoomingOnline App Flow", () => {
     const loadButton = page.locator('button:has-text("Load Data")');
     await loadButton.click();
     
-    await expect(page).toHaveURL(/\/selection/, { timeout: 15000 });
+    await expect(page).toHaveURL(/\/selection/, { timeout: 5000 });
     
     // Look for "Load Different Dataset" or similar button
     const backButton = page.locator('button')
       .filter({ hasText: /Load Different|Try Different|Back|Home/i });
     
-    await expect(backButton.first()).toBeVisible({ timeout: 10000 });
+    await expect(backButton.first()).toBeVisible({ timeout: 5000 });
     await backButton.first().click();
     
     // Should return to home page
