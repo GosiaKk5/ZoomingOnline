@@ -1,7 +1,7 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
     import { base } from '$app/paths';
-    import { AlertCircle, CheckCircle } from 'lucide-svelte';
+    import { CircleAlert, CheckCircle } from 'lucide-svelte';
     import { 
         appState, 
         actions,
@@ -166,7 +166,7 @@
         <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
             <div class="flex items-center mb-2">
                 <div class="w-5 h-5 text-red-600 mr-2">
-                    <AlertCircle />
+                    <CircleAlert />
                 </div>
                 <h3 class="text-red-800 font-medium">Error Loading Dataset</h3>
             </div>

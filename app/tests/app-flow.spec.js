@@ -115,11 +115,11 @@ test.describe("ZoomingOnline App Flow", () => {
     await expect(channelSelect).toBeVisible({ timeout: 5000 });
     console.log("✅ Channel selection dropdown found");
 
-    // Step 8: Select a channel
-    console.log("📍 Step 8: Selecting channel");
-    await channelSelect.selectOption({ index: 1 }); // Select second option
+    // Step 8: Select channel 2 (second item)
+    console.log("📍 Step 8: Selecting channel 2");
+    await channelSelect.selectOption({ index: 2 }); // Select third option (Channel 2, index starts from 0)
     const selectedChannelValue = await channelSelect.inputValue();
-    console.log("✅ Channel selected, value:", selectedChannelValue);
+    console.log("✅ Channel 2 selected, value:", selectedChannelValue);
 
     // Step 9: Look for TRC selection
     console.log("📍 Step 9: Looking for TRC selection");
@@ -132,16 +132,16 @@ test.describe("ZoomingOnline App Flow", () => {
     const selectedTrcValue = await trcSelect.inputValue();
     console.log("✅ TRC selected, value:", selectedTrcValue);
 
-    // Step 10: Look for segment selection
-    console.log("📍 Step 10: Looking for segment selection");
+    // Step 10: Select segment 2 (second item)
+    console.log("📍 Step 10: Selecting segment 2");
     const segmentSelect = page.locator('#segment-select')
       .or(page.locator('select[id*="segment"]'))
       .or(page.locator('select').nth(2));
       
     await expect(segmentSelect).toBeVisible({ timeout: 5000 });
-    await segmentSelect.selectOption({ index: 1 }); // Select first actual segment (skip placeholder)
+    await segmentSelect.selectOption({ index: 2 }); // Select third option (Segment 2, index starts from 0)
     const selectedSegmentValue = await segmentSelect.inputValue();
-    console.log("✅ Segment selected, value:", selectedSegmentValue);
+    console.log("✅ Segment 2 selected, value:", selectedSegmentValue);
 
     // Step 11: Click plot button
     console.log("📍 Step 11: Clicking plot button");

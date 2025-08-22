@@ -5,7 +5,7 @@
   Follows modern error boundary patterns with customizable error handling.
 -->
 <script lang="ts">
-  import { AlertCircle } from 'lucide-svelte';
+  import { CircleAlert } from 'lucide-svelte';
   import type { StoreError } from '../types/stores';
   
   interface Props {
@@ -124,7 +124,7 @@
       <!-- Error Icon -->
       <div class="error-icon">
         <div class="w-12 h-12">
-          <AlertCircle />
+          <CircleAlert />
         </div>
       </div>
       

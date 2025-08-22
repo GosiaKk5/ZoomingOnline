@@ -5,7 +5,7 @@
   Provides chart-specific error recovery options.
 -->
 <script lang="ts">
-  import { AlertCircle, AlertTriangle } from 'lucide-svelte';
+  import { CircleAlert, AlertTriangle } from 'lucide-svelte';
 
   interface Props {
     /** Chart name for error context */
@@ -73,7 +73,7 @@
     <div class="error-content">
       <div class="error-icon">
         <div class="w-6 h-6">
-          <AlertCircle />
+          <CircleAlert />
         </div>
       </div>
       <h3>Data Loading Error</h3>

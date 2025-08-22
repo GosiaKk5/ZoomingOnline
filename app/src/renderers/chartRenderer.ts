@@ -135,11 +135,10 @@ export async function initializePlotData(
 }
 
 /**
- * Create SVG container for a chart with title and y-axis label
+ * Create SVG container for a chart with y-axis label
  */
 export function createChartSVG(
   containerElement: HTMLElement,
-  title: string,
   margin: ChartMargin,
   width: number,
   height: number,
@@ -180,16 +179,6 @@ export function createChartSVG(
     .attr("viewBox", `0 0 ${fullWidth} ${chartHeight}`)
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
-
-  // Add title
-  svg
-    .append("text")
-    .attr("x", width / 2)
-    .attr("y", -margin.top / 2)
-    .attr("text-anchor", "middle")
-    .style("font-size", "16px")
-    .style("font-weight", "600")
-    .text(title);
 
   // Add y-axis label
   svg

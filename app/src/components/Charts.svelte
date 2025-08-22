@@ -92,7 +92,6 @@
         // Create SVG
         const svg = createChartSVG(
             chartContainer, 
-            `Channel ${state.selection.channelIndex + 1} | TRC ${state.selection.trcIndex + 1} | Segment ${state.selection.segmentIndex + 1}`,
             margin,
             width,
             height,
@@ -146,15 +145,6 @@
     </div>
 {:else}
     <div class="bg-white rounded-lg shadow-md overflow-hidden">
-        <div class="p-6 border-b border-gray-200">
-            <h2 class="text-xl font-semibold text-gray-800">
-                Data Visualization
-            </h2>
-            <p class="text-sm text-gray-600 mt-1">
-                Channel {state.selection.channelIndex + 1}, TRC {state.selection.trcIndex + 1}, Segment {state.selection.segmentIndex + 1}
-            </p>
-        </div>
-        
         <div class="p-6">
             <div 
                 bind:this={chartContainer}
