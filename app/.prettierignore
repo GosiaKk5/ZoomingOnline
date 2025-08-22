@@ -1,0 +1,23 @@
+# Build outputs
+dist/
+build/
+
+# Test reports
+playwright-report/
+test-results/
+coverage/
+
+# Dependencies
+node_modules/
+
+# Generated files
+*.min.js
+*.min.css
+
+# Logs
+*.log
+vite.log
+
+# OS files
+.DS_Store
+Thumbs.db

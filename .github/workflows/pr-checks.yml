@@ -16,6 +16,8 @@ jobs:
 
       - name: Install the project
         run: uv sync --locked --all-extras --dev
+        working-directory: python
 
       - name: Run check.sh
-        run: bash ci_scripts/check.sh
+        run: bash check.sh
+        working-directory: python
