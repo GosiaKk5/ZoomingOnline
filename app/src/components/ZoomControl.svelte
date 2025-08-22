@@ -64,6 +64,7 @@
         selectedZoomLevel = newLevel;
         onZoomLevelChange(newLevel);
     }
+</script>
 
 <div class="zoom-control bg-white p-4 rounded-lg shadow-md">
     <div class="zoom-control-header mb-3">

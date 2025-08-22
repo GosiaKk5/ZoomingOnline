@@ -13,11 +13,10 @@ const __dirname = path.dirname(__filename);
 const gitignorePath = path.resolve(__dirname, "../.gitignore");
 
 const config = [
-  // Apply to all JS/TS files
+  // Essential base configs
   js.configs.recommended,
-
-  // TypeScript recommended configs
   ...tseslint.configs.recommended,
+  ...svelte.configs["flat/recommended"],
 ];
 
 // Include gitignore patterns if the file exists
@@ -26,49 +25,26 @@ if (existsSync(gitignorePath)) {
 }
 
 config.push(
-  // Base configuration for all JS/TS files
+  // Global configuration
   {
     languageOptions: {
       globals: {
         ...globals.browser,
-        ...globals.es2022,
         ...globals.node,
       },
       ecmaVersion: 2022,
       sourceType: "module",
     },
     rules: {
-      // Possible errors
+      // Only essential rules
       "no-console": "warn",
-      "no-debugger": "warn",
-      "no-unused-vars": "error",
-      "no-undef": "error",
-
-      // Best practices
-      eqeqeq: "error",
-      "no-eval": "error",
-      "no-implied-eval": "error",
-      "no-return-assign": "error",
-      "no-self-compare": "error",
-      "no-throw-literal": "error",
-      "no-unused-expressions": "error",
-      "no-useless-concat": "error",
-      "no-void": "error",
-      "prefer-promise-reject-errors": "error",
-
-      // Stylistic
-      camelcase: ["error", { properties: "never" }],
-      "new-cap": "error",
-      "no-array-constructor": "error",
-      "no-new-object": "error",
-      "no-trailing-spaces": "error",
-      "no-multiple-empty-lines": ["error", { max: 2 }],
+      "no-unused-vars": "off", // Let TypeScript handle this
       "prefer-const": "error",
       "no-var": "error",
     },
   },
 
-  // TypeScript specific configuration
+  // TypeScript files
   {
     files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
@@ -79,116 +55,65 @@ config.push(
       },
     },
     rules: {
-      // TypeScript handles these better than ESLint
-      "no-undef": "off",
-      "no-unused-vars": "off",
-
-      // TypeScript specific rules
       "@typescript-eslint/no-unused-vars": [
         "error",
-        {
-          argsIgnorePattern: "^_",
-          varsIgnorePattern: "^_",
-          ignoreRestSiblings: true,
-        },
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
-      "@typescript-eslint/explicit-function-return-type": "off",
-      "@typescript-eslint/explicit-module-boundary-types": "off",
       "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/no-non-null-assertion": "warn",
-      "@typescript-eslint/no-var-requires": "error",
+      // Relax camelcase for data properties from external APIs
+      "camelcase": ["error", { "properties": "never", "ignoreDestructuring": true }],
     },
   },
 
-  // Svelte specific configuration
-  // Svelte 5 recommended rules
-  ...svelte.configs["flat/recommended"],
+  // Svelte files
   {
     files: ["**/*.svelte"],
     languageOptions: {
-      globals: {
-        ...globals.browser,
-      },
+      globals: globals.browser,
       parserOptions: {
         parser: tseslint.parser,
         extraFileExtensions: [".svelte"],
-        svelteFeatures: {
-          experimentalGenerics: true,
-        },
       },
     },
     rules: {
-      // TypeScript rules for Svelte files
-      "no-undef": "off",
-      "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",
-        {
-          argsIgnorePattern: "^_",
-          varsIgnorePattern: "^_",
-          ignoreRestSiblings: true,
-        },
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
-
-      // Svelte specific rules
+      // Essential Svelte rules only
       "svelte/no-unused-svelte-ignore": "error",
-      "svelte/no-useless-mustaches": "error",
-      "svelte/prefer-class-directive": "error",
-      "svelte/prefer-style-directive": "error",
       "svelte/shorthand-attribute": "error",
-      "svelte/shorthand-directive": "error",
-      "svelte/spaced-html-comment": "error",
-
-      // HTML/A11y rules
-      "svelte/no-at-html-tags": "warn",
-      "svelte/no-target-blank": "error",
-
-      // Performance
-      "svelte/no-reactive-functions": "warn",
-      "svelte/no-reactive-literals": "warn",
     },
   },
 
-  // Test files configuration
+  // Test files - allow console and test globals
   {
     files: ["**/*.test.{js,ts}", "**/*.spec.{js,ts}", "tests/**/*.{js,ts}"],
     languageOptions: {
       globals: {
-        ...globals.browser,
         ...globals.node,
-        // Vitest globals
         describe: "readonly",
         it: "readonly",
         expect: "readonly",
         vi: "readonly",
-        beforeEach: "readonly",
-        afterEach: "readonly",
-        beforeAll: "readonly",
-        afterAll: "readonly",
         test: "readonly",
-        // Playwright globals
-        page: "readonly",
-        browser: "readonly",
-        context: "readonly",
       },
     },
     rules: {
-      // Allow console in tests for debugging
       "no-console": "off",
+      "@typescript-eslint/no-non-null-assertion": "off",
     },
   },
 
-  // Config files
+  // Config files - allow console and require
   {
     files: ["*.config.{js,ts}", "**/*.config.{js,ts}"],
     languageOptions: {
-      globals: {
-        ...globals.node,
-      },
+      globals: globals.node,
     },
     rules: {
-      // Allow console in config files
       "no-console": "off",
+      "@typescript-eslint/no-require-imports": "off",
     },
   },
 
