@@ -68,17 +68,15 @@
 
 {#if hasDataError}
   <!-- Data Error State -->
-  <div class="chart-error-boundary" role="alert">
-    <div class="error-content">
-      <div class="error-icon">
-        <div class="w-6 h-6">
-          <CircleAlert />
-        </div>
+  <div class="flex items-center justify-center min-h-[300px] p-8 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg my-4" role="alert">
+    <div class="text-center max-w-md">
+      <div class="w-6 h-6 text-red-500 mx-auto mb-4">
+        <CircleAlert />
       </div>
-      <h3>Data Loading Error</h3>
-      <p>Unable to load data for {chartName}.</p>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">Data Loading Error</h3>
+      <p class="text-gray-600 mb-6 leading-relaxed">Unable to load data for {chartName}.</p>
       <button 
-        class="retry-btn" 
+        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded font-medium transition-colors"
         onclick={handleRetryData}
         type="button"
       >
@@ -88,23 +86,21 @@
   </div>
 {:else if hasChartError}
   <!-- Chart Rendering Error State -->
-  <div class="chart-error-boundary" role="alert">
-    <div class="error-content">
-      <div class="error-icon">
-        <div class="w-6 h-6">
-          <AlertTriangle />
-        </div>
+  <div class="flex items-center justify-center min-h-[300px] p-8 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg my-4" role="alert">
+    <div class="text-center max-w-md">
+      <div class="w-6 h-6 text-yellow-500 mx-auto mb-4">
+        <AlertTriangle />
       </div>
-      <h3>Chart Rendering Error</h3>
-      <p>Unable to render {chartName}.</p>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">Chart Rendering Error</h3>
+      <p class="text-gray-600 mb-6 leading-relaxed">Unable to render {chartName}.</p>
       {#if chartError}
-        <details class="error-details">
-          <summary>Error Details</summary>
-          <p class="error-message">{chartError}</p>
+        <details class="text-left my-4 border border-gray-200 rounded bg-white">
+          <summary class="p-2 bg-gray-50 cursor-pointer text-sm">Error Details</summary>
+          <p class="p-3 font-mono text-xs text-red-500 bg-gray-50 m-0">{chartError}</p>
         </details>
       {/if}
       <button 
-        class="retry-btn" 
+        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded font-medium transition-colors"
         onclick={handleRetryChart}
         type="button"
       >
@@ -114,10 +110,10 @@
   </div>
 {:else if isLoading}
   <!-- Loading State -->
-  <div class="chart-loading">
-    <div class="loading-content">
-      <div class="loading-spinner"></div>
-      <p>Loading {chartName}...</p>
+  <div class="flex items-center justify-center min-h-[300px] p-8">
+    <div class="text-center">
+      <div class="animate-spin w-6 h-6 border-2 border-gray-200 border-t-blue-600 rounded-full mx-auto mb-4"></div>
+      <p class="text-gray-600 text-sm">Loading {chartName}...</p>
     </div>
   </div>
 {:else}
@@ -125,122 +121,3 @@
   {@render children?.()}
 {/if}
 
-<style>
-  .chart-error-boundary {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 300px;
-    padding: 2rem;
-    background: #fafafa;
-    border: 2px dashed #e0e0e0;
-    border-radius: 8px;
-    margin: 1rem 0;
-  }
-  
-  .error-content {
-    text-align: center;
-    max-width: 400px;
-  }
-  
-  .error-icon {
-    color: #dc3545;
-    margin-bottom: 1rem;
-  }
-  
-  .error-content h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #212529;
-    margin-bottom: 0.5rem;
-  }
-  
-  .error-content p {
-    color: #6c757d;
-    margin-bottom: 1.5rem;
-    line-height: 1.5;
-  }
-  
-  .retry-btn {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .retry-btn:hover {
-    background-color: #0056b3;
-  }
-  
-  .error-details {
-    text-align: left;
-    margin: 1rem 0;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    background: white;
-  }
-  
-  .error-details summary {
-    padding: 0.5rem;
-    background: #f8f9fa;
-    cursor: pointer;
-    font-size: 0.875rem;
-  }
-  
-  .error-message {
-    padding: 0.75rem;
-    font-family: 'Courier New', monospace;
-    font-size: 0.75rem;
-    color: #dc3545;
-    background: #f8f9fa;
-    margin: 0;
-  }
-  
-  .chart-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 300px;
-    padding: 2rem;
-  }
-  
-  .loading-content {
-    text-align: center;
-  }
-  
-  .loading-spinner {
-    width: 24px;
-    height: 24px;
-    border: 2px solid #e9ecef;
-    border-top: 2px solid #007bff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 1rem;
-  }
-  
-  .loading-content p {
-    color: #6c757d;
-    font-size: 0.875rem;
-  }
-  
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-  
-  @media (max-width: 768px) {
-    .chart-error-boundary {
-      min-height: 200px;
-      padding: 1rem;
-    }
-    
-    .error-content {
-      max-width: 100%;
-    }
-  }
-</style>
