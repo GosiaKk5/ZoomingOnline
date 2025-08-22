@@ -12,6 +12,7 @@
     
     import Charts from '../../components/Charts.svelte';
     import ShareButton from '../../components/ShareButton.svelte';
+    import { onMount, onDestroy } from 'svelte';
 
     // Local component state using runes
     let hasInitialized = $state(false);
@@ -23,6 +24,15 @@
     const channelIndex = $derived($selectedChannelIndex);
     const trcIndex = $derived($selectedTrcIndex);
     const segmentIndex = $derived($selectedSegmentIndex);
+
+    // Add/remove visualization-page class to body
+    onMount(() => {
+        document.body.classList.add('visualization-page');
+    });
+
+    onDestroy(() => {
+        document.body.classList.remove('visualization-page');
+    });
 
     // Navigation guard using runes effect
     $effect(() => {
@@ -48,7 +58,7 @@
 
 {#if plotReady}
     <div class="w-full">
-        <div class="flex justify-between items-center mb-4 p-6 bg-white rounded-lg shadow-md">
+        <div class="flex justify-between items-center mb-4 p-4 bg-white rounded-lg shadow-md">
             <div class="flex items-center gap-4">
                 <button class="btn-primary btn-sm" onclick={handleGoBack}>
                     ← Back to Selection

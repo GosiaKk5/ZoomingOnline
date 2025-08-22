@@ -150,10 +150,10 @@
 <ChartLoadingStates isLoading={$uiState.isLoading} error={$uiState.error || chartError} />
 
 {#if !$uiState.isLoading && !$uiState.error && !chartError}
-    <div class="flex gap-6">
+    <div class="flex gap-4">
         <!-- Chart Container -->
         <div class="flex-1 bg-white rounded-lg shadow-md overflow-hidden">
-            <div class="p-6">
+            <div class="p-4">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Data Visualization</h3>
                 <div class="chart-area">
                     {#if !isInitialized || !plotData}
@@ -184,7 +184,7 @@
         
         <!-- Zoom Controls -->
         {#if isInitialized && plotData}
-            <div class="flex-shrink-0">
+            <div class="flex-shrink-0 w-80">
                 <ChartZoomControls
                     timeBetweenPoints={plotData.horiz_interval || 1e-6}
                     segmentDuration={plotData.total_time_s}
@@ -199,7 +199,7 @@
 
 <style>
     .chart-area {
-        min-height: 500px;
+        min-height: 600px;
         padding: 1rem;
         background-color: #f9fafb;
         border-radius: 0.5rem;

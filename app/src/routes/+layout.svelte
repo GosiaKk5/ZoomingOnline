@@ -51,7 +51,7 @@
 
     .container {
         width: 100%;
-        max-width: 900px;
+        max-width: 1400px; /* Increased from 900px for wider visualization */
     }
 
     /* Global responsive styles */
@@ -63,5 +63,11 @@
         .container {
             max-width: 100%;
         }
+    }
+
+    /* Full width for visualization route */
+    :global(.visualization-page) .container {
+        max-width: 95%;
+        width: 95%;
     }
 </style>

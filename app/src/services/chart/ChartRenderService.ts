@@ -93,16 +93,6 @@ export class ChartRenderService {
         config.onZoomPositionChange || (() => {})
       );
     }
-
-    // Add chart title
-    this.svg.append("text")
-      .attr("x", width / 2)
-      .attr("y", -5)
-      .attr("text-anchor", "middle")
-      .style("font-size", "12px")
-      .style("font-weight", "500")
-      .style("fill", "#6b7280")
-      .text("Overview");
   }
 
   /**

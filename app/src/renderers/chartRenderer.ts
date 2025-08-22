@@ -444,14 +444,12 @@ function createDragBehavior(
       }
     })
     .on("drag", function(event) {
-      // Get the mouse position in the chart coordinate system
-      const mouseX = event.x;
+      // Get the mouse position relative to the SVG container (not event.x)
+      const svgNode = this.ownerSVGElement;
+      if (!svgNode) return;
       
-      console.log('🖱️ Drag event:', {
-        mouseX,
-        xScaleDomain: xScale.domain(),
-        xScaleRange: xScale.range()
-      });
+      const svgPoint = d3.pointer(event, svgNode);
+      const mouseX = svgPoint[0];
       
       // Convert back to time
       const timeAtMouse = xScale.invert(mouseX);
@@ -464,14 +462,6 @@ function createDragBehavior(
       
       // Convert to position percentage
       const newPosition = constrainedCenterTime / totalTime;
-      
-      console.log('🖱️ Drag calculation:', {
-        timeAtMouse,
-        halfWidth,
-        constrainedCenterTime,
-        newPosition,
-        totalTime
-      });
       
       // Update the position
       onPositionChange(newPosition);
