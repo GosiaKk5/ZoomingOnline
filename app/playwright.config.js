@@ -40,12 +40,14 @@ export default defineConfig({
     },
   ],
   /**
-   * Web server configuration - automatically starts dev server for tests
+   * Web server configuration
+   * - In CI: reuse existing server (started by GitHub Actions)
+   * - Locally: start dev server automatically
    */
-  webServer: {
+  webServer: process.env.CI ? undefined : {
     command: "npm run dev",
     url: "http://localhost:5173/",
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true,
     timeout: 120 * 1000, // 2 minutes
   },
   use: {
