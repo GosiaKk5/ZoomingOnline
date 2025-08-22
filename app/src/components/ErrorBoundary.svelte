@@ -114,34 +114,34 @@
 </script>
 
 {#if hasError}
-  <div class="error-boundary" role="alert">
-    <div class="error-boundary-container">
+  <div class="flex items-center justify-center min-h-[400px] p-8 bg-gray-50 border border-gray-200 rounded-lg md:p-4 md:min-h-[300px]" role="alert">
+    <div class="max-w-2xl text-center">
       <!-- Error Icon -->
-      <div class="error-icon">
+      <div class="text-red-500 mb-4">
         <div class="w-12 h-12">
           <CircleAlert />
         </div>
       </div>
       
       <!-- Error Title -->
-      <h2 class="error-title">
+      <h2 class="text-2xl font-semibold text-gray-800 mb-4">
         Something went wrong
       </h2>
       
       <!-- Error Message -->
-      <div class="error-message">
+      <div class="text-base text-gray-600 mb-2 leading-relaxed">
         {errorMessage || error?.message || 'An unexpected error occurred in the application.'}
       </div>
       
       <!-- Error Context -->
-      <div class="error-context">
+      <div class="text-sm text-gray-500 mb-8">
         Error occurred in: <strong>{context}</strong>
       </div>
       
       <!-- Error Actions -->
-      <div class="error-actions">
+      <div class="flex gap-4 justify-center mb-8 md:flex-col md:items-stretch">
         <button 
-          class="btn btn-primary"
+          class="px-6 py-3 border-0 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium cursor-pointer transition-colors duration-200 md:w-full"
           onclick={handleRetry}
           type="button"
         >
@@ -149,7 +149,7 @@
         </button>
         
         <button 
-          class="btn btn-secondary"
+          class="px-6 py-3 border-0 rounded bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium cursor-pointer transition-colors duration-200 md:w-full"
           onclick={handleReset}
           type="button"
         >
@@ -159,25 +159,25 @@
       
       <!-- Detailed Error Information -->
       {#if showDetails && errorDetails}
-        <details class="error-details">
-          <summary>Technical Details</summary>
-          <div class="error-details-content">
+        <details class="text-left mt-4 border border-gray-300 rounded bg-gray-50">
+          <summary class="p-3 bg-gray-200 cursor-pointer font-medium">Technical Details</summary>
+          <div class="p-4 text-sm">
             <div><strong>Error Code:</strong> {errorDetails.code}</div>
             <div><strong>Timestamp:</strong> {new Date(errorDetails.timestamp).toLocaleString()}</div>
             {#if errorDetails.context}
               <div><strong>Context:</strong></div>
-              <pre>{JSON.stringify(errorDetails.context, null, 2)}</pre>
+              <pre class="bg-gray-100 p-2 rounded overflow-x-auto text-xs my-2">{JSON.stringify(errorDetails.context, null, 2)}</pre>
             {/if}
             {#if errorDetails.stack}
               <div><strong>Stack Trace:</strong></div>
-              <pre class="error-stack">{errorDetails.stack}</pre>
+              <pre class="bg-gray-100 p-2 rounded overflow-x-auto text-xs my-2 max-h-48 overflow-y-auto">{errorDetails.stack}</pre>
             {/if}
           </div>
         </details>
       {/if}
       
       <!-- Development Mode Information -->
-      <div class="error-dev-info">
+      <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded text-left text-sm">
         <p><strong>Development Mode:</strong> This error boundary caught an error during development.</p>
         <p>Check the browser console for additional details.</p>
       </div>
@@ -188,140 +188,3 @@
   {@render children()}
 {/if}
 
-<style>
-  .error-boundary {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 400px;
-    padding: 2rem;
-    background: #fefefe;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-  }
-  
-  .error-boundary-container {
-    max-width: 600px;
-    text-align: center;
-  }
-  
-  .error-icon {
-    color: #dc3545;
-    margin-bottom: 1rem;
-  }
-  
-  .error-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #212529;
-    margin-bottom: 1rem;
-  }
-  
-  .error-message {
-    font-size: 1rem;
-    color: #6c757d;
-    margin-bottom: 0.5rem;
-    line-height: 1.5;
-  }
-  
-  .error-context {
-    font-size: 0.875rem;
-    color: #868e96;
-    margin-bottom: 2rem;
-  }
-  
-  .error-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    margin-bottom: 2rem;
-  }
-  
-  .btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 4px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .btn-primary {
-    background-color: #007bff;
-    color: white;
-  }
-  
-  .btn-primary:hover {
-    background-color: #0056b3;
-  }
-  
-  .btn-secondary {
-    background-color: #6c757d;
-    color: white;
-  }
-  
-  .btn-secondary:hover {
-    background-color: #545b62;
-  }
-  
-  .error-details {
-    text-align: left;
-    margin-top: 1rem;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-    background: #f8f9fa;
-  }
-  
-  .error-details summary {
-    padding: 0.75rem;
-    background: #e9ecef;
-    cursor: pointer;
-    font-weight: 500;
-  }
-  
-  .error-details-content {
-    padding: 1rem;
-    font-size: 0.875rem;
-  }
-  
-  .error-details pre {
-    background: #f1f3f4;
-    padding: 0.5rem;
-    border-radius: 4px;
-    overflow-x: auto;
-    font-size: 0.75rem;
-    margin: 0.5rem 0;
-  }
-  
-  .error-stack {
-    max-height: 200px;
-    overflow-y: auto;
-  }
-  
-  .error-dev-info {
-    margin-top: 1rem;
-    padding: 1rem;
-    background: #fff3cd;
-    border: 1px solid #ffeaa7;
-    border-radius: 4px;
-    text-align: left;
-    font-size: 0.875rem;
-  }
-  
-  @media (max-width: 768px) {
-    .error-boundary {
-      padding: 1rem;
-      min-height: 300px;
-    }
-    
-    .error-actions {
-      flex-direction: column;
-      align-items: stretch;
-    }
-    
-    .btn {
-      width: 100%;
-    }
-  }
-</style>

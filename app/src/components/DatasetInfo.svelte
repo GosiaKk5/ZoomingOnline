@@ -25,28 +25,28 @@
 </script>
 
 {#if datasetInfo}
-<div class="dataset-info">
-    <h4>Dataset Information</h4>
-    <div class="info-grid">
-        <div class="info-item">
-            <span class="info-label">Points per segment:</span>
-            <span class="info-value">{safeToLocaleString(datasetInfo.pointsInSegment)}</span>
+<div class="bg-gray-50 border border-gray-200 rounded-md p-4 mb-6 text-left">
+    <h4 class="m-0 mb-4 text-gray-800 text-base font-semibold text-center">Dataset Information</h4>
+    <div class="grid gap-2 text-sm">
+        <div class="grid grid-cols-2 items-center py-1 border-b border-gray-200 last:border-b-0">
+            <span class="font-medium text-gray-600">Points per segment:</span>
+            <span class="text-gray-800 font-mono text-right">{safeToLocaleString(datasetInfo.pointsInSegment)}</span>
         </div>
-        <div class="info-item">
-            <span class="info-label">Time between points:</span>
-            <span class="info-value">{safeFormatTime(datasetInfo.timeBetweenPoints)}</span>
+        <div class="grid grid-cols-2 items-center py-1 border-b border-gray-200 last:border-b-0">
+            <span class="font-medium text-gray-600">Time between points:</span>
+            <span class="text-gray-800 font-mono text-right">{safeFormatTime(datasetInfo.timeBetweenPoints)}</span>
         </div>
-        <div class="info-item">
-            <span class="info-label">Segment duration:</span>
-            <span class="info-value">{safeFormatTime(datasetInfo.segmentLength)}</span>
+        <div class="grid grid-cols-2 items-center py-1 border-b border-gray-200 last:border-b-0">
+            <span class="font-medium text-gray-600">Segment duration:</span>
+            <span class="text-gray-800 font-mono text-right">{safeFormatTime(datasetInfo.segmentLength)}</span>
         </div>
-        <div class="info-item">
-            <span class="info-label">Total dataset size:</span>
-            <span class="info-value">{safeFormatFileSize(datasetInfo.totalDataSize)}</span>
+        <div class="grid grid-cols-2 items-center py-1 border-b border-gray-200 last:border-b-0">
+            <span class="font-medium text-gray-600">Total dataset size:</span>
+            <span class="text-gray-800 font-mono text-right">{safeFormatFileSize(datasetInfo.totalDataSize)}</span>
         </div>
-        <div class="info-item">
-            <span class="info-label">Data source:</span>
-            <span class="info-value info-url" title={datasetInfo.url || 'N/A'}>
+        <div class="grid grid-cols-2 items-center py-1">
+            <span class="font-medium text-gray-600">Data source:</span>
+            <span class="text-blue-600 font-mono text-right text-xs break-all" title={datasetInfo.url || 'N/A'}>
                 {datasetInfo.url && datasetInfo.url.length > 60 ? '...' + datasetInfo.url.slice(-60) : (datasetInfo.url || 'N/A')}
             </span>
         </div>
@@ -54,56 +54,3 @@
 </div>
 {/if}
 
-<style>
-    .dataset-info {
-        background: #f8f9fa;
-        border: 1px solid #e9ecef;
-        border-radius: 6px;
-        padding: 1rem;
-        margin-bottom: 1.5rem;
-        text-align: left;
-    }
-
-    .dataset-info h4 {
-        margin: 0 0 1rem 0;
-        color: #212529;
-        font-size: 1rem;
-        font-weight: 600;
-        text-align: center;
-    }
-
-    .info-grid {
-        display: grid;
-        gap: 0.5rem;
-        font-size: 0.875rem;
-    }
-
-    .info-item {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        align-items: center;
-        padding: 0.25rem 0;
-        border-bottom: 1px solid #e9ecef;
-    }
-
-    .info-item:last-child {
-        border-bottom: none;
-    }
-
-    .info-label {
-        font-weight: 500;
-        color: #495057;
-    }
-
-    .info-value {
-        color: #212529;
-        font-family: 'Courier New', monospace;
-        text-align: right;
-    }
-
-    .info-url {
-        word-break: break-all;
-        font-size: 0.75rem;
-        color: #007bff;
-    }
-</style>

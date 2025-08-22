@@ -42,13 +42,13 @@
     }
 </script>
 
-<div class="input-container">
+<div class="p-6 bg-white rounded-lg shadow-lg text-center mb-6">
     <div class="mb-6 mt-6">
         <h3 class="px-4">Load Zarr Data - Enter full URL to your .zarr file</h3>
     </div>
     
-    <div class="example-hint">
-        <p>For testing, try the example dataset:</p>
+    <div class="my-2 p-3 bg-gray-50 border border-gray-200 rounded text-sm text-gray-600">
+        <p class="m-0">For testing, try the example dataset:</p>
         <div class="flex gap-2 justify-center mt-2">
             <button 
                 class="btn-secondary btn-sm" 
@@ -91,27 +91,3 @@
     </div>
 </div>
 
-<style>
-    .input-container {
-        padding: var(--padding-md);
-        background: white;
-        border-radius: var(--border-radius-lg);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        text-align: center;
-        margin-bottom: var(--padding-md);
-    }
-
-    .example-hint {
-        margin: 0.5rem 0;
-        padding: 0.75rem;
-        background-color: #f8f9fa;
-        border: 1px solid #e9ecef;
-        border-radius: var(--border-radius-sm);
-        font-size: 0.875rem;
-        color: var(--color-text-secondary);
-    }
-
-    .example-hint p {
-        margin: 0;
-    }
-</style>

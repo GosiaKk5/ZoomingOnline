@@ -117,25 +117,37 @@
     }
 </script>
 
-<div class="zoom-controls">
-    <h3>Zoom Controls</h3>
+<div class="bg-white p-6 rounded-lg shadow-md min-w-[200px] max-w-[240px]">
+    <h3 class="text-lg font-semibold text-gray-800 m-0 mb-4">Zoom Controls</h3>
     
     <!-- Control buttons -->
-    <div class="control-buttons">
-        <button onclick={handleZoomReset} title="Reset zoom">🔄 Reset</button>
-        <button onclick={handleReloadData} title="Reload data">♻️ Reload</button>
+    <div class="flex gap-2 mb-6">
+        <button 
+            onclick={handleZoomReset} 
+            title="Reset zoom"
+            class="flex-1 p-2 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 hover:text-gray-700 hover:-translate-y-0.5 transition-all text-gray-600 text-xs cursor-pointer"
+        >
+            🔄 Reset
+        </button>
+        <button 
+            onclick={handleReloadData} 
+            title="Reload data"
+            class="flex-1 p-2 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 hover:text-gray-700 hover:-translate-y-0.5 transition-all text-gray-600 text-xs cursor-pointer"
+        >
+            ♻️ Reload
+        </button>
     </div>
     
     <!-- Zoom Level -->
-    <div class="zoom-level-section">
-        <h4>Zoom Level</h4>
+    <div class="mb-6">
+        <h4 class="text-sm font-medium text-gray-700 m-0 mb-3">Zoom Level</h4>
         
-        <div class="zoom-buttons">
+        <div class="flex gap-2 mb-4">
             <button 
                 onclick={handleZoomIn} 
                 title="Zoom In"
                 disabled={!canZoomIn}
-                class:disabled={!canZoomIn}
+                class="flex-1 flex items-center justify-center gap-1 px-4 py-2 rounded-lg text-sm font-medium text-white transition-all cursor-pointer {canZoomIn ? 'bg-emerald-500 hover:bg-emerald-600 hover:-translate-y-0.5' : 'bg-gray-400 cursor-not-allowed'}"
             >
                 ➕ In
             </button>
@@ -143,18 +155,19 @@
                 onclick={handleZoomOut} 
                 title="Zoom Out"
                 disabled={!canZoomOut}
-                class:disabled={!canZoomOut}
+                class="flex-1 flex items-center justify-center gap-1 px-4 py-2 rounded-lg text-sm font-medium text-white transition-all cursor-pointer {canZoomOut ? 'bg-amber-500 hover:bg-amber-600 hover:-translate-y-0.5' : 'bg-gray-400 cursor-not-allowed'}"
             >
                 ➖ Out
             </button>
         </div>
         
-        <div class="zoom-dropdown">
-            <label for="zoomSelect">Time Span:</label>
+        <div class="mb-2">
+            <label for="zoomSelect" class="block text-xs font-medium text-gray-600 mb-1">Time Span:</label>
             <select 
                 id="zoomSelect"
                 bind:value={selectedZoomLevel}
                 onchange={handleDropdownChange}
+                class="w-full border border-gray-300 rounded-lg p-2 text-sm bg-white cursor-pointer transition-colors focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
             >
                 {#each zoomLevels as level}
                     <option value={level.value}>
@@ -165,182 +178,16 @@
         </div>
         
         {#if selectedZoomLevel}
-            <div class="current-zoom-info">
+            <div class="p-2 bg-blue-50 text-blue-800 rounded-md text-xs text-center">
                 Current: {zoomLevels.find(l => l.value === selectedZoomLevel)?.label || 'Custom'}
             </div>
         {/if}
     </div>
 
     {#if zoomLevels.length === 0}
-        <div class="no-zoom-message">
+        <div class="text-xs text-gray-600 text-center mt-4">
             No zoom levels available
         </div>
     {/if}
 </div>
 
-<style>
-    .zoom-controls {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        min-width: 200px;
-        max-width: 240px;
-    }
-    
-    .zoom-controls h3 {
-        margin: 0 0 1rem 0;
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: #1f2937;
-    }
-    
-    .zoom-controls h4 {
-        margin: 0 0 0.75rem 0;
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: #374151;
-    }
-    
-    .control-buttons {
-        display: flex;
-        gap: 0.5rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    .control-buttons button {
-        flex: 1;
-        padding: 0.5rem;
-        background-color: #f3f4f6;
-        border: 1px solid #d1d5db;
-        border-radius: 0.375rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        color: #6b7280;
-        font-size: 0.75rem;
-    }
-    
-    .control-buttons button:hover {
-        background-color: #e5e7eb;
-        color: #374151;
-        transform: translateY(-1px);
-    }
-    
-    .zoom-level-section {
-        margin-bottom: 1.5rem;
-    }
-    
-    .zoom-buttons {
-        display: flex;
-        gap: 0.5rem;
-        margin-bottom: 1rem;
-    }
-    
-    .zoom-buttons button {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.25rem;
-        padding: 0.5rem 1rem;
-        border: none;
-        border-radius: 0.5rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-size: 0.875rem;
-        font-weight: 500;
-        color: white;
-    }
-    
-    .zoom-buttons button:first-child {
-        background-color: #10b981;
-    }
-    
-    .zoom-buttons button:first-child:hover {
-        background-color: #059669;
-        transform: translateY(-1px);
-    }
-    
-    .zoom-buttons button:last-child {
-        background-color: #f59e0b;
-    }
-    
-    .zoom-buttons button:last-child:hover {
-        background-color: #d97706;
-        transform: translateY(-1px);
-    }
-    
-    .zoom-buttons button.disabled,
-    .zoom-buttons button:disabled {
-        background-color: #9ca3af;
-        cursor: not-allowed;
-        transform: none;
-    }
-    
-    .zoom-buttons button.disabled:hover,
-    .zoom-buttons button:disabled:hover {
-        background-color: #9ca3af;
-        transform: none;
-    }
-    
-    .zoom-dropdown {
-        margin-bottom: 0.5rem;
-    }
-    
-    .zoom-dropdown label {
-        display: block;
-        font-size: 0.75rem;
-        font-weight: 500;
-        color: #6b7280;
-        margin-bottom: 0.25rem;
-    }
-    
-    .zoom-dropdown select {
-        width: 100%;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-        padding: 0.5rem;
-        font-size: 0.875rem;
-        background-color: white;
-        cursor: pointer;
-        transition: border-color 0.2s ease;
-    }
-    
-    .zoom-dropdown select:focus {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-    
-    .current-zoom-info {
-        padding: 0.5rem;
-        background-color: #dbeafe;
-        color: #1d4ed8;
-        border-radius: 0.375rem;
-        font-size: 0.75rem;
-        text-align: center;
-    }
-    
-    .no-zoom-message {
-        font-size: 0.75rem;
-        color: #6b7280;
-        text-align: center;
-        margin-top: 1rem;
-    }
-    
-    /* Responsive design */
-    @media (max-width: 640px) {
-        .zoom-controls {
-            min-width: 180px;
-        }
-        
-        .zoom-buttons button {
-            padding: 0.375rem 0.75rem;
-            font-size: 0.75rem;
-        }
-        
-        .zoom-dropdown select {
-            font-size: 0.75rem;
-        }
-    }
-</style>

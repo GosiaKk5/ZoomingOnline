@@ -119,7 +119,7 @@
         <div class="flex-1 bg-white rounded-lg shadow-md overflow-hidden">
             <div class="p-4">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Data Visualization</h3>
-                <div class="chart-area">
+                <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
                     {#if !isInitialized || !plotData}
                         <ChartLoadingStates showInitializing={true} />
                     {:else}
@@ -156,11 +156,4 @@
     </div>
 {/if}
 
-<style>
-    .chart-area {
-        padding: 1rem;
-        background-color: #f9fafb;
-        border-radius: 0.5rem;
-        border: 1px solid #e5e7eb;
-    }
-</style>
+

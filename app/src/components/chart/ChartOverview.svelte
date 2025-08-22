@@ -78,18 +78,14 @@
 
 <div 
     bind:this={containerRef} 
-    class="overview-chart flex-1 mb-4 bg-gray-50 rounded border"
+    class="flex-1 mb-4 bg-gray-50 rounded border min-h-[300px] h-full"
     role="img"
     aria-label="Overview chart showing full data range with zoom controls"
 ></div>
 
 <style>
-    .overview-chart {
-        min-height: 300px;
-        height: 100%; /* Use full available height */
-    }
-    
-    .overview-chart :global(.zoom-rect) {
+    /* Global D3 chart styles that can't be easily replaced with Tailwind */
+    :global(.zoom-rect) {
         fill: rgba(59, 130, 246, 0.2);
         stroke: #3b82f6;
         stroke-width: 2px;
@@ -98,38 +94,38 @@
         transition: fill 0.2s ease;
     }
     
-    .overview-chart :global(.zoom-rect:hover) {
+    :global(.zoom-rect:hover) {
         fill: rgba(59, 130, 246, 0.3);
     }
     
-    .overview-chart :global(.zoom-rect.dragging) {
+    :global(.zoom-rect.dragging) {
         fill: rgba(59, 130, 246, 0.4);
         stroke-width: 3px;
     }
     
-    .overview-chart :global(.zoom-rect-hit-area) {
+    :global(.zoom-rect-hit-area) {
         fill: transparent;
         stroke: none;
         cursor: move;
     }
     
-    .overview-chart :global(.grid line) {
+    :global(.grid line) {
         stroke: #e5e7eb;
         stroke-dasharray: 2,2;
         opacity: 0.7;
     }
     
-    .overview-chart :global(.axis) {
+    :global(.axis) {
         color: #6b7280;
         font-size: 11px;
     }
     
-    .overview-chart :global(.axis path),
-    .overview-chart :global(.axis line) {
+    :global(.axis path),
+    :global(.axis line) {
         stroke: #9ca3af;
     }
     
-    .overview-chart :global(.area) {
+    :global(.area) {
         fill: #3b82f6;
         fill-opacity: 0.3;
         stroke: #3b82f6;

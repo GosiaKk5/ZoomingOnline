@@ -51,15 +51,15 @@
     }
 </script>
 
-<div class="selection-container">
-    <div class="form-row">
-        <div class="form-group">
-            <label for="channel-select">Channel:</label>
+<div class="flex flex-col gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="flex flex-col">
+            <label for="channel-select" class="mb-2 font-semibold text-gray-600">Channel:</label>
             <select 
                 id="channel-select" 
                 value={selectedChannel} 
                 onchange={handleChannelChange}
-                class="form-control"
+                class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             >
                 <option value="">Select Channel</option>
                 {#each channels as channel}
@@ -68,13 +68,13 @@
             </select>
         </div>
 
-        <div class="form-group">
-            <label for="trc-select">TRC File:</label>
+        <div class="flex flex-col">
+            <label for="trc-select" class="mb-2 font-semibold text-gray-600">TRC File:</label>
             <select 
                 id="trc-select" 
                 value={selectedTrc} 
                 onchange={handleTrcChange}
-                class="form-control"
+                class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             >
                 <option value="">Select TRC File</option>
                 {#each trcFiles as trc}
@@ -83,13 +83,13 @@
             </select>
         </div>
 
-        <div class="form-group">
-            <label for="segment-select">Segment:</label>
+        <div class="flex flex-col">
+            <label for="segment-select" class="mb-2 font-semibold text-gray-600">Segment:</label>
             <select 
                 id="segment-select" 
                 value={selectedSegment} 
                 onchange={handleSegmentChange}
-                class="form-control"
+                class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
             >
                 <option value="">Select Segment</option>
                 {#each segments as segment}
@@ -99,9 +99,9 @@
         </div>
     </div>
 
-    <div class="action-row">
+    <div class="flex flex-col md:flex-row justify-center items-center gap-6 mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
         <button 
-            class="btn-primary btn-sm"
+            class="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 disabled:transform-none w-full md:w-auto max-w-xs"
             disabled={!isDataReadyForPlot}
             onclick={handlePlotData}
         >
@@ -109,7 +109,7 @@
         </button>
 
         <button 
-            class="btn-secondary btn-sm"
+            class="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105 w-full md:w-auto max-w-xs"
             onclick={handleLoadDifferent}
         >
             ← Load Different Dataset
@@ -117,57 +117,3 @@
     </div>
 </div>
 
-<style>
-    .selection-container {
-        display: flex;
-        flex-direction: column;
-        gap: var(--padding-md);
-    }
-
-    .form-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: var(--padding-md);
-    }
-
-    .form-group {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .form-group label {
-        margin-bottom: 0.5rem;
-        font-weight: 600;
-        color: var(--color-text-secondary);
-    }
-
-    .action-row {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 1.5rem;
-        margin-top: 2rem;
-        padding: 1.5rem;
-        background: #f8f9fa;
-        border-radius: var(--border-radius-lg);
-        border: 1px solid #e9ecef;
-    }
-
-    /* Responsive design */
-    @media (max-width: 768px) {
-        .form-row {
-            grid-template-columns: 1fr;
-        }
-        
-        .action-row {
-            flex-direction: column;
-            gap: 1rem;
-            padding: 1rem;
-        }
-        
-        .action-row button {
-            width: 100%;
-            max-width: 280px;
-        }
-    }
-</style>

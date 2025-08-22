@@ -66,16 +66,15 @@
     }
 </script>
 
-<div class="zoom-control bg-white p-4 rounded-lg shadow-md">
-    <div class="zoom-control-header mb-3">
+<div class="bg-white p-4 rounded-lg shadow-md min-w-[140px] max-w-[180px] sm:min-w-[120px]">
+    <div class="mb-3">
         <h3 class="text-sm font-semibold text-gray-800">Zoom Control</h3>
     </div>
     
     <!-- Zoom In/Out Buttons -->
-    <div class="zoom-buttons flex gap-2 mb-4">
+    <div class="flex gap-2 mb-4">
         <button 
-            class="zoom-button zoom-in btn-sm"
-            class:disabled={!canZoomIn}
+            class="flex items-center gap-1 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60 text-white border-0 rounded-md cursor-pointer transition-all duration-200 text-xs font-medium flex-1 hover:transform hover:-translate-y-0.5 disabled:transform-none active:translate-y-0 sm:px-2 sm:py-1 sm:text-[10px]"
             disabled={!canZoomIn}
             onclick={handleZoomIn}
             title="Zoom In (decrease time span)"
@@ -87,8 +86,7 @@
         </button>
         
         <button 
-            class="zoom-button zoom-out btn-sm"
-            class:disabled={!canZoomOut}
+            class="flex items-center gap-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60 text-white border-0 rounded-md cursor-pointer transition-all duration-200 text-xs font-medium flex-1 hover:transform hover:-translate-y-0.5 disabled:transform-none active:translate-y-0 sm:px-2 sm:py-1 sm:text-[10px]"
             disabled={!canZoomOut}
             onclick={handleZoomOut}
             title="Zoom Out (increase time span)"
@@ -101,13 +99,13 @@
     </div>
     
     <!-- Zoom Level Dropdown -->
-    <div class="zoom-dropdown">
+    <div>
         <label for="zoomLevelSelect" class="block text-xs font-medium text-gray-700 mb-1">
             Time Span:
         </label>
         <select 
             id="zoomLevelSelect"
-            class="zoom-select form-select text-sm w-full"
+            class="border border-gray-300 rounded-md px-1.5 py-1.5 text-xs bg-white cursor-pointer w-full focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 sm:text-[10px]"
             value={selectedZoomLevel}
             onchange={handleDropdownChange}
         >
@@ -126,87 +124,3 @@
     {/if}
 </div>
 
-<style>
-    .zoom-control {
-        min-width: 140px;
-        max-width: 180px;
-    }
-    
-    .zoom-button {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-        padding: 0.375rem 0.75rem;
-        background-color: #3b82f6;
-        color: white;
-        border: none;
-        border-radius: 0.375rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-size: 0.75rem;
-        font-weight: 500;
-        flex: 1;
-    }
-    
-    .zoom-button:hover:not(.disabled) {
-        background-color: #2563eb;
-        transform: translateY(-1px);
-    }
-    
-    .zoom-button:active:not(.disabled) {
-        transform: translateY(0);
-    }
-    
-    .zoom-button.disabled {
-        background-color: #9ca3af;
-        cursor: not-allowed;
-        opacity: 0.6;
-    }
-    
-    .zoom-in {
-        background-color: #10b981;
-    }
-    
-    .zoom-in:hover:not(.disabled) {
-        background-color: #059669;
-    }
-    
-    .zoom-out {
-        background-color: #f59e0b;
-    }
-    
-    .zoom-out:hover:not(.disabled) {
-        background-color: #d97706;
-    }
-    
-    .zoom-select {
-        border: 1px solid #d1d5db;
-        border-radius: 0.375rem;
-        padding: 0.375rem;
-        font-size: 0.75rem;
-        background-color: white;
-        cursor: pointer;
-    }
-    
-    .zoom-select:focus {
-        outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-    }
-    
-    /* Ensure responsive design */
-    @media (max-width: 640px) {
-        .zoom-control {
-            min-width: 120px;
-        }
-        
-        .zoom-button {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.625rem;
-        }
-        
-        .zoom-select {
-            font-size: 0.625rem;
-        }
-    }
-</style>

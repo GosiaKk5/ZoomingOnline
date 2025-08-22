@@ -34,15 +34,15 @@
 </script>
 
 {#if isLoading}
-    <div class="loading-container">
-        <div class="loading-spinner"></div>
-        <p>{loadingMessage}</p>
+    <div class="flex flex-col items-center justify-center py-16 px-8 text-center">
+        <div class="animate-spin w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full mb-4"></div>
+        <p class="text-gray-600">{loadingMessage}</p>
     </div>
 {:else if error}
-    <div class="error-container">
-        <h3>{errorTitle}</h3>
-        <p>{error}</p>
-        <div class="error-actions">
+    <div class="flex flex-col items-center justify-center py-16 px-8 text-center">
+        <h3 class="text-xl font-semibold text-red-600 mt-0 mb-2">{errorTitle}</h3>
+        <p class="text-red-600 mb-6">{error}</p>
+        <div class="flex gap-4 flex-wrap justify-center">
             {#if showRetryButton}
                 <button class="btn-secondary" onclick={handleRetry}>
                     {retryText}
@@ -57,45 +57,3 @@
     </div>
 {/if}
 
-<style>
-    .loading-container, .error-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 4rem 2rem;
-        text-align: center;
-    }
-
-    .loading-spinner {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #3498db;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 2s linear infinite;
-        margin-bottom: 1rem;
-    }
-
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-
-    .error-container h3 {
-        margin-top: 0;
-        color: #dc3545;
-    }
-
-    .error-container p {
-        color: #dc3545;
-        margin-bottom: 1.5rem;
-    }
-
-    .error-actions {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-</style>
