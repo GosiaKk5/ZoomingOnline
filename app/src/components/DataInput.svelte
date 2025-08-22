@@ -42,14 +42,15 @@
     }
 </script>
 
-<div class="p-6 bg-white rounded-lg shadow-lg text-center mb-6">
-    <div class="mb-6 mt-6">
-        <h3 class="px-4">Load Zarr Data - Enter full URL to your .zarr file</h3>
+<div class="p-8 md:p-6 bg-white rounded-xl shadow-lg text-center mb-6 max-w-4xl mx-auto">
+    <div class="mb-8">
+        <h2 class="text-2xl md:text-xl font-bold text-gray-800 mb-2">Load Zarr Data</h2>
+        <p class="text-gray-600 text-sm md:text-xs">Enter the full URL to your .zarr file to begin analysis</p>
     </div>
     
-    <div class="my-2 p-3 bg-gray-50 border border-gray-200 rounded text-sm text-gray-600">
-        <p class="m-0">For testing, try the example dataset:</p>
-        <div class="flex gap-2 justify-center mt-2">
+    <div class="my-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800">
+        <p class="m-0 font-medium mb-3">For testing, try the example dataset:</p>
+        <div class="flex gap-3 justify-center flex-wrap">
             <button 
                 class="btn-secondary btn-sm" 
                 onclick={loadExample}
@@ -69,10 +70,10 @@
         </div>
     </div>
     
-    <div class="w-full max-w-2xl mx-auto">
+    <div class="w-full max-w-3xl mx-auto space-y-4">
         <input 
             type="text" 
-            class="form-control font-mono text-sm text-gray-900 bg-gray-50 border-2 border-gray-300 focus:border-blue-500 focus:bg-white w-full mb-4"
+            class="form-control font-mono text-sm text-gray-900 bg-gray-50 border-2 border-gray-300 focus:border-blue-500 focus:bg-white w-full"
             bind:value={inputUrl}
             placeholder={placeholder || exampleUrl}
             onkeydown={handleKeyPress}
@@ -80,11 +81,11 @@
         />
         <div class="flex justify-center">
             <button 
-                class="btn-primary btn-sm flex items-center gap-2"
+                class="btn-primary px-6 py-3 md:px-4 md:py-2 text-base md:text-sm flex items-center gap-2"
                 onclick={handleLoadData}
                 disabled={isLoading || !inputUrl.trim()}
             >
-                <CloudDownload class="w-4 h-4"/>
+                <CloudDownload class="w-5 h-5 md:w-4 md:h-4"/>
                 <span>{isLoading ? 'Loading...' : 'Load Data'}</span>
             </button>
         </div>

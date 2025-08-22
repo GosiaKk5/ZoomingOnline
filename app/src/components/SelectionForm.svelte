@@ -59,7 +59,7 @@
                 id="channel-select" 
                 value={selectedChannel} 
                 onchange={handleChannelChange}
-                class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                class="form-select"
             >
                 <option value="">Select Channel</option>
                 {#each channels as channel}
@@ -74,7 +74,7 @@
                 id="trc-select" 
                 value={selectedTrc} 
                 onchange={handleTrcChange}
-                class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                class="form-select"
             >
                 <option value="">Select TRC File</option>
                 {#each trcFiles as trc}
@@ -89,7 +89,7 @@
                 id="segment-select" 
                 value={selectedSegment} 
                 onchange={handleSegmentChange}
-                class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+                class="form-select"
             >
                 <option value="">Select Segment</option>
                 {#each segments as segment}

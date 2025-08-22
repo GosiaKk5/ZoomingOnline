@@ -10,19 +10,19 @@
   }
 
   .btn-primary {
-    @apply btn bg-primary text-white hover:bg-primary-hover disabled:bg-gray-400;
+    @apply btn bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400;
   }
 
   .btn-secondary {
-    @apply btn bg-secondary text-white hover:bg-secondary-hover;
+    @apply btn bg-gray-500 text-white hover:bg-gray-600;
   }
 
   .btn-success {
-    @apply btn bg-success text-white hover:bg-success-hover;
+    @apply btn bg-emerald-500 text-white hover:bg-emerald-600;
   }
 
   .btn-link {
-    @apply btn bg-transparent text-primary underline hover:text-primary-hover hover:bg-transparent p-0 disabled:text-gray-400 disabled:no-underline;
+    @apply btn bg-transparent text-blue-600 underline hover:text-blue-700 hover:bg-transparent p-0 disabled:text-gray-400 disabled:no-underline;
   }
 
   .btn-close {
@@ -35,45 +35,31 @@
 
   /* Form Components */
   .form-control {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors;
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors;
   }
 
-  /* Card Components */
-  .card {
-    @apply bg-white rounded-lg shadow-md p-4 mb-4;
+  .form-select {
+    @apply px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200;
   }
 
-  .card-header {
-    @apply flex items-center justify-between p-6 border-b border-gray-200;
+  /* Zoom Button Components */
+  .zoom-btn {
+    @apply flex items-center gap-1 px-3 py-1.5 text-white border-0 rounded-md cursor-pointer transition-all duration-200 text-xs font-medium flex-1 hover:transform hover:-translate-y-0.5 disabled:transform-none disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60 active:translate-y-0;
   }
 
-  .card-body {
-    @apply p-6;
+  .zoom-btn-in {
+    @apply zoom-btn bg-emerald-500 hover:bg-emerald-600;
   }
 
-  /* Container Components */
-  .container-center {
-    @apply bg-white p-4 rounded-lg shadow-md text-center mb-4;
+  .zoom-btn-out {
+    @apply zoom-btn bg-amber-500 hover:bg-amber-600;
   }
 
-  /* Input Groups */
-  .input-group {
-    @apply flex gap-2 justify-center items-center flex-wrap;
-  }
-
-  /* Loading States */
-  .loading {
-    @apply text-blue-600 animate-pulse;
-  }
-
-  /* Example Hints */
-  .example-hint {
-    @apply my-2 p-3 bg-gray-50 border border-gray-200 rounded text-sm text-gray-600;
-  }
-
-  /* Selection Info */
-  .selection-info {
-    @apply flex items-center gap-2 text-sm text-gray-600;
+  /* Responsive zoom button adjustments */
+  @media (max-width: 640px) {
+    .zoom-btn {
+      @apply px-2 py-1 text-[10px];
+    }
   }
 
   /* Modal Components */
@@ -107,8 +93,8 @@
     line-height: 1.5;
     font-weight: 400;
     color-scheme: light;
-    color: #333;
-    background-color: #f8f9fa;
+    color: theme(colors.gray.800);
+    background-color: theme(colors.gray.50);
     font-synthesis: none;
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
@@ -121,19 +107,19 @@
   }
 
   body {
-    @apply m-0 flex items-center min-w-80 min-h-screen;
+    @apply m-0 p-8 flex justify-center items-start min-w-80 min-h-screen bg-gray-50 md:p-4;
   }
 
   #app {
-    @apply w-full max-w-screen-xl mx-auto text-center;
+    @apply w-full max-w-6xl mx-auto;
   }
 }
 
 /* Zoom rectangle styles for interactive overview chart */
 @layer components {
   .zoom-rect {
-    fill: rgba(239, 68, 68, 0.2); /* Semi-transparent red */
-    stroke: #dc2626; /* Red border */
+    fill: theme(colors.red.500 / 0.2); /* Semi-transparent red */
+    stroke: theme(colors.red.600); /* Red border */
     stroke-width: 2px;
     stroke-dasharray: 5, 5; /* Dashed border */
     cursor: move;
@@ -142,12 +128,12 @@
   }
 
   .zoom-rect:hover {
-    fill: rgba(239, 68, 68, 0.3); /* Slightly more opaque on hover */
+    fill: theme(colors.red.500 / 0.3); /* Slightly more opaque on hover */
     stroke-width: 2.5px;
   }
 
   .zoom-rect.dragging {
-    fill: rgba(239, 68, 68, 0.4); /* More opaque when dragging */
+    fill: theme(colors.red.500 / 0.4); /* More opaque when dragging */
     stroke-width: 3px;
   }
 

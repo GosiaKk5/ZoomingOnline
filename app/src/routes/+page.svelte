@@ -58,18 +58,18 @@
     <title>ZoomingOnline - Interactive Raw Data Analysis</title>
 </svelte:head>
 
-<DataInput 
-    bind:inputUrl
-    exampleUrl={exampleUrl()}
-    isLoading={loading}
-    onload={handleLoadData}
-/>
+<div class="min-h-[60vh] flex flex-col justify-center items-center">
+    <DataInput 
+        bind:inputUrl
+        exampleUrl={exampleUrl()}
+        isLoading={loading}
+        onload={handleLoadData}
+    />
 
-<LoadingState 
-    isLoading={loading}
-    error={errorMessage ?? ''}
-    showRetryButton={false}
-    onback={handleBack}
-/>
-
-<!-- No styles needed - using component styles -->
+    <LoadingState 
+        isLoading={loading}
+        error={errorMessage ?? ''}
+        showRetryButton={false}
+        onback={handleBack}
+    />
+</div>

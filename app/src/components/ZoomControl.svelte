@@ -74,7 +74,7 @@
     <!-- Zoom In/Out Buttons -->
     <div class="flex gap-2 mb-4">
         <button 
-            class="flex items-center gap-1 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60 text-white border-0 rounded-md cursor-pointer transition-all duration-200 text-xs font-medium flex-1 hover:transform hover:-translate-y-0.5 disabled:transform-none active:translate-y-0 sm:px-2 sm:py-1 sm:text-[10px]"
+            class="zoom-btn-in"
             disabled={!canZoomIn}
             onclick={handleZoomIn}
             title="Zoom In (decrease time span)"
@@ -86,7 +86,7 @@
         </button>
         
         <button 
-            class="flex items-center gap-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:opacity-60 text-white border-0 rounded-md cursor-pointer transition-all duration-200 text-xs font-medium flex-1 hover:transform hover:-translate-y-0.5 disabled:transform-none active:translate-y-0 sm:px-2 sm:py-1 sm:text-[10px]"
+            class="zoom-btn-out"
             disabled={!canZoomOut}
             onclick={handleZoomOut}
             title="Zoom Out (increase time span)"
@@ -105,7 +105,7 @@
         </label>
         <select 
             id="zoomLevelSelect"
-            class="border border-gray-300 rounded-md px-1.5 py-1.5 text-xs bg-white cursor-pointer w-full focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 sm:text-[10px]"
+            class="form-select text-sm w-full sm:text-[10px]"
             value={selectedZoomLevel}
             onchange={handleDropdownChange}
         >

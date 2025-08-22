@@ -85,50 +85,26 @@
 
 <style>
     /* Global D3 chart styles that can't be easily replaced with Tailwind */
-    :global(.zoom-rect) {
-        fill: rgba(59, 130, 246, 0.2);
-        stroke: #3b82f6;
-        stroke-width: 2px;
-        stroke-dasharray: 5, 5;
-        cursor: move;
-        transition: fill 0.2s ease;
-    }
-    
-    :global(.zoom-rect:hover) {
-        fill: rgba(59, 130, 246, 0.3);
-    }
-    
-    :global(.zoom-rect.dragging) {
-        fill: rgba(59, 130, 246, 0.4);
-        stroke-width: 3px;
-    }
-    
-    :global(.zoom-rect-hit-area) {
-        fill: transparent;
-        stroke: none;
-        cursor: move;
-    }
-    
     :global(.grid line) {
-        stroke: #e5e7eb;
+        stroke: theme(colors.gray.200);
         stroke-dasharray: 2,2;
         opacity: 0.7;
     }
     
     :global(.axis) {
-        color: #6b7280;
+        color: theme(colors.gray.500);
         font-size: 11px;
     }
     
     :global(.axis path),
     :global(.axis line) {
-        stroke: #9ca3af;
+        stroke: theme(colors.gray.400);
     }
     
     :global(.area) {
-        fill: #3b82f6;
+        fill: theme(colors.blue.500);
         fill-opacity: 0.3;
-        stroke: #3b82f6;
+        stroke: theme(colors.blue.500);
         stroke-width: 1.5px;
     }
 </style>

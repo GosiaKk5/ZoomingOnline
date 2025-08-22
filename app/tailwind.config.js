@@ -7,20 +7,8 @@ export default {
   ],
   theme: {
     extend: {
-      colors: {
-        primary: {
-          DEFAULT: "#007bff",
-          hover: "#0056b3",
-        },
-        secondary: {
-          DEFAULT: "#6c757d",
-          hover: "#5a6268",
-        },
-        success: {
-          DEFAULT: "#10b981",
-          hover: "#059669",
-        },
-      },
+      // Using default Tailwind colors instead of custom ones
+      // primary → blue-600, secondary → gray-500, success → emerald-500
     },
   },
   plugins: [require("@tailwindcss/forms")],
@@ -30,13 +18,19 @@ export default {
     'btn-primary',
     'btn-secondary', 
     'btn-success',
-    'btn-link',
     'btn-close',
     'btn-sm',
     'form-control',
     'form-select',
-    'card',
-    'card-header',
-    'card-body'
+    'zoom-btn',
+    'zoom-btn-in',
+    'zoom-btn-out',
+    'modal-backdrop',
+    'modal-content',
+    'modal-header',
+    'modal-title',
+    'modal-body',
+    'zoom-rect',
+    'zoom-rect-hit-area'
   ]
 };
