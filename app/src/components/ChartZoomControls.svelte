@@ -3,7 +3,7 @@
     import { generateZoomLevelsWithLabels } from '../utils/zoomLevels';
     
     // Props using Svelte 5 runes syntax
-    let { timeBetweenPoints, segmentDuration, currentZoomPosition = 0.5 } = $props();
+    let { timeBetweenPoints, segmentDuration, totalSamples, currentZoomPosition = 0 } = $props();
 
     // Event dispatcher
     const dispatch = createEventDispatcher();
@@ -42,7 +42,7 @@
                 defaultSet = true;
                 
                 // Dispatch the initial zoom level to ensure the visualization shows the rectangle
-                dispatch('zoomLevelChange', { zoomLevel: selectedZoomLevel, position: 0.5 });
+                dispatch('zoomLevelChange', { zoomLevel: selectedZoomLevel, position: Math.floor(totalSamples / 2) });
             }
         }
     });

@@ -5,10 +5,11 @@ import type { OverviewDataPoint } from './ChartDataService';
 export interface OverviewRenderConfig {
   data: OverviewDataPoint[];
   totalTime: number;
+  totalSamples: number;
   globalYMin: number;
   globalYMax: number;
   zoomLevel?: number | null;
-  zoomPosition?: number;
+  zoomPosition?: number; // Now represents sample index (integer)
   onZoomPositionChange?: (position: number) => void;
 }
 
@@ -81,16 +82,23 @@ export class ChartRenderService {
     // Add zoom rectangle if zoom is active
     if (config.zoomLevel !== null && config.zoomLevel !== undefined && config.zoomLevel < config.totalTime) {
       const zoomWidth = config.zoomLevel / config.totalTime; // Convert to fraction
-      const zoomPosition = config.zoomPosition ?? 0.5; // Default to center if not provided
+      
+      // Convert sample index to 0-1 position fraction for drawing
+      const sampleIndex = config.zoomPosition ?? Math.floor(config.totalSamples / 2);
+      const positionFraction = sampleIndex / (config.totalSamples - 1); // Convert sample index to 0-1 range
       
       drawZoomRectangle(
         this.svg,
         xScale,
         height,
-        zoomPosition,
+        positionFraction,
         zoomWidth,
         config.totalTime,
-        config.onZoomPositionChange || (() => {})
+        // Convert callback from fraction back to sample index
+        (newPositionFraction: number) => {
+          const newSampleIndex = Math.round(newPositionFraction * (config.totalSamples - 1));
+          config.onZoomPositionChange?.(newSampleIndex);
+        }
       );
     }
   }

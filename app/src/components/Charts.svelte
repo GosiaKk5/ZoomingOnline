@@ -17,7 +17,7 @@
 
     // Local zoom state - no global store needed!
     let zoomLevel = $state<number | null>(null);
-    let zoomPosition = $state<number>(0.5);
+    let zoomPosition = $state<number>(0); // Changed to sample index (integer)
 
     // Derived values using Svelte 5 $derived with proper typing
     const state = $derived($appState);
@@ -87,17 +87,18 @@
         const { zoomLevel: newLevel, position } = event.detail;
         zoomLevel = newLevel;
         zoomPosition = position;
-        console.log(`Zoom changed to level ${newLevel} at position ${position}`);
+        console.log(`Zoom changed to level ${newLevel} at sample ${position}`);
     }
 
     function handleZoomPositionChange(event: CustomEvent<{ position: number }>): void {
         zoomPosition = event.detail.position;
-        console.log(`Zoom position changed to ${zoomPosition} via draggable rectangle`);
+        console.log(`Zoom position changed to sample ${zoomPosition} via draggable rectangle`);
     }
 
     function handleZoomReset(): void {
         zoomLevel = null;
-        zoomPosition = 0.5;
+        // Reset to middle sample position
+        zoomPosition = plotData ? Math.floor(plotData.no_of_samples / 2) : 0;
         console.log('Zoom reset to overview');
     }
 
@@ -126,6 +127,7 @@
                         <ChartOverview
                             data={plotData.overviewData || []}
                             totalTime={plotData.total_time_s}
+                            totalSamples={plotData.no_of_samples}
                             globalYMin={plotData.globalYMin ?? 0}
                             globalYMax={plotData.globalYMax ?? 1}
                             {zoomLevel}
@@ -141,8 +143,9 @@
         {#if isInitialized && plotData}
             <div class="flex-shrink-0 w-80">
                 <ChartZoomControls
-                    timeBetweenPoints={plotData.horiz_interval || 1e-6}
+                    timeBetweenPoints={plotData.horiz_interval}
                     segmentDuration={plotData.total_time_s}
+                    totalSamples={plotData.no_of_samples}
                     currentZoomPosition={zoomPosition}
                     on:zoomLevelChange={handleZoomLevelChange}
                     on:zoomReset={handleZoomReset}

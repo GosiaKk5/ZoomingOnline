@@ -7,17 +7,19 @@
     const { 
         data,
         totalTime,
+        totalSamples,
         globalYMin,
         globalYMax,
         zoomLevel = null,
-        zoomPosition = 0.5
+        zoomPosition = 0
     }: {
         data: OverviewDataPoint[];
         totalTime: number;
+        totalSamples: number;
         globalYMin: number;
         globalYMax: number;
         zoomLevel?: number | null;
-        zoomPosition?: number;
+        zoomPosition?: number; // Now represents sample index (integer)
     } = $props();
 
     // Event dispatcher for zoom position changes
@@ -60,6 +62,7 @@
         renderService.renderOverview({
             data,
             totalTime,
+            totalSamples,
             globalYMin,
             globalYMax,
             zoomLevel,
