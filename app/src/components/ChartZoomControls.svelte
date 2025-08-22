@@ -3,7 +3,7 @@
     import { generateZoomLevelsWithLabels } from '../utils/zoomLevels';
     
     // Props using Svelte 5 runes syntax
-    let { timeBetweenPoints = 1e-6, segmentDuration = 1 } = $props();
+    let { timeBetweenPoints = 1e-6, segmentDuration = 1, currentZoomPosition = 0.5 } = $props();
 
     // Event dispatcher
     const dispatch = createEventDispatcher();
@@ -86,7 +86,8 @@
         
         if (newZoomLevel !== undefined) {
             selectedZoomLevel = newZoomLevel;
-            dispatch('zoomLevelChange', { zoomLevel: newZoomLevel, position: 0.5 });
+            // Use current zoom position to maintain position during zoom change
+            dispatch('zoomLevelChange', { zoomLevel: newZoomLevel, position: currentZoomPosition });
         }
     }
 
@@ -106,7 +107,8 @@
         
         if (newZoomLevel !== undefined) {
             selectedZoomLevel = newZoomLevel;
-            dispatch('zoomLevelChange', { zoomLevel: newZoomLevel, position: 0.5 });
+            // Use current zoom position to maintain position during zoom change
+            dispatch('zoomLevelChange', { zoomLevel: newZoomLevel, position: currentZoomPosition });
         }
     }
 
@@ -123,7 +125,8 @@
     function handleDropdownChange(event) {
         const newLevel = parseFloat(event.target.value);
         selectedZoomLevel = newLevel;
-        dispatch('zoomLevelChange', { zoomLevel: newLevel, position: zoomPosition / 100 });
+        // Use current zoom position to maintain position during zoom change
+        dispatch('zoomLevelChange', { zoomLevel: newLevel, position: currentZoomPosition });
     }
 </script>
 

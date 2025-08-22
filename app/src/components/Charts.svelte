@@ -188,6 +188,7 @@
                 <ChartZoomControls
                     timeBetweenPoints={plotData.horiz_interval || 1e-6}
                     segmentDuration={plotData.total_time_s}
+                    currentZoomPosition={zoomPosition}
                     on:zoomLevelChange={handleZoomLevelChange}
                     on:zoomReset={handleZoomReset}
                     on:reloadData={handleReloadData}
