@@ -59,8 +59,8 @@
     
     <!-- Control buttons -->
     <div class="control-buttons">
-        <button on:click={handleZoomReset} title="Reset zoom">🔄 Reset</button>
-        <button on:click={handleReloadData} title="Reload data">♻️ Reload</button>
+        <button onclick={handleZoomReset} title="Reset zoom">🔄 Reset</button>
+        <button onclick={handleReloadData} title="Reload data">♻️ Reload</button>
     </div>
     
     <!-- Zoom Level -->
@@ -68,8 +68,8 @@
         <h4>Zoom Level</h4>
         
         <div class="zoom-buttons">
-            <button on:click={handleZoomIn} title="Zoom In">🔍 In</button>
-            <button on:click={handleZoomOut} title="Zoom Out">🔍 Out</button>
+            <button onclick={handleZoomIn} title="Zoom In">🔍 In</button>
+            <button onclick={handleZoomOut} title="Zoom Out">🔍 Out</button>
         </div>
         
         <div class="zoom-dropdown">
@@ -77,7 +77,7 @@
             <select 
                 id="zoomSelect"
                 bind:value={selectedZoomLevel}
-                on:change={handleDropdownChange}
+                onchange={handleDropdownChange}
             >
                 <option value={undefined}>Overview</option>
                 {#each zoomLevels as level}
@@ -106,7 +106,7 @@
                 max="100"
                 step="1"
                 bind:value={zoomPosition}
-                on:input={handlePositionChange}
+                oninput={handlePositionChange}
             />
             <div class="slider-labels">
                 <span>Start</span>

@@ -75,7 +75,7 @@
             class="form-control font-mono text-sm text-gray-900 bg-gray-50 border-2 border-gray-300 focus:border-blue-500 focus:bg-white w-full mb-4"
             bind:value={inputUrl}
             placeholder={placeholder || exampleUrl}
-            onkeypress={handleKeyPress}
+            onkeydown={handleKeyPress}
             disabled={isLoading}
         />
         <div class="flex justify-center">
