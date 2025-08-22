@@ -5,12 +5,6 @@ export default {
     "./src/app.html",
     "!./src/**/*.{test,spec}.{js,ts}"
   ],
-  theme: {
-    extend: {
-      // Using default Tailwind colors instead of custom ones
-      // primary → blue-600, secondary → gray-500, success → emerald-500
-    },
-  },
   plugins: [require("@tailwindcss/forms")],
   // Enable purging for production builds
   safelist: [

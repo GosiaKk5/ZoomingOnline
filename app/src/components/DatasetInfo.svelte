@@ -25,7 +25,7 @@
 </script>
 
 {#if datasetInfo}
-<div class="bg-gray-50 border border-gray-200 rounded-md p-4 mb-6 text-left">
+<div class="dataset-info bg-gray-50 border border-gray-200 rounded-md p-4 mb-6 text-left">
     <h4 class="m-0 mb-4 text-gray-800 text-base font-semibold text-center">Dataset Information</h4>
     <div class="grid gap-2 text-sm">
         <div class="grid grid-cols-2 items-center py-1 border-b border-gray-200 last:border-b-0">

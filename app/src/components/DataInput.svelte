@@ -42,7 +42,7 @@
     }
 </script>
 
-<div class="p-8 md:p-6 bg-white rounded-xl shadow-lg text-center mb-6 max-w-4xl mx-auto">
+<div class="p-8 md:p-6 bg-white rounded-xl shadow-lg text-center mb-6 max-w-7xl mx-auto">
     <div class="mb-8">
         <h2 class="text-2xl md:text-xl font-bold text-gray-800 mb-2">Load Zarr Data</h2>
         <p class="text-gray-600 text-sm md:text-xs">Enter the full URL to your .zarr file to begin analysis</p>
@@ -70,7 +70,7 @@
         </div>
     </div>
     
-    <div class="w-full max-w-3xl mx-auto space-y-4">
+    <div class="w-full max-w-5xl mx-auto space-y-4">
         <input 
             type="text" 
             class="form-control font-mono text-sm text-gray-900 bg-gray-50 border-2 border-gray-300 focus:border-blue-500 focus:bg-white w-full"

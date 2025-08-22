@@ -39,7 +39,7 @@
         <p class="text-gray-600">{loadingMessage}</p>
     </div>
 {:else if error}
-    <div class="flex flex-col items-center justify-center py-16 px-8 text-center">
+    <div class="error bg-red-50 flex flex-col items-center justify-center py-16 px-8 text-center border border-red-200 rounded-lg">
         <h3 class="text-xl font-semibold text-red-600 mt-0 mb-2">{errorTitle}</h3>
         <p class="text-red-600 mb-6">{error}</p>
         <div class="flex gap-4 flex-wrap justify-center">

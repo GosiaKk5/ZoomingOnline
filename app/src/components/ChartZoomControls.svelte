@@ -117,7 +117,7 @@
     }
 </script>
 
-<div class="bg-white p-6 rounded-lg shadow-md min-w-[200px] max-w-[240px]">
+<div class="zoom-controls bg-white p-6 rounded-lg shadow-md min-w-[200px] max-w-[240px]">
     <h3 class="text-lg font-semibold text-gray-800 m-0 mb-4">Zoom Controls</h3>
     
     <!-- Control buttons -->
