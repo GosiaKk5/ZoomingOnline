@@ -48,7 +48,7 @@ export interface CacheEntry {
 }
 
 // UI Store Types
-export type CurrentView = 'home' | 'selection' | 'charts';
+export type CurrentView = "home" | "selection" | "charts";
 
 export interface UIState {
   isLoading: boolean;
@@ -117,7 +117,7 @@ export interface ZoomState {
 
 // App Configuration Types
 export interface AppConfig {
-  theme: 'light' | 'dark' | 'auto';
+  theme: "light" | "dark" | "auto";
   language: string;
   performance: {
     maxConcurrentRequests: number;
@@ -134,7 +134,7 @@ export interface AppConfig {
   };
   debugging: {
     enableLogs: boolean;
-    logLevel: 'debug' | 'info' | 'warn' | 'error';
+    logLevel: "debug" | "info" | "warn" | "error";
     showPerformanceMetrics: boolean;
   };
 }
@@ -165,7 +165,7 @@ export interface PlotActions {
   resetZoom: () => void;
   panTo: (position: number) => void;
   refreshData: () => Promise<void>;
-  exportData: (format: 'json' | 'csv' | 'png') => Promise<void>;
+  exportData: (format: "json" | "csv" | "png") => Promise<void>;
 }
 
 // Error Types

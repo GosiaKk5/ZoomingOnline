@@ -1,27 +1,27 @@
 /**
  * Consolidated Store Exports
- * 
+ *
  * Single source of truth for all app state management
  */
 
 // Import actions first for individual exports
-import { actions } from './appState';
+import { actions } from "./appState";
 
 // Export the consolidated state and actions
 export {
   appState,
   dataState,
-  selectionState, 
+  selectionState,
   plotState,
   uiState,
   actions,
-  
+
   // Key derived values
   isDataReady,
   isDataReadyForPlot,
   canInteract,
   selectorOptions,
-  
+
   // Backward compatibility exports (for components not yet migrated)
   selectedChannelIndex,
   selectedTrcIndex,
@@ -36,16 +36,16 @@ export {
   showCopyLink,
   zoomPosition,
   zoomWidth,
-  plotConfig
-} from './appState';
+  plotConfig,
+} from "./appState";
 
 // Export individual action functions for backward compatibility
 export const setError = actions.setError;
 export const setLoadingState = actions.setLoading;
 
 // Services
-export { ZoomService } from '../services/zoomService';
-export { loadZarrData, getRawDataSlice } from '../services/dataService';
+export { ZoomService } from "../services/zoomService";
+export { loadZarrData, getRawDataSlice } from "../services/dataService";
 
 // Types (only the essential ones)
 export type {
@@ -53,5 +53,5 @@ export type {
   RawDataStore,
   OverviewStore,
   PlotConfig,
-  CurrentView
-} from '../types/stores';
+  CurrentView,
+} from "../types/stores";

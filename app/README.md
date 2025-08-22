@@ -55,30 +55,31 @@ Open browser to http://localhost:5173
 
 ## 📦 Available Scripts
 
-| Command                | Purpose                  | Usage                                |
+| Command | Purpose | Usage |
+
 ## Svelte 5 Features
 
 - **Upgraded to Svelte 5** with `vite-plugin-svelte` 6+ and `svelte-check` 4+
 - **Runes enabled by default**: Uses modern Svelte 5 runes (`$state`, `$derived`, `$effect`) for component-local state
 - **Store compatibility**: Legacy Svelte 3/4 syntax still works alongside runes for global state management
-- **State management pattern**: 
+- **State management pattern**:
   - **Runes** for component-local state (reactive variables, computed values, effects)
   - **Stores** for global state shared across components
 - **Routing**: Uses a custom internal router (`src/router.ts`) optimized for Svelte 5 with proper Vite base path support (`/ZoomingOnline/`)
 - **URL synchronization**: Components use the `updateQuery` helper for URL search parameter updates without re-entrant route changes
-| ---------------------- | ------------------------ | ------------------------------------ |
-| `npm run dev`          | Start development server | Local development with hot reload    |
-| `npm run build`        | Production build         | Generates optimized build in `dist/` |
-| `npm run preview`      | Preview production build | Test production build locally        |
-| `npm run check`        | TypeScript type checking | Validate types with svelte-check     |
-| `npm run check:watch`  | Watch mode type checking | Continuous type validation           |
-| `npm run lint`         | Run ESLint               | Check code quality and style         |
-| `npm run lint:fix`     | Fix ESLint issues        | Automatically fix linting problems   |
-| `npm run format`       | Format code              | Apply Prettier formatting            |
-| `npm run format:check` | Check formatting         | Verify code is properly formatted    |
-| `npm run validate`     | Run all quality checks   | Complete validation pipeline         |
-| `npm run test:unit`    | Run unit tests           | Vitest-based unit tests              |
-| `npm run test:headed`  | Run E2E tests (headed)   | Playwright browser tests with UI     |
+  | ---------------------- | ------------------------ | ------------------------------------ |
+  | `npm run dev` | Start development server | Local development with hot reload |
+  | `npm run build` | Production build | Generates optimized build in `dist/` |
+  | `npm run preview` | Preview production build | Test production build locally |
+  | `npm run check` | TypeScript type checking | Validate types with svelte-check |
+  | `npm run check:watch` | Watch mode type checking | Continuous type validation |
+  | `npm run lint` | Run ESLint | Check code quality and style |
+  | `npm run lint:fix` | Fix ESLint issues | Automatically fix linting problems |
+  | `npm run format` | Format code | Apply Prettier formatting |
+  | `npm run format:check` | Check formatting | Verify code is properly formatted |
+  | `npm run validate` | Run all quality checks | Complete validation pipeline |
+  | `npm run test:unit` | Run unit tests | Vitest-based unit tests |
+  | `npm run test:headed` | Run E2E tests (headed) | Playwright browser tests with UI |
 
 ## 🔧 Development Tools
 

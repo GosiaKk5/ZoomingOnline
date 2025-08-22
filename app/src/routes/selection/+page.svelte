@@ -95,7 +95,6 @@
                 url: $dataState.url || 'Unknown'
             };
             
-            console.log('Dataset info calculated:', JSON.stringify(datasetInfo, null, 2));
         } catch (error) {
             console.error('Error calculating dataset info:', error);
             // Provide fallback info

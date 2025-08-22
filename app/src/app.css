@@ -124,7 +124,9 @@
     stroke-dasharray: 5, 5; /* Dashed border */
     cursor: move;
     pointer-events: all;
-    transition: fill 0.2s, stroke-width 0.2s;
+    transition:
+      fill 0.2s,
+      stroke-width 0.2s;
   }
 
   .zoom-rect:hover {

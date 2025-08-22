@@ -46,7 +46,6 @@ export async function initializePlotData(
   trc: number,
   segment: number,
 ): Promise<PlotDataResult> {
-
   try {
     // Validate inputs
     if (!rawStore) {
@@ -58,8 +57,14 @@ export async function initializePlotData(
     if (!overviewStore) {
       throw new Error("overviewStore is required but was null/undefined");
     }
-    if (typeof channel !== 'number' || typeof trc !== 'number' || typeof segment !== 'number') {
-      throw new Error(`Invalid indices: channel=${channel}, trc=${trc}, segment=${segment}`);
+    if (
+      typeof channel !== "number" ||
+      typeof trc !== "number" ||
+      typeof segment !== "number"
+    ) {
+      throw new Error(
+        `Invalid indices: channel=${channel}, trc=${trc}, segment=${segment}`,
+      );
     }
 
     // Extract metadata from Zarr attributes
@@ -73,18 +78,25 @@ export async function initializePlotData(
 
     // Defensive checks for vertical_gains and vertical_offsets
     if (!vertical_gains) {
-      console.warn("⚠️ vertical_gains not found in attributes, using default value 1.0");
+      console.warn(
+        "⚠️ vertical_gains not found in attributes, using default value 1.0",
+      );
     }
     if (!vertical_offsets) {
-      console.warn("⚠️ vertical_offsets not found in attributes, using default value 0.0");
+      console.warn(
+        "⚠️ vertical_offsets not found in attributes, using default value 0.0",
+      );
     }
 
     // Safely extract gains and offsets with fallback values
     const vertical_gain = (vertical_gains?.[channel]?.[trc] ?? 1.0) as number;
-    const vertical_offset = (vertical_offsets?.[channel]?.[trc] ?? 0.0) as number;
+    const vertical_offset = (vertical_offsets?.[channel]?.[trc] ??
+      0.0) as number;
 
-    console.log(`📏 Using vertical_gain: ${vertical_gain}, vertical_offset: ${vertical_offset} for channel ${channel}, trc ${trc}`);
-    
+    console.log(
+      `📏 Using vertical_gain: ${vertical_gain}, vertical_offset: ${vertical_offset} for channel ${channel}, trc ${trc}`,
+    );
+
     const no_of_samples = rawStore.shape[3] as number;
 
     // Function to convert ADC values to millivolts
@@ -107,8 +119,7 @@ export async function initializePlotData(
     // Process overview data for plotting
     const overviewData: OverviewDataPoint[] = Array.from(overviewMin).map(
       (min_val, i) => {
-        const time_s =
-          (i + 0.5) * downsampling_factor * horiz_interval;
+        const time_s = (i + 0.5) * downsampling_factor * horiz_interval;
         const maxVal = overviewMax[i];
         if (typeof maxVal === "undefined") {
           throw new Error(`Missing overview max value at index ${i}`);
@@ -159,7 +170,6 @@ export function createChartSVG(
   fullWidth: number,
   chartHeight: number,
 ): d3.Selection<SVGGElement, unknown, null, undefined> {
-
   // Validate parameters
   if (
     isNaN(width) ||
@@ -188,7 +198,8 @@ export function createChartSVG(
   // Clear existing content
   d3.select(containerElement).selectAll("*").remove();
 
-  const svg = d3.select(containerElement)
+  const svg = d3
+    .select(containerElement)
     .append("svg")
     .attr("viewBox", `0 0 ${fullWidth} ${chartHeight}`)
     .append("g")
@@ -224,10 +235,13 @@ export function drawAxes(
     .append("g")
     .attr("transform", `translate(0, ${height})`)
     .call(
-      d3.axisBottom(xScale).ticks(5).tickFormat((d) => {
-        const timeInSeconds = Number(d);
-        return formatTime(timeInSeconds);
-      })
+      d3
+        .axisBottom(xScale)
+        .ticks(5)
+        .tickFormat((d) => {
+          const timeInSeconds = Number(d);
+          return formatTime(timeInSeconds);
+        }),
     );
 
   svg.append("g").call(d3.axisLeft(yScale).ticks(5));
@@ -354,34 +368,33 @@ export function drawZoomRectangle(
   onDragStart?: () => void,
   onDragEnd?: () => void,
 ): d3.Selection<SVGRectElement, unknown, null, undefined> {
-  
   // Calculate rectangle bounds in time units with proper boundary constraints
   const halfWidth = (zoomWidth * totalTime) / 2;
   let centerTime = zoomPosition * totalTime;
-  
-  console.log('📐 Rectangle bounds calculation:', {
+
+  console.log("📐 Rectangle bounds calculation:", {
     zoomPosition,
     totalTime,
     centerTime: centerTime,
     halfWidth,
-    zoomWidth
+    zoomWidth,
   });
-  
+
   // Constrain the center position so rectangle edges don't go beyond plot boundaries
   centerTime = Math.max(halfWidth, Math.min(totalTime - halfWidth, centerTime));
-  
+
   const startTime = centerTime - halfWidth;
   const endTime = centerTime + halfWidth;
-  
+
   // Convert to pixel coordinates
   const x = xScale(startTime);
   const width = xScale(endTime) - x;
   const chartWidth = xScale.range()[1] || 0;
-  
+
   // Remove any existing zoom rectangle
   svg.selectAll(".zoom-rect").remove();
   svg.selectAll(".zoom-rect-hit-area").remove();
-  
+
   // Create the visible rectangle
   const rect = svg
     .append("rect")
@@ -390,18 +403,20 @@ export function drawZoomRectangle(
     .attr("y", 0)
     .attr("width", Math.max(width, 3)) // Minimum width of 3 pixels for visibility
     .attr("height", height);
-  
+
   // Enhanced small rectangle handling
   const isVerySmallZoom = zoomWidth <= 0.02; // 2% or smaller
-  const minHitAreaWidth = isVerySmallZoom ? Math.max(chartWidth * 0.01, 40) : 20; // 1% of chart width or 40px minimum for very small zooms
-  
+  const minHitAreaWidth = isVerySmallZoom
+    ? Math.max(chartWidth * 0.01, 40)
+    : 20; // 1% of chart width or 40px minimum for very small zooms
+
   if (width < minHitAreaWidth) {
     const hitAreaWidth = minHitAreaWidth;
     let hitAreaX = x - (hitAreaWidth - width) / 2; // Center the hit area on the rectangle
-    
+
     // Constrain hit area to chart bounds
     hitAreaX = Math.max(0, Math.min(chartWidth - hitAreaWidth, hitAreaX));
-    
+
     const hitArea = svg
       .append("rect")
       .attr("class", "zoom-rect-hit-area")
@@ -409,14 +424,32 @@ export function drawZoomRectangle(
       .attr("y", 0)
       .attr("width", hitAreaWidth)
       .attr("height", height);
-      
+
     // Apply drag behavior to hit area for small rectangles
-    hitArea.call(createDragBehavior(xScale, totalTime, zoomWidth, onPositionChange, onDragStart, onDragEnd));
+    hitArea.call(
+      createDragBehavior(
+        xScale,
+        totalTime,
+        zoomWidth,
+        onPositionChange,
+        onDragStart,
+        onDragEnd,
+      ),
+    );
   }
-  
+
   // Apply drag behavior to the main rectangle
-  rect.call(createDragBehavior(xScale, totalTime, zoomWidth, onPositionChange, onDragStart, onDragEnd));
-  
+  rect.call(
+    createDragBehavior(
+      xScale,
+      totalTime,
+      zoomWidth,
+      onPositionChange,
+      onDragStart,
+      onDragEnd,
+    ),
+  );
+
   return rect;
 }
 
@@ -431,62 +464,72 @@ function createDragBehavior(
   onDragStart?: () => void,
   onDragEnd?: () => void,
 ) {
-  return d3.drag<SVGRectElement, unknown>()
-    .on("start", function() {
+  return d3
+    .drag<SVGRectElement, unknown>()
+    .on("start", function () {
       // Add dragging class for visual feedback
       const parentElement = this.parentNode as SVGGElement;
       if (parentElement) {
-        d3.select(parentElement).selectAll(".zoom-rect").classed("dragging", true);
+        d3.select(parentElement)
+          .selectAll(".zoom-rect")
+          .classed("dragging", true);
       }
       // Call external drag start callback
       if (onDragStart) {
         onDragStart();
       }
     })
-    .on("drag", function(event) {
+    .on("drag", function (event) {
       // Get the mouse position relative to the SVG container (not event.x)
       const svgNode = this.ownerSVGElement;
       if (!svgNode) return;
-      
+
       // Get the mouse coordinates relative to the SVG
       const svgPoint = d3.pointer(event, svgNode);
       let mouseX = svgPoint[0];
-      
+
       // Adjust for the chart margins - the main group has a transform applied
       // We need to subtract the left margin to get coordinates relative to the chart area
       const parentGroup = this.parentNode as SVGGElement;
       if (parentGroup) {
         // Get the transform of the parent group (should be translate(margin.left, margin.top))
-        const transform = parentGroup.getAttribute('transform');
+        const transform = parentGroup.getAttribute("transform");
         if (transform) {
-          const translateMatch = transform.match(/translate\(([^,]+),([^)]+)\)/);
+          const translateMatch = transform.match(
+            /translate\(([^,]+),([^)]+)\)/,
+          );
           if (translateMatch && translateMatch[1]) {
             const translateX = parseFloat(translateMatch[1]);
             mouseX = mouseX - translateX; // Adjust for margin.left
           }
         }
       }
-      
+
       // Convert back to time using the adjusted mouse position
       const timeAtMouse = xScale.invert(mouseX);
-      
+
       // Calculate the half-width in time units
       const halfWidth = (zoomWidth * totalTime) / 2;
-      
+
       // Constrain the center position so rectangle edges don't go beyond boundaries
-      const constrainedCenterTime = Math.max(halfWidth, Math.min(totalTime - halfWidth, timeAtMouse));
-      
+      const constrainedCenterTime = Math.max(
+        halfWidth,
+        Math.min(totalTime - halfWidth, timeAtMouse),
+      );
+
       // Convert to position percentage
       const newPosition = constrainedCenterTime / totalTime;
-      
+
       // Update the position
       onPositionChange(newPosition);
     })
-    .on("end", function() {
+    .on("end", function () {
       // Remove dragging class
       const parentElement = this.parentNode as SVGGElement;
       if (parentElement) {
-        d3.select(parentElement).selectAll(".zoom-rect").classed("dragging", false);
+        d3.select(parentElement)
+          .selectAll(".zoom-rect")
+          .classed("dragging", false);
       }
       // Call external drag end callback
       if (onDragEnd) {

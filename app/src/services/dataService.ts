@@ -6,9 +6,7 @@
  */
 
 import { openGroup, openArray, slice, HTTPStore } from "zarr";
-import {
-  actions
-} from "../stores";
+import { actions } from "../stores";
 
 /**
  * Reset all application state (replacement for old resetAppState)
@@ -23,7 +21,7 @@ function resetAppState(): void {
 export async function loadZarrData(url: string): Promise<void> {
   try {
     resetAppState();
-    
+
     actions.setLoading(true);
 
     // Create HTTP store for remote access
@@ -65,7 +63,7 @@ export async function loadZarrData(url: string): Promise<void> {
       rawStore: raw,
       overviewStore: overview,
       url: url,
-      isLoaded: true
+      isLoaded: true,
     });
 
     actions.setLoading(false);
@@ -117,6 +115,6 @@ export async function getRawDataSlice(
     finalData.set(sliced, finalDataOffset);
     finalDataOffset += sliced.length;
   }
-  
+
   return finalData;
 }

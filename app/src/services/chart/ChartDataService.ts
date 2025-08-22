@@ -24,14 +24,14 @@ export class ChartDataService {
   static calculateZoomDomain(
     totalTime: number,
     zoomLevel: number,
-    position: number
+    position: number,
   ): ZoomDomain {
     const halfWindow = zoomLevel / 2;
     const centerTime = position * totalTime;
-    
+
     let startTime = Math.max(0, centerTime - halfWindow);
     let endTime = Math.min(totalTime, centerTime + halfWindow);
-    
+
     // Handle boundary conditions to maintain zoom window size
     if (endTime - startTime < zoomLevel) {
       if (startTime === 0) {
@@ -40,7 +40,7 @@ export class ChartDataService {
         startTime = Math.max(0, totalTime - zoomLevel);
       }
     }
-    
+
     return { startTime, endTime };
   }
 
@@ -54,13 +54,11 @@ export class ChartDataService {
   static filterDataByTimeRange(
     data: OverviewDataPoint[] | undefined,
     startTime: number,
-    endTime: number
+    endTime: number,
   ): OverviewDataPoint[] {
     if (!data) return [];
-    
-    return data.filter(d => 
-      d.time_s >= startTime && d.time_s <= endTime
-    );
+
+    return data.filter((d) => d.time_s >= startTime && d.time_s <= endTime);
   }
 
   /**
@@ -71,9 +69,9 @@ export class ChartDataService {
    */
   static generateChartTitle(isZoomed: boolean, zoomLevel?: number): string {
     if (!isZoomed || zoomLevel === undefined) {
-      return 'Full Data View';
+      return "Full Data View";
     }
-    
+
     // Format zoom level appropriately
     if (zoomLevel >= 1) {
       return `Zoomed View (${zoomLevel.toFixed(1)} s span)`;
@@ -94,7 +92,7 @@ export class ChartDataService {
   static validateZoomParameters(
     zoomLevel: number | null,
     position: number,
-    totalTime: number
+    totalTime: number,
   ): boolean {
     if (zoomLevel === null) return true; // No zoom is valid
     if (zoomLevel <= 0 || zoomLevel > totalTime) return false;

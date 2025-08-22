@@ -61,7 +61,7 @@ config.push(
       ],
       "@typescript-eslint/no-explicit-any": "warn",
       // Relax camelcase for data properties from external APIs
-      "camelcase": ["error", { "properties": "never", "ignoreDestructuring": true }],
+      camelcase: ["error", { properties: "never", ignoreDestructuring: true }],
     },
   },
 
