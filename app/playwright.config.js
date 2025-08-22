@@ -40,10 +40,14 @@ export default defineConfig({
     },
   ],
   /**
-   * Web server configuration for local testing only
-   * In CI, the server is started manually for better control
+   * Web server configuration - automatically starts dev server for tests
    */
-  webServer: undefined, // Don't auto-start server, use existing one
+  webServer: {
+    command: "npm run dev",
+    url: "http://localhost:5173/",
+    reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000, // 2 minutes
+  },
   use: {
     baseURL: "http://localhost:5173/",
   },
