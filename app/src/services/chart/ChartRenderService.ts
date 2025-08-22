@@ -7,8 +7,8 @@ export interface OverviewRenderConfig {
   totalTime: number;
   globalYMin: number;
   globalYMax: number;
-  zoomLevel: number | null;
-  zoomPosition: number;
+  zoomLevel?: number | null;
+  zoomPosition?: number;
   onZoomPositionChange?: (position: number) => void;
 }
 
@@ -79,14 +79,15 @@ export class ChartRenderService {
     );
 
     // Add zoom rectangle if zoom is active
-    if (config.zoomLevel !== null && config.zoomLevel < config.totalTime) {
+    if (config.zoomLevel !== null && config.zoomLevel !== undefined && config.zoomLevel < config.totalTime) {
       const zoomWidth = config.zoomLevel / config.totalTime; // Convert to fraction
+      const zoomPosition = config.zoomPosition ?? 0.5; // Default to center if not provided
       
       drawZoomRectangle(
         this.svg,
         xScale,
         height,
-        config.zoomPosition,
+        zoomPosition,
         zoomWidth,
         config.totalTime,
         config.onZoomPositionChange || (() => {})

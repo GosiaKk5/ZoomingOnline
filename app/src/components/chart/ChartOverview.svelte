@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
+    import { onMount, createEventDispatcher } from 'svelte';
     import { ChartRenderService } from '../../services/chart/ChartRenderService';
     import type { OverviewDataPoint } from '../../services/chart/ChartDataService';
 
@@ -8,13 +8,20 @@
         data,
         totalTime,
         globalYMin,
-        globalYMax 
+        globalYMax,
+        zoomLevel = null,
+        zoomPosition = 0.5
     }: {
         data: OverviewDataPoint[];
         totalTime: number;
         globalYMin: number;
         globalYMax: number;
+        zoomLevel?: number | null;
+        zoomPosition?: number;
     } = $props();
+
+    // Event dispatcher for zoom position changes
+    const dispatch = createEventDispatcher();
 
     // Local state using Svelte 5 runes
     let containerRef = $state<HTMLDivElement | undefined>(undefined);
@@ -54,8 +61,15 @@
             data,
             totalTime,
             globalYMin,
-            globalYMax
+            globalYMax,
+            zoomLevel,
+            zoomPosition,
+            onZoomPositionChange: handleZoomPositionChange
         });
+    }
+
+    function handleZoomPositionChange(newPosition: number): void {
+        dispatch('zoomPositionChange', { position: newPosition });
     }
 </script>
 

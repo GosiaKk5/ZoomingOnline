@@ -2,8 +2,7 @@
     import { 
         appState,
         dataState,
-        uiState,
-        actions
+        uiState
     } from '../stores/appState';
     import { initializePlotData } from '../renderers/chartRenderer';
     import { ChartDataService } from '../services/chart/ChartDataService';
@@ -128,6 +127,11 @@
         console.log(`Zoom changed to level ${newLevel} at position ${position}`);
     }
 
+    function handleZoomPositionChange(event: CustomEvent<{ position: number }>): void {
+        zoomPosition = event.detail.position;
+        console.log(`Zoom position changed to ${zoomPosition} via draggable rectangle`);
+    }
+
     function handleZoomReset(): void {
         zoomLevel = null;
         zoomPosition = 0.5;
@@ -161,6 +165,9 @@
                             totalTime={plotData.total_time_s}
                             globalYMin={plotData.globalYMin ?? 0}
                             globalYMax={plotData.globalYMax ?? 1}
+                            {zoomLevel}
+                            {zoomPosition}
+                            on:zoomPositionChange={handleZoomPositionChange}
                         />
                         
                         <!-- Detail Chart -->

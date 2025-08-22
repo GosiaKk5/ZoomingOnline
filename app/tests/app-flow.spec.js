@@ -187,6 +187,52 @@ test.describe("ZoomingOnline App Flow", () => {
     await expect(chartContainer.first()).toBeVisible({ timeout: 5000 });
     console.log("✅ Chart rendered successfully");
 
+    // Step 14: Check if the correct default zoom level is selected
+    console.log("📍 Step 14: Checking default zoom level selection");
+    
+    // Wait for zoom controls to be visible
+    const zoomControls = page.locator('.zoom-controls');
+    await expect(zoomControls).toBeVisible({ timeout: 5000 });
+    
+    // Find the time span dropdown
+    const timeSpanSelect = page.locator('#zoomSelect');
+    await expect(timeSpanSelect).toBeVisible({ timeout: 5000 });
+    
+    // Get all available options to understand what's generated
+    const allOptions = await timeSpanSelect.locator('option').allTextContents();
+    console.log("🔍 Available zoom levels:", allOptions);
+    
+    // Get the selected value and text
+    const selectedValue = await timeSpanSelect.inputValue();
+    const selectedOptionText = await timeSpanSelect.locator('option:checked').textContent();
+    
+    console.log("🔍 Selected zoom level value:", selectedValue);
+    console.log("🔍 Selected zoom level text:", selectedOptionText);
+    
+    // Check if 1 µs is available and selected
+    const hasOneMicrosecond = allOptions.some(option => option.match(/1\s*(µs|μs|us|microsecond)/i));
+    
+    if (hasOneMicrosecond) {
+        // If 1µs is available, it should be selected
+        expect(selectedOptionText).toMatch(/1\s*(µs|μs|us|microsecond)/i);
+        console.log("✅ Correct default zoom level '1 microsecond' is selected");
+    } else {
+        // If 1µs is not available (due to data constraints), check that a reasonable default is selected
+        // It should not be the smallest or largest level
+        const selectedIndex = allOptions.indexOf(selectedOptionText);
+        expect(selectedIndex).toBeGreaterThan(0); // Not the first (smallest)
+        expect(selectedIndex).toBeLessThan(allOptions.length - 1); // Not the last (largest)
+        console.log("✅ Reasonable default zoom level selected (not smallest or largest):", selectedOptionText);
+    }
+    
+    // Step 15: Check if zoom rectangle is visible on the overview plot
+    console.log("📍 Step 15: Checking if zoom rectangle is displayed");
+    
+    // Look for zoom rectangle in the SVG
+    const zoomRect = page.locator('.zoom-rect, rect.zoom-rect');
+    await expect(zoomRect).toBeVisible({ timeout: 3000 });
+    console.log("✅ Zoom rectangle is visible on the overview plot");
+
     // Final verification
     console.log("🎉 Complete app flow test passed!");
   });
