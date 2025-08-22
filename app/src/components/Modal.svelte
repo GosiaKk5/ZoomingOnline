@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { onMount, onDestroy } from 'svelte';
     import { X } from 'lucide-svelte';
 
     interface Props {
@@ -28,21 +27,24 @@
         }
     }
 
-    // Document-level escape key handler
-    function handleDocumentKeydown(event: KeyboardEvent) {
-        if (event.key === 'Escape' && show) {
-            event.preventDefault();
-            event.stopPropagation();
-            handleClose();
+    // Document-level escape key handler using runes effect
+    $effect(() => {
+        function handleDocumentKeydown(event: KeyboardEvent) {
+            if (event.key === 'Escape' && show) {
+                event.preventDefault();
+                event.stopPropagation();
+                handleClose();
+            }
         }
-    }
 
-    onMount(() => {
-        document.addEventListener('keydown', handleDocumentKeydown);
-    });
-
-    onDestroy(() => {
-        document.removeEventListener('keydown', handleDocumentKeydown);
+        if (show) {
+            document.addEventListener('keydown', handleDocumentKeydown);
+            
+            // Cleanup function
+            return () => {
+                document.removeEventListener('keydown', handleDocumentKeydown);
+            };
+        }
     });
 </script>
 
@@ -58,9 +60,7 @@
             <div class="modal-header">
                 <h2 id="modal-title" class="modal-title">{title}</h2>
                 <button class="btn-close" onclick={handleClose} aria-label="Close modal">
-                    <div class="w-5 h-5">
-                        <MdClose />
-                    </div>
+                    <X class="w-5 h-5" />
                 </button>
             </div>
             <div class="modal-body">

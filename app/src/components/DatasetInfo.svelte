@@ -6,17 +6,17 @@
     
     // Helper function to safely format numbers
     function safeToLocaleString(value) {
-        return (value != null && !isNaN(value)) ? value.toLocaleString() : 'N/A';
+        return (value !== null && value !== undefined && !isNaN(value)) ? value.toLocaleString() : 'N/A';
     }
     
     // Helper function to safely format time
     function safeFormatTime(value) {
-        return (value != null && !isNaN(value)) ? formatTime(value) : 'N/A';
+        return (value !== null && value !== undefined && !isNaN(value)) ? formatTime(value) : 'N/A';
     }
     
     // Helper function to safely format file size
     function safeFormatFileSize(value) {
-        return (value != null && !isNaN(value)) ? formatFileSize(value) : 'N/A';
+        return (value !== null && value !== undefined && !isNaN(value)) ? formatFileSize(value) : 'N/A';
     }
 </script>
 

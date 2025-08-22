@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     import { 
         setError
     } from '../stores/index';
@@ -8,10 +8,14 @@
     import ErrorBoundary from '../components/ErrorBoundary.svelte';
     import '../app.css';
 
+    interface Props {
+        children?: import('svelte').Snippet;
+    }
+
     // Layout children prop for Svelte 5
-    let { children } = $props();
+    const { children }: Props = $props();
     
-    function handleLayoutError(error) {
+    function handleLayoutError(error: Error) {
         console.error('Layout error:', error);
         setError(error.message);
     }

@@ -12,7 +12,7 @@
         onback?: () => void;
     }
     
-    let { 
+    const { 
         isLoading = false,
         error = '',
         loadingMessage = 'Loading data...',

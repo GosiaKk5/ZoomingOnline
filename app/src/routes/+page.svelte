@@ -11,10 +11,15 @@
     import DataInput from '../components/DataInput.svelte';
     import LoadingState from '../components/LoadingState.svelte';
 
+    // Local component state using runes
     let inputUrl = $state('');
 
+    // Global store access using derived runes
+    const loading = $derived($isLoading);
+    const errorMessage = $derived($error);
+
     // Use example.zarr served from static/downloads directory - convert to full URL
-    let exampleUrl = $derived(() => {
+    const exampleUrl = $derived(() => {
         if (browser) {
             return new URL('/downloads/example.zarr', window.location.origin).toString();
         }
@@ -35,8 +40,9 @@
             // Navigate to selection
             goto(`${base}/selection`);
             
-        } catch (err: any) {
-            actions.setError(err.message);
+        } catch (err: unknown) {
+            const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+            actions.setError(errorMsg);
         } finally {
             actions.setLoading(false);
         }
@@ -53,15 +59,15 @@
 </svelte:head>
 
 <DataInput 
-    bind:inputUrl={inputUrl}
+    bind:inputUrl
     exampleUrl={exampleUrl()}
-    isLoading={$isLoading}
+    isLoading={loading}
     onload={handleLoadData}
 />
 
 <LoadingState 
-    isLoading={$isLoading}
-    error={$error ?? ''}
+    isLoading={loading}
+    error={errorMessage ?? ''}
     showRetryButton={false}
     onback={handleBack}
 />

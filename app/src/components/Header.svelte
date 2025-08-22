@@ -8,7 +8,8 @@
         
         <a 
             href="https://github.com/DataMedSci/ZoomingOnline" 
-            target="_blank" 
+            target="_blank"
+            rel="noopener noreferrer"
             class="flex items-center gap-2 no-underline text-gray-600 text-sm hover:text-gray-800 transition-colors"
         >
             <div class="w-5 h-5">

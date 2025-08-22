@@ -1,7 +1,18 @@
-<script>
-    import { createEventDispatcher } from 'svelte';
+<script lang="ts">
+    // Props using Svelte 5 runes
+    interface Props {
+        channels?: string[];
+        trcFiles?: string[];
+        segments?: string[];
+        selectedChannel?: string;
+        selectedTrc?: string;
+        selectedSegment?: string;
+        isDataReadyForPlot?: boolean;
+        onSelectionChange?: (field: string, value: string) => void;
+        onPlot?: () => void;
+        onLoadDifferent?: () => void;
+    }
     
-    // Use Svelte 5 runes mode for props
     const { 
         channels = [], 
         trcFiles = [], 
@@ -9,33 +20,36 @@
         selectedChannel = '', 
         selectedTrc = '', 
         selectedSegment = '', 
-        isDataReadyForPlot = false 
-    } = $props();
+        isDataReadyForPlot = false,
+        onSelectionChange,
+        onPlot,
+        onLoadDifferent
+    }: Props = $props();
     
-    // Event dispatcher for Svelte 5 compatibility
-    const dispatch = createEventDispatcher();
-    
-    // Handle selection changes
-    function handleChannelChange(event) {
-        dispatch('selectionChange', { field: 'channel', value: event.target.value });
+    // Handle selection changes using runes callback pattern
+    function handleChannelChange(event: Event) {
+        const target = event.target as HTMLSelectElement;
+        onSelectionChange?.('channel', target.value);
     }
     
-    function handleTrcChange(event) {
-        dispatch('selectionChange', { field: 'trc', value: event.target.value });
+    function handleTrcChange(event: Event) {
+        const target = event.target as HTMLSelectElement;
+        onSelectionChange?.('trc', target.value);
     }
     
-    function handleSegmentChange(event) {
-        dispatch('selectionChange', { field: 'segment', value: event.target.value });
+    function handleSegmentChange(event: Event) {
+        const target = event.target as HTMLSelectElement;
+        onSelectionChange?.('segment', target.value);
     }
     
     // Handle plot button click
     function handlePlotData() {
-        dispatch('plot');
+        onPlot?.();
     }
     
     // Handle load different dataset
     function handleLoadDifferent() {
-        dispatch('loadDifferent');
+        onLoadDifferent?.();
     }
 </script>
 

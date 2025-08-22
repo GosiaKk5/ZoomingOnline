@@ -22,7 +22,7 @@
     children?: any;
   }
   
-  let {
+  const {
     chartName = 'Chart',
     isLoading = false,
     hasDataError = false,

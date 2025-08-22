@@ -1,5 +1,4 @@
-<script>
-    import { onMount } from 'svelte';
+<script lang="ts">
     import { goto } from '$app/navigation';
     import { base } from '$app/paths';
     import { AlertCircle, CheckCircle } from 'lucide-svelte';
@@ -17,17 +16,41 @@
     import SelectionForm from '../../components/SelectionForm.svelte';
     import LoadingState from '../../components/LoadingState.svelte';
 
-    // Simple local state using Svelte 5 runes
+    // Local component state using Svelte 5 runes
     let hasInitialized = $state(false);
     let datasetInfo = $state(null);
 
-    // Reactive state using Svelte 5 derived runes
-    let state = $derived($appState);
-    let options = $derived($selectorOptions);
-    let dataReady = $derived($isDataReady);
-    let plotReady = $derived($isDataReadyForPlot);
-    let loading = $derived($uiState.isLoading);
-    let error = $derived($uiState.error);
+    // Global store access using derived runes
+    const state = $derived($appState);
+    const options = $derived($selectorOptions);
+    const dataReady = $derived($isDataReady);
+    const plotReady = $derived($isDataReadyForPlot);
+    const loading = $derived($uiState.isLoading);
+    const error = $derived($uiState.error);
+
+    // Selection values for the form (convert from indices) using derived runes
+    const selectedChannel = $derived(`${state.selection.channelIndex + 1}`);
+    const selectedTrc = $derived(`${state.selection.trcIndex + 1}`);
+    const selectedSegment = $derived(`${state.selection.segmentIndex + 1}`);
+
+    // Initialize and check data readiness using runes effect
+    $effect(() => {
+        if (!dataReady && hasInitialized) {
+            goto(`${base}/`);
+            return;
+        }
+        
+        if (dataReady && !hasInitialized) {
+            hasInitialized = true;
+        }
+    });
+
+    // Effect to calculate dataset info when data becomes available
+    $effect(() => {
+        if ($dataState.rawStore?.shape && $dataState.zarrGroup && !datasetInfo) {
+            calculateDatasetInfo();
+        }
+    });
 
     // Calculate dataset info when data is ready
     async function calculateDatasetInfo() {
@@ -86,21 +109,8 @@
         }
     }
 
-    // Effect to calculate dataset info when data becomes available
-    $effect(() => {
-        if ($dataState.rawStore?.shape && $dataState.zarrGroup && !datasetInfo) {
-            calculateDatasetInfo();
-        }
-    });
-
-    // Selection values for the form (convert from indices) using Svelte 5 runes
-    let selectedChannel = $derived(`${state.selection.channelIndex + 1}`);
-    let selectedTrc = $derived(`${state.selection.trcIndex + 1}`);
-    let selectedSegment = $derived(`${state.selection.segmentIndex + 1}`);
-
-    // Handle selection changes using Svelte 5 approach
-    async function handleSelectionChange(event) {
-        const { field, value } = event.detail;
+    // Handle selection changes using callback pattern instead of events
+    function handleSelectionChange(field: string, value: string) {
         const index = parseInt(value) - 1; // Convert to 0-based index
         
         switch (field) {
@@ -116,7 +126,7 @@
         }
     }
 
-    // Handle plot navigation using Svelte 5 approach
+    // Handle plot navigation
     async function handlePlot() {
         if (plotReady) {
             await goto(`${base}/visualization`);
@@ -125,21 +135,11 @@
         }
     }
 
-    // Handle loading different dataset using Svelte 5 approach
+    // Handle loading different dataset
     async function handleLoadDifferentDataset() {
         actions.resetData();
         await goto(`${base}/`);
     }
-
-    // Initialize on mount using Svelte 5 approach
-    onMount(() => {
-        if (!dataReady) {
-            goto(`${base}/`);
-            return;
-        }
-        
-        hasInitialized = true;
-    });
 </script>
 
 <svelte:head>
@@ -171,7 +171,7 @@
                 <h3 class="text-red-800 font-medium">Error Loading Dataset</h3>
             </div>
             <p class="text-red-700 mb-4">{error}</p>
-            <button class="btn-secondary btn-sm" onclick={handleLoadDifferent}>
+            <button class="btn-secondary btn-sm" onclick={handleLoadDifferentDataset}>
                 ← Try Different Dataset
             </button>
         </div>
@@ -196,9 +196,9 @@
                     {selectedTrc}
                     {selectedSegment}
                     isDataReadyForPlot={plotReady}
-                    on:selectionChange={handleSelectionChange}
-                    on:plot={handlePlot}
-                    on:loadDifferent={handleLoadDifferentDataset}
+                    onSelectionChange={handleSelectionChange}
+                    onPlot={handlePlot}
+                    onLoadDifferent={handleLoadDifferentDataset}
                 />
             </div>
 

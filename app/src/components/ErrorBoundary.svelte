@@ -5,7 +5,6 @@
   Follows modern error boundary patterns with customizable error handling.
 -->
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
   import { AlertCircle } from 'lucide-svelte';
   import type { StoreError } from '../types/stores';
   
@@ -24,7 +23,7 @@
     children?: any;
   }
   
-  let {
+  const {
     errorMessage,
     showDetails = false,
     onRetry,
@@ -33,12 +32,13 @@
     children
   }: Props = $props();
   
-  // Local error state
+  // Local error state using runes
   let hasError = $state(false);
   let error = $state<Error | null>(null);
   let errorDetails = $state<StoreError | null>(null);
   
-  onMount(() => {
+  // Global error handler using runes effect
+  $effect(() => {
     // Global error handler for unhandled promise rejections
     function handleUnhandledRejection(event: PromiseRejectionEvent) {
       console.error('Unhandled promise rejection:', event.reason);
@@ -48,6 +48,7 @@
     // Add global error listeners
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
     
+    // Cleanup function
     return () => {
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };

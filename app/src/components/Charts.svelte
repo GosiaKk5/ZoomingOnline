@@ -1,28 +1,26 @@
 <script lang="ts">
-    import { onMount, onDestroy } from 'svelte';
     import * as d3 from 'd3';
     import { 
         appState,
         dataState,
-        uiState,
-        actions
+        uiState
     } from '../stores/appState';
     import { initializePlotData, createChartSVG, drawAxes, drawGridLines, drawArea } from '../renderers/chartRenderer';
     import type { PlotDataResult } from '../renderers/chartRenderer';
 
-    // Component state
-    let chartContainer: HTMLDivElement;
+    // Component local state using runes
+    let chartContainer = $state<HTMLDivElement>();
     let isInitialized = $state(false);
     let chartError = $state<string | null>(null);
     let plotData = $state<PlotDataResult | null>(null);
 
-    // Reactive state
-    let state = $derived($appState);
-    let data = $derived($dataState);
-    let ui = $derived($uiState);
+    // Global store access using derived runes
+    const state = $derived($appState);
+    const data = $derived($dataState);
+    const ui = $derived($uiState);
 
     // Check if we have all required data for plotting
-    let canInitialize = $derived(
+    const canInitialize = $derived(
         data.rawStore && 
         data.zarrGroup && 
         data.overviewStore && 
@@ -32,11 +30,26 @@
         !isInitialized
     );
 
-    // Initialize chart when data is ready
+    // Initialize chart when data is ready - using runes effect
     $effect(() => {
         if (!canInitialize || !chartContainer) return;
-
         initializeChart();
+    });
+
+    // Handle window resize using runes effect with cleanup
+    $effect(() => {
+        function handleResize() {
+            if (isInitialized && plotData) {
+                renderChart();
+            }
+        }
+
+        window.addEventListener('resize', handleResize);
+        
+        // Cleanup function
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
     });
 
     async function initializeChart() {
@@ -113,21 +126,6 @@
             );
         }
     }
-
-    // Handle window resize
-    function handleResize() {
-        if (isInitialized && plotData) {
-            renderChart();
-        }
-    }
-
-    onMount(() => {
-        window.addEventListener('resize', handleResize);
-    });
-
-    onDestroy(() => {
-        window.removeEventListener('resize', handleResize);
-    });
 </script>
 
 <!-- Chart container -->

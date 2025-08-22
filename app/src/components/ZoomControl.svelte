@@ -22,7 +22,7 @@
     }: Props = $props();
 
     // Generate zoom levels based on current parameters
-    let zoomLevelsWithLabels = $derived(
+    const zoomLevelsWithLabels = $derived(
         timeBetweenPoints && segmentDuration 
             ? generateZoomLevelsWithLabels(timeBetweenPoints, segmentDuration) 
             : []
@@ -35,13 +35,13 @@
         }
     });
     
-    let currentLevelIndex = $derived(
+    const currentLevelIndex = $derived(
         selectedZoomLevel !== undefined 
             ? zoomLevelsWithLabels.findIndex(level => level.value === selectedZoomLevel)
             : -1
     );
-    let canZoomIn = $derived(currentLevelIndex > 0);
-    let canZoomOut = $derived(currentLevelIndex < zoomLevelsWithLabels.length - 1 && currentLevelIndex >= 0);
+    const canZoomIn = $derived(currentLevelIndex > 0);
+    const canZoomOut = $derived(currentLevelIndex < zoomLevelsWithLabels.length - 1 && currentLevelIndex >= 0);
 
     function handleZoomIn() {
         if (canZoomIn && currentLevelIndex > 0) {
