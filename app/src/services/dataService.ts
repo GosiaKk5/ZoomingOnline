@@ -55,7 +55,7 @@ export async function loadZarrData(url: string): Promise<void> {
           ),
         ),
       ]);
-    } catch (overviewError) {
+    } catch {
       overview = null;
     }
 

@@ -30,43 +30,15 @@ interface DataStore {
 export async function populateSelectors(
   store: DataStore | null,
 ): Promise<SelectorOptions> {
-  const DEBUG_UI = false;
-  if (DEBUG_UI) {
-    console.log("🎯 populateSelectors() called");
-    console.log("  - store parameter:", store);
-    console.log("  - store type:", typeof store);
-    console.log("  - store exists:", !!store);
-  }
-
   if (!store) {
-    if (DEBUG_UI) console.warn("⚠️ populateSelectors: No store provided");
     return { channels: [], trcFiles: [], segments: [] };
   }
 
   if (!store.shape) {
-    if (DEBUG_UI) {
-      console.warn("⚠️ populateSelectors: Store has no shape property");
-      console.log("  - Available store properties:", Object.keys(store));
-      // Use JSON.stringify to avoid console.log state proxy warning
-      console.log("  - Store structure:", JSON.stringify(store, null, 2));
-    }
     return { channels: [], trcFiles: [], segments: [] };
   }
 
-  if (DEBUG_UI) {
-    console.log("📐 Store shape analysis:");
-    console.log("  - store.shape:", store.shape);
-    console.log("  - shape type:", typeof store.shape);
-    console.log("  - shape length:", store.shape?.length);
-  }
-
   const [channelCount, trcCount, segmentCount] = store.shape;
-  if (DEBUG_UI) {
-    console.log("📊 Extracted dimensions:");
-    console.log("  - channelCount:", channelCount);
-    console.log("  - trcCount:", trcCount);
-    console.log("  - segmentCount:", segmentCount);
-  }
 
   // Validate dimensions
   if (
@@ -74,12 +46,10 @@ export async function populateSelectors(
     typeof trcCount !== "number" ||
     typeof segmentCount !== "number"
   ) {
-  if (DEBUG_UI) console.error("❌ Invalid dimensions from store shape");
     return { channels: [], trcFiles: [], segments: [] };
   }
 
   // Create arrays of options - using just numbers
-  if (DEBUG_UI) console.log("🔨 Creating selector arrays...");
   const channels = Array.from(
     { length: channelCount },
     (_, i): string => `${i + 1}`,
@@ -93,15 +63,7 @@ export async function populateSelectors(
     (_, i): string => `${i + 1}`,
   );
 
-  if (DEBUG_UI) {
-    console.log("✅ Generated selectors:");
-    console.log("  - channels:", channels);
-    console.log("  - trcFiles:", trcFiles);
-    console.log("  - segments:", segments);
-  }
-
   const result: SelectorOptions = { channels, trcFiles, segments };
-  if (DEBUG_UI) console.log("📤 Returning result:", result);
 
   return result;
 }

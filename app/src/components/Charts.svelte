@@ -22,7 +22,6 @@
     // Derived values using Svelte 5 $derived with proper typing
     const state = $derived($appState);
     const data = $derived($dataState);
-    const ui = $derived($uiState);
 
     const canInitialize = $derived<boolean>(
         data.rawStore !== null &&
