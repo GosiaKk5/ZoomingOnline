@@ -3,12 +3,12 @@
         appState,
         dataState,
         uiState
-    } from '../stores/appState';
-    import { initializePlotData } from '../renderers/chartRenderer';
-    import ChartOverview from './chart/ChartOverview.svelte';
-    import ChartLoadingStates from './chart/ChartLoadingStates.svelte';
+    } from '../../stores/appState';
+    import { initializePlotData } from '../../renderers/chartRenderer';
+    import ChartOverview from './ChartOverview.svelte';
+    import ChartLoadingStates from './ChartLoadingStates.svelte';
     import ChartZoomControls from './ChartZoomControls.svelte';
-    import type { PlotDataResult } from '../renderers/chartRenderer';
+    import type { PlotDataResult } from '../../renderers/chartRenderer';
 
     // Component state using Svelte 5 runes with proper TypeScript typing
     let plotData = $state<PlotDataResult | null>(null);

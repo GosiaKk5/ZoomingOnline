@@ -10,7 +10,7 @@
         isDataLoaded
     } from '../../stores/index';
     
-    import Charts from '../../components/Charts.svelte';
+    import Charts from '../../components/chart/Charts.svelte';
     import ShareButton from '../../components/ShareButton.svelte';
     import { onMount, onDestroy } from 'svelte';
 

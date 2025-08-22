@@ -1,6 +1,6 @@
 <script>
     import { createEventDispatcher } from 'svelte';
-    import { generateZoomLevelsWithLabels } from '../utils/zoomLevels';
+    import { generateZoomLevelsWithLabels } from '../../utils/zoomLevels';
     
     // Props using Svelte 5 runes syntax
     let { timeBetweenPoints, segmentDuration, totalSamples, currentZoomPosition = 0 } = $props();
