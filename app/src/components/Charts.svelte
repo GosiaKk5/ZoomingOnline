@@ -5,9 +5,7 @@
         uiState
     } from '../stores/appState';
     import { initializePlotData } from '../renderers/chartRenderer';
-    import { ChartDataService } from '../services/chart/ChartDataService';
     import ChartOverview from './chart/ChartOverview.svelte';
-    import ChartDetail from './chart/ChartDetail.svelte';
     import ChartLoadingStates from './chart/ChartLoadingStates.svelte';
     import ChartZoomControls from './ChartZoomControls.svelte';
     import type { PlotDataResult } from '../renderers/chartRenderer';
@@ -39,41 +37,6 @@
         !isInitialized &&
         !chartError
     );
-
-    const isZoomActive = $derived<boolean>(zoomLevel !== null && plotData !== null);
-    
-    const zoomDomain = $derived<{ startTime: number; endTime: number } | null>(() => {
-        if (!isZoomActive || !plotData) return null;
-        return ChartDataService.calculateZoomDomain(plotData.total_time_s, zoomLevel!, zoomPosition);
-    });
-    
-    const detailData = $derived(() => {
-        if (!plotData?.overviewData) return [];
-        const domain = zoomDomain();
-        if (!domain) return plotData.overviewData;
-        return ChartDataService.filterDataByTimeRange(
-            plotData.overviewData, 
-            domain.startTime, 
-            domain.endTime
-        );
-    });
-    
-    const chartTitle = $derived<string>(() => 
-        ChartDataService.generateChartTitle(isZoomActive, zoomLevel ?? undefined)
-    );
-    
-    const timeDomainForDetail = $derived<[number, number]>(() => {
-        const domain = zoomDomain();
-        if (domain) {
-            return [domain.startTime, domain.endTime];
-        }
-        return plotData ? [0, plotData.total_time_s] : [0, 1];
-    });
-    
-    const yDomainForCharts = $derived<[number, number]>(() => {
-        if (!plotData) return [0, 1];
-        return [plotData.globalYMin ?? 0, plotData.globalYMax ?? 1];
-    });
 
     // Initialize when ready using $effect
     $effect(() => {
@@ -169,14 +132,6 @@
                             {zoomPosition}
                             on:zoomPositionChange={handleZoomPositionChange}
                         />
-                        
-                        <!-- Detail Chart -->
-                        <ChartDetail
-                            data={detailData}
-                            timeDomain={timeDomainForDetail}
-                            yDomain={yDomainForCharts}
-                            title={chartTitle}
-                        />
                     {/if}
                 </div>
             </div>
@@ -200,7 +155,6 @@
 
 <style>
     .chart-area {
-        min-height: 600px;
         padding: 1rem;
         background-color: #f9fafb;
         border-radius: 0.5rem;

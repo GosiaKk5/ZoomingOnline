@@ -448,10 +448,26 @@ function createDragBehavior(
       const svgNode = this.ownerSVGElement;
       if (!svgNode) return;
       
+      // Get the mouse coordinates relative to the SVG
       const svgPoint = d3.pointer(event, svgNode);
-      const mouseX = svgPoint[0];
+      let mouseX = svgPoint[0];
       
-      // Convert back to time
+      // Adjust for the chart margins - the main group has a transform applied
+      // We need to subtract the left margin to get coordinates relative to the chart area
+      const parentGroup = this.parentNode as SVGGElement;
+      if (parentGroup) {
+        // Get the transform of the parent group (should be translate(margin.left, margin.top))
+        const transform = parentGroup.getAttribute('transform');
+        if (transform) {
+          const translateMatch = transform.match(/translate\(([^,]+),([^)]+)\)/);
+          if (translateMatch && translateMatch[1]) {
+            const translateX = parseFloat(translateMatch[1]);
+            mouseX = mouseX - translateX; // Adjust for margin.left
+          }
+        }
+      }
+      
+      // Convert back to time using the adjusted mouse position
       const timeAtMouse = xScale.invert(mouseX);
       
       // Calculate the half-width in time units

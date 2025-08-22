@@ -42,7 +42,7 @@ export class ChartRenderService {
 
     this.clearContainer();
 
-    const { width, height, margin } = this.getChartDimensions(150); // Overview height: 150px
+    const { width, height, margin } = this.getChartDimensions(); // Use container's actual height
     
     // Create SVG
     this.svg = createChartSVG(
@@ -176,11 +176,15 @@ export class ChartRenderService {
   /**
    * Get chart dimensions based on container size
    */
-  private getChartDimensions(targetHeight: number) {
+  private getChartDimensions(targetHeight?: number) {
     const margin = { top: 30, right: 30, bottom: 40, left: 60 };
     const containerRect = this.container.getBoundingClientRect();
     const width = Math.max(300, containerRect.width - margin.left - margin.right);
-    const height = targetHeight - margin.top - margin.bottom;
+    
+    // Use container's actual height if no targetHeight provided
+    const height = targetHeight 
+      ? targetHeight - margin.top - margin.bottom
+      : Math.max(200, containerRect.height - margin.top - margin.bottom);
     
     return { width, height, margin };
   }

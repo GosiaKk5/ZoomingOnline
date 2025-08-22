@@ -3,7 +3,7 @@
     import { generateZoomLevelsWithLabels } from '../utils/zoomLevels';
     
     // Props using Svelte 5 runes syntax
-    let { timeBetweenPoints = 1e-6, segmentDuration = 1, currentZoomPosition = 0.5 } = $props();
+    let { timeBetweenPoints, segmentDuration, currentZoomPosition = 0.5 } = $props();
 
     // Event dispatcher
     const dispatch = createEventDispatcher();
@@ -25,30 +25,17 @@
         if (zoomLevels.length > 0 && !defaultSet) {
             let defaultLevel;
             
-            // First, try to find "1 µs" (1e-6 seconds) as the preferred default
-            const preferredLevel = zoomLevels.find(level => {
-                const is1us = Math.abs(level.value - 1e-6) < 1e-9; // 1 microsecond
-                const labelMatch = level.label.includes('1 µs') || 
-                                  level.label.includes('1 μs') ||
-                                  level.label.includes('1 us');
-                return is1us || labelMatch;
-            });
+            // Select third item from the bottom (end) as the default
+            let defaultIndex;
             
-            if (preferredLevel) {
-                defaultLevel = preferredLevel;
+            if (zoomLevels.length <= 2) {
+                defaultIndex = 0;
             } else {
-                // Fallback to original logic if 1µs not available
-                let defaultIndex;
-                
-                if (zoomLevels.length <= 2) {
-                    defaultIndex = 0;
-                } else {
-                    // Select third item from the bottom
-                    defaultIndex = zoomLevels.length - 3;
-                }
-                
-                defaultLevel = zoomLevels[defaultIndex];
+                // Select third item from the bottom
+                defaultIndex = zoomLevels.length - 3;
             }
+            
+            defaultLevel = zoomLevels[defaultIndex];
             
             if (defaultLevel) {
                 selectedZoomLevel = defaultLevel.value;

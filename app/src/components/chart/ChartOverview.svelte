@@ -75,14 +75,15 @@
 
 <div 
     bind:this={containerRef} 
-    class="overview-chart h-40 mb-4 bg-gray-50 rounded border"
+    class="overview-chart flex-1 mb-4 bg-gray-50 rounded border"
     role="img"
     aria-label="Overview chart showing full data range with zoom controls"
 ></div>
 
 <style>
     .overview-chart {
-        min-height: 160px;
+        min-height: 300px;
+        height: 100%; /* Use full available height */
     }
     
     .overview-chart :global(.zoom-rect) {
