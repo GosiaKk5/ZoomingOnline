@@ -7,20 +7,21 @@
     import Header from '../components/Header.svelte';
     import ErrorBoundary from '../components/ErrorBoundary.svelte';
     import '../app.css';
+    import type { Snippet } from 'svelte';
 
-    interface Props {
-        children?: import('svelte').Snippet;
-    }
-
-    // Layout children prop for Svelte 5
-    const { children }: Props = $props();
+    // Children snippet for layout using Svelte 5 pattern
+    const { 
+        children 
+    }: {
+        children: Snippet;
+    } = $props();
     
-    function handleLayoutError(error: Error) {
+    function handleLayoutError(error: Error): void {
         console.error('Layout error:', error);
         setError(error.message);
     }
 
-    function handleRetryLayout() {
+    function handleRetryLayout(): void {
         setError(null);
     }
 </script>

@@ -1,7 +1,7 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
     import { base } from '$app/paths';
-    import { CircleAlert, CheckCircle } from 'lucide-svelte';
+    import { CircleAlert, CheckCircle } from '@lucide/svelte';
     import { 
         appState, 
         actions,
@@ -95,7 +95,7 @@
                 url: $dataState.url || 'Unknown'
             };
             
-            console.log('Dataset info calculated:', datasetInfo);
+            console.log('Dataset info calculated:', JSON.stringify(datasetInfo, null, 2));
         } catch (error) {
             console.error('Error calculating dataset info:', error);
             // Provide fallback info

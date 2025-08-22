@@ -21,8 +21,8 @@
     "test:unit": "vitest"
   },
   "dependencies": {
+    "@lucide/svelte": "^0.541.0",
     "d3": "^7.9.0",
-    "lucide-svelte": "^0.540.0",
     "mathjs": "^14.6.0",
     "zarr": "^0.6.3"
   },

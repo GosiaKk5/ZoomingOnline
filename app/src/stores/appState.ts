@@ -30,8 +30,9 @@ interface AppState {
   // Plot state - consolidated from plotConfig and zoomState
   plot: {
     config: PlotConfig | null;
-    zoomPosition: number;
-    zoomWidth: number | null;
+    zoomPosition: number; // 0-1 range representing position within the data
+    zoomWidth: number | null; // Width of zoom window as fraction of total data
+    zoomLevel: number | null; // Current zoom level (time span in seconds)
   };
   
   // UI state - consolidated from uiStore
@@ -62,6 +63,7 @@ const defaultState: AppState = {
     config: null,
     zoomPosition: 0,
     zoomWidth: null,
+    zoomLevel: null,
   },
   ui: {
     isLoading: false,
@@ -177,7 +179,8 @@ export const actions = {
       plot: { 
         ...state.plot,
         zoomPosition: 0,
-        zoomWidth: null
+        zoomWidth: null,
+        zoomLevel: null
       }
     }));
   },
@@ -235,4 +238,5 @@ export const showCopyLink = derived(uiState, $uiState => $uiState.showCopyLink);
 
 export const zoomPosition = derived(plotState, $plotState => $plotState.zoomPosition);
 export const zoomWidth = derived(plotState, $plotState => $plotState.zoomWidth);
+export const zoomLevel = derived(plotState, $plotState => $plotState.zoomLevel);
 export const plotConfig = derived(plotState, $plotState => $plotState.config);

@@ -1,5 +1,17 @@
 <script lang="ts">
-    interface Props {
+    // Props using Svelte 5 $props() with proper TypeScript typing
+    const { 
+        isLoading = false,
+        error = '',
+        loadingMessage = 'Loading data...',
+        errorTitle = 'Error Loading Data',
+        showRetryButton = true,
+        showBackButton = true,
+        retryText = 'Try Again',
+        backText = '← Back to Home',
+        onretry = () => {},
+        onback = () => {}
+    }: {
         isLoading?: boolean;
         error?: string;
         loadingMessage?: string;
@@ -10,26 +22,13 @@
         backText?: string;
         onretry?: () => void;
         onback?: () => void;
-    }
+    } = $props();
     
-    const { 
-        isLoading = false,
-        error = '',
-        loadingMessage = 'Loading data...',
-        errorTitle = 'Error Loading Data',
-        showRetryButton = true,
-        showBackButton = true,
-        retryText = 'Try Again',
-        backText = '← Back to Home',
-        onretry,
-        onback
-    }: Props = $props();
-    
-    function handleRetry() {
+    function handleRetry(): void {
         onretry?.();
     }
     
-    function handleBack() {
+    function handleBack(): void {
         onback?.();
     }
 </script>

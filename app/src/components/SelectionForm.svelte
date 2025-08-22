@@ -1,6 +1,17 @@
 <script lang="ts">
-    // Props using Svelte 5 runes
-    interface Props {
+    // Props using Svelte 5 $props() with proper TypeScript typing
+    const { 
+        channels = [],
+        trcFiles = [],
+        segments = [],
+        selectedChannel = '',
+        selectedTrc = '',
+        selectedSegment = '',
+        isDataReadyForPlot = false,
+        onSelectionChange = () => {},
+        onPlot = () => {},
+        onLoadDifferent = () => {}
+    }: {
         channels?: string[];
         trcFiles?: string[];
         segments?: string[];
@@ -11,44 +22,31 @@
         onSelectionChange?: (field: string, value: string) => void;
         onPlot?: () => void;
         onLoadDifferent?: () => void;
-    }
-    
-    const { 
-        channels = [], 
-        trcFiles = [], 
-        segments = [], 
-        selectedChannel = '', 
-        selectedTrc = '', 
-        selectedSegment = '', 
-        isDataReadyForPlot = false,
-        onSelectionChange,
-        onPlot,
-        onLoadDifferent
-    }: Props = $props();
+    } = $props();
     
     // Handle selection changes using runes callback pattern
-    function handleChannelChange(event: Event) {
+    function handleChannelChange(event: Event): void {
         const target = event.target as HTMLSelectElement;
         onSelectionChange?.('channel', target.value);
     }
     
-    function handleTrcChange(event: Event) {
+    function handleTrcChange(event: Event): void {
         const target = event.target as HTMLSelectElement;
         onSelectionChange?.('trc', target.value);
     }
     
-    function handleSegmentChange(event: Event) {
+    function handleSegmentChange(event: Event): void {
         const target = event.target as HTMLSelectElement;
         onSelectionChange?.('segment', target.value);
     }
     
     // Handle plot button click
-    function handlePlotData() {
+    function handlePlotData(): void {
         onPlot?.();
     }
     
     // Handle load different dataset
-    function handleLoadDifferent() {
+    function handleLoadDifferent(): void {
         onLoadDifferent?.();
     }
 </script>

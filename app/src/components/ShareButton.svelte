@@ -1,5 +1,5 @@
 <script>
-    import { Share2, Copy, Check } from 'lucide-svelte';
+    import { Share2, Copy, Check } from '@lucide/svelte';
     import { showCopyLink, dataUrl } from '../stores/index';
     import Modal from './Modal.svelte';
     

@@ -1,24 +1,23 @@
 <script lang="ts">
-    import { CloudDownload } from 'lucide-svelte';
+    import { CloudDownload } from '@lucide/svelte';
     
-    interface Props {
-        inputUrl?: string;
-        exampleUrl?: string;
-        isLoading?: boolean;
-        placeholder?: string;
-        onload?: (data: { url: string }) => void;
-    }
-    
+    // Props using Svelte 5 $props() with proper TypeScript typing
     let { 
         inputUrl = $bindable(''),
         exampleUrl = '',
         isLoading = false,
         placeholder = '',
-        onload
-    }: Props = $props();
+        onload = () => {}
+    }: {
+        inputUrl?: string;
+        exampleUrl?: string;
+        isLoading?: boolean;
+        placeholder?: string;
+        onload?: (data: { url: string }) => void;
+    } = $props();
     
     // Handle form submission
-    function handleLoadData() {
+    function handleLoadData(): void {
         if (!inputUrl.trim()) {
             return;
         }
@@ -26,14 +25,14 @@
     }
     
     // Handle Enter key in input field
-    function handleKeyPress(event: KeyboardEvent) {
+    function handleKeyPress(event: KeyboardEvent): void {
         if (event.key === 'Enter') {
             handleLoadData();
         }
     }
     
     // Copy example URL to input field (don't auto-load)
-    function loadExample() {
+    function loadExample(): void {
         inputUrl = exampleUrl;
     }
     

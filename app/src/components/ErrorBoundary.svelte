@@ -5,40 +5,35 @@
   Follows modern error boundary patterns with customizable error handling.
 -->
 <script lang="ts">
-  import { CircleAlert } from 'lucide-svelte';
+  import { onMount } from 'svelte';
+  import { CircleAlert } from '@lucide/svelte';
   import type { StoreError } from '../types/stores';
+  import type { Snippet } from 'svelte';
   
-  interface Props {
-    /** Optional custom error message */
-    errorMessage?: string;
-    /** Whether to show detailed error information (stack trace, etc.) */
-    showDetails?: boolean;
-    /** Custom retry handler - if not provided, page refresh will be used */
-    onRetry?: () => void;
-    /** Custom error reporting handler */
-    onError?: (error: Error) => void;
-    /** Context information for error reporting */
-    context?: string;
-    /** Child content to render */
-    children?: any;
-  }
-  
-  const {
-    errorMessage,
+  // Props using Svelte 5 $props() with proper TypeScript typing
+  const { 
+    errorMessage = '',
     showDetails = false,
-    onRetry,
-    onError,
+    onRetry = () => {},
+    onError = () => {},
     context = 'Component',
     children
-  }: Props = $props();
+  }: {
+    errorMessage?: string;
+    showDetails?: boolean;
+    onRetry?: () => void;
+    onError?: (error: Error) => void;
+    context?: string;
+    children: Snippet;
+  } = $props();
   
-  // Local error state using runes
+  // Local error state using Svelte 5 runes
   let hasError = $state(false);
   let error = $state<Error | null>(null);
   let errorDetails = $state<StoreError | null>(null);
   
-  // Global error handler using runes effect
-  $effect(() => {
+  // Global error handler setup
+  onMount(() => {
     // Global error handler for unhandled promise rejections
     function handleUnhandledRejection(event: PromiseRejectionEvent) {
       console.error('Unhandled promise rejection:', event.reason);
@@ -190,7 +185,7 @@
   </div>
 {:else}
   <!-- Render children normally -->
-  {@render children?.()}
+  {@render children()}
 {/if}
 
 <style>

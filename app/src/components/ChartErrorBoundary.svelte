@@ -5,33 +5,32 @@
   Provides chart-specific error recovery options.
 -->
 <script lang="ts">
-  import { CircleAlert, AlertTriangle } from 'lucide-svelte';
+  import { CircleAlert, AlertTriangle } from '@lucide/svelte';
 
-  interface Props {
-    /** Chart name for error context */
-    chartName?: string;
-    /** Data loading state */
-    isLoading?: boolean;
-    /** Data error state */
-    hasDataError?: boolean;
-    /** Custom retry handler for data loading */
-    onRetryData?: () => void;
-    /** Custom retry handler for chart rendering */
-    onRetryChart?: () => void;
-    /** Child content to render */
-    children?: any;
+  interface StoreError {
+    message: string;
+    code?: string;
   }
-  
-  const {
-    chartName = 'Chart',
+
+  // Props using Svelte 5 runes syntax
+  let {
+    chartName = '',
     isLoading = false,
     hasDataError = false,
     onRetryData,
     onRetryChart,
-    children
-  }: Props = $props();
+    children,
+    errorMessage = '',
+    showDetails = false,
+    onRetry = () => {},
+    onError = () => {},
+    context = 'Chart'
+  } = $props();
   
-  // Local error state for chart rendering
+  // Local error state using $state
+  let hasError = $state(false);
+  let error = $state<Error | null>(null);
+  let errorDetails = $state<StoreError | null>(null);
   let hasChartError = $state(false);
   let chartError = $state<string | null>(null);
   

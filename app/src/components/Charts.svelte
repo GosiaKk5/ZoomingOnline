@@ -1,63 +1,98 @@
 <script lang="ts">
-    import * as d3 from 'd3';
     import { 
         appState,
         dataState,
-        uiState
+        uiState,
+        actions
     } from '../stores/appState';
-    import { initializePlotData, createChartSVG, drawAxes, drawGridLines, drawArea } from '../renderers/chartRenderer';
+    import { initializePlotData } from '../renderers/chartRenderer';
+    import { ChartDataService } from '../services/chart/ChartDataService';
+    import ChartOverview from './chart/ChartOverview.svelte';
+    import ChartDetail from './chart/ChartDetail.svelte';
+    import ChartLoadingStates from './chart/ChartLoadingStates.svelte';
+    import ChartZoomControls from './ChartZoomControls.svelte';
     import type { PlotDataResult } from '../renderers/chartRenderer';
 
-    // Component local state using runes
-    let chartContainer = $state<HTMLDivElement>();
-    let isInitialized = $state(false);
-    let chartError = $state<string | null>(null);
+    // Component state using Svelte 5 runes with proper TypeScript typing
     let plotData = $state<PlotDataResult | null>(null);
+    let isInitialized = $state<boolean>(false);
+    let chartError = $state<string | null>(null);
 
-    // Global store access using derived runes
+    // Local zoom state - no global store needed!
+    let zoomLevel = $state<number | null>(null);
+    let zoomPosition = $state<number>(0.5);
+
+    // Derived values using Svelte 5 $derived with proper typing
     const state = $derived($appState);
     const data = $derived($dataState);
     const ui = $derived($uiState);
 
-    // Check if we have all required data for plotting
-    const canInitialize = $derived(
-        data.rawStore && 
-        data.zarrGroup && 
-        data.overviewStore && 
-        state.selection.channelIndex !== null && 
-        state.selection.trcIndex !== null && 
+    const canInitialize = $derived<boolean>(
+        data.rawStore !== null &&
+        data.zarrGroup !== null &&
+        data.overviewStore !== null &&
+        state.selection.channelIndex !== null &&
+        state.selection.trcIndex !== null &&
         state.selection.segmentIndex !== null &&
-        !isInitialized
+        typeof state.selection.channelIndex === 'number' &&
+        typeof state.selection.trcIndex === 'number' &&
+        typeof state.selection.segmentIndex === 'number' &&
+        !isInitialized &&
+        !chartError
     );
 
-    // Initialize chart when data is ready - using runes effect
-    $effect(() => {
-        if (!canInitialize || !chartContainer) return;
-        initializeChart();
+    const isZoomActive = $derived<boolean>(zoomLevel !== null && plotData !== null);
+    
+    const zoomDomain = $derived<{ startTime: number; endTime: number } | null>(() => {
+        if (!isZoomActive || !plotData) return null;
+        return ChartDataService.calculateZoomDomain(plotData.total_time_s, zoomLevel!, zoomPosition);
     });
-
-    // Handle window resize using runes effect with cleanup
-    $effect(() => {
-        function handleResize() {
-            if (isInitialized && plotData) {
-                renderChart();
-            }
+    
+    const detailData = $derived(() => {
+        if (!plotData?.overviewData) return [];
+        const domain = zoomDomain();
+        if (!domain) return plotData.overviewData;
+        return ChartDataService.filterDataByTimeRange(
+            plotData.overviewData, 
+            domain.startTime, 
+            domain.endTime
+        );
+    });
+    
+    const chartTitle = $derived<string>(() => 
+        ChartDataService.generateChartTitle(isZoomActive, zoomLevel ?? undefined)
+    );
+    
+    const timeDomainForDetail = $derived<[number, number]>(() => {
+        const domain = zoomDomain();
+        if (domain) {
+            return [domain.startTime, domain.endTime];
         }
-
-        window.addEventListener('resize', handleResize);
-        
-        // Cleanup function
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
+        return plotData ? [0, plotData.total_time_s] : [0, 1];
+    });
+    
+    const yDomainForCharts = $derived<[number, number]>(() => {
+        if (!plotData) return [0, 1];
+        return [plotData.globalYMin ?? 0, plotData.globalYMax ?? 1];
     });
 
-    async function initializeChart() {
+    // Initialize when ready using $effect
+    $effect(() => {
+        if (canInitialize) {
+            initializeChart();
+        }
+    });
+
+    // Functions with improved error handling and proper typing
+    async function initializeChart(): Promise<void> {
+        if (isInitialized) return;
+        
         try {
+            console.log('Initializing chart with current selection');
+            isInitialized = true;
             chartError = null;
             
-            // Get plot data from renderer
-            plotData = await initializePlotData(
+            const result = await initializePlotData(
                 data.rawStore,
                 data.zarrGroup,
                 data.overviewStore,
@@ -65,100 +100,102 @@
                 state.selection.trcIndex!,
                 state.selection.segmentIndex!
             );
-
-            // Create chart visualization
-            renderChart();
+            plotData = result;
             
-            isInitialized = true;
+            console.log('Chart initialized successfully', JSON.stringify({
+                horiz_interval: plotData.horiz_interval,
+                no_of_samples: plotData.no_of_samples,
+                total_time_s: plotData.total_time_s,
+                channel: plotData.channel,
+                trc: plotData.trc,
+                segment: plotData.segment,
+                globalYMin: plotData.globalYMin,
+                globalYMax: plotData.globalYMax,
+                overviewDataLength: plotData.overviewData?.length
+            }, null, 2));
         } catch (error) {
-            console.error('Error initializing chart:', error);
-            chartError = error instanceof Error ? error.message : 'Unknown error occurred';
+            console.error('Chart initialization failed:', error);
+            chartError = error instanceof Error ? error.message : 'Unknown initialization error';
+            isInitialized = false;
         }
     }
 
-    function renderChart() {
-        if (!plotData || !chartContainer) return;
+    // Optimized zoom handlers with proper TypeScript typing
+    function handleZoomLevelChange(event: CustomEvent<{ zoomLevel: number; position: number }>): void {
+        const { zoomLevel: newLevel, position } = event.detail;
+        zoomLevel = newLevel;
+        zoomPosition = position;
+        console.log(`Zoom changed to level ${newLevel} at position ${position}`);
+    }
 
-        // Clear existing content
-        chartContainer.innerHTML = '';
+    function handleZoomReset(): void {
+        zoomLevel = null;
+        zoomPosition = 0.5;
+        console.log('Zoom reset to overview');
+    }
 
-        // Chart dimensions
-        const margin = { top: 20, right: 30, bottom: 40, left: 60 };
-        const width = chartContainer.clientWidth - margin.left - margin.right;
-        const height = 400 - margin.top - margin.bottom;
-        const fullWidth = width + margin.left + margin.right;
-        const chartHeight = height + margin.top + margin.bottom;
-
-        // Create SVG
-        const svg = createChartSVG(
-            chartContainer, 
-            margin,
-            width,
-            height,
-            fullWidth,
-            chartHeight
-        );
-
-        // Create scales
-        const xScale = d3.scaleLinear()
-            .domain([0, plotData.total_time_s])
-            .range([0, width]);
-
-        const yScale = d3.scaleLinear()
-            .domain([plotData.globalYMin, plotData.globalYMax])
-            .range([height, 0]);
-
-        // Draw chart elements
-        drawAxes(svg, xScale, yScale, "Time (s)", height, margin, width);
-        drawGridLines(svg, xScale, yScale, width, height);
-
-        // Draw overview data if available
-        if (plotData.overviewData && plotData.overviewData.length > 0) {
-            drawArea(
-                svg,
-                plotData.overviewData,
-                xScale,
-                yScale,
-                (d) => d.time_s,
-                (d) => d.min_mv,
-                (d) => d.max_mv
-            );
-        }
+    function handleReloadData(): void {
+        console.log('Reloading chart data');
+        plotData = null;
+        isInitialized = false;
+        chartError = null;
     }
 </script>
 
 <!-- Chart container -->
-{#if ui.isLoading}
-    <div class="flex items-center justify-center py-8">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <span class="ml-4 text-gray-600">Loading chart data...</span>
-    </div>
-{:else if chartError}
-    <div class="bg-red-50 border border-red-200 rounded-lg p-4 my-4">
-        <p class="text-red-800 font-medium">Chart Error:</p>
-        <p class="text-red-600 text-sm mt-1">{chartError}</p>
-    </div>
-{:else if ui.error}
-    <div class="bg-red-50 border border-red-200 rounded-lg p-4 my-4">
-        <p class="text-red-800 font-medium">Data Error:</p>
-        <p class="text-red-600 text-sm mt-1">{ui.error}</p>
-    </div>
-{:else}
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
-        <div class="p-6">
-            <div 
-                bind:this={chartContainer}
-                class="w-full min-h-[400px] bg-gray-50 rounded border"
-            >
-                {#if !isInitialized}
-                    <div class="flex items-center justify-center h-full py-20">
-                        <div class="text-center">
-                            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                            <p class="text-gray-500">Initializing chart...</p>
-                        </div>
-                    </div>
-                {/if}
+<ChartLoadingStates isLoading={$uiState.isLoading} error={$uiState.error || chartError} />
+
+{#if !$uiState.isLoading && !$uiState.error && !chartError}
+    <div class="flex gap-6">
+        <!-- Chart Container -->
+        <div class="flex-1 bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Data Visualization</h3>
+                <div class="chart-area">
+                    {#if !isInitialized || !plotData}
+                        <ChartLoadingStates showInitializing={true} />
+                    {:else}
+                        <!-- Overview Chart -->
+                        <ChartOverview
+                            data={plotData.overviewData || []}
+                            totalTime={plotData.total_time_s}
+                            globalYMin={plotData.globalYMin ?? 0}
+                            globalYMax={plotData.globalYMax ?? 1}
+                        />
+                        
+                        <!-- Detail Chart -->
+                        <ChartDetail
+                            data={detailData}
+                            timeDomain={timeDomainForDetail}
+                            yDomain={yDomainForCharts}
+                            title={chartTitle}
+                        />
+                    {/if}
+                </div>
             </div>
         </div>
+        
+        <!-- Zoom Controls -->
+        {#if isInitialized && plotData}
+            <div class="flex-shrink-0">
+                <ChartZoomControls
+                    timeBetweenPoints={plotData.horiz_interval || 1e-6}
+                    segmentDuration={plotData.total_time_s}
+                    on:zoomLevelChange={handleZoomLevelChange}
+                    on:zoomReset={handleZoomReset}
+                    on:reloadData={handleReloadData}
+                />
+            </div>
+        {/if}
     </div>
 {/if}
+
+<style>
+    .chart-area {
+        min-height: 500px;
+        padding: 1rem;
+        background-color: #f9fafb;
+        border-radius: 0.5rem;
+        border: 1px solid #e5e7eb;
+    }
+</style>

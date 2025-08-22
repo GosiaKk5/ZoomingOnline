@@ -1,27 +1,31 @@
 <script lang="ts">
-    import { X } from 'lucide-svelte';
+    import { X } from '@lucide/svelte';
+    import type { Snippet } from 'svelte';
 
-    interface Props {
+    // Props using Svelte 5 $props() with proper TypeScript typing
+    const { 
+        show = false,
+        title = '',
+        onclose = () => {},
+        children
+    }: {
         show?: boolean;
         title?: string;
         onclose?: () => void;
-        children?: import('svelte').Snippet;
-    }
-
-    let { show = $bindable(false), title = '', onclose, children }: Props = $props();
+        children: Snippet;
+    } = $props();
     
-    function handleClose() {
-        show = false;
+    function handleClose(): void {
         onclose?.();
     }
     
-    function handleKeydown(event: KeyboardEvent) {
+    function handleKeydown(event: KeyboardEvent): void {
         if (event.key === 'Escape') {
             handleClose();
         }
     }
     
-    function handleBackdropClick(event: MouseEvent) {
+    function handleBackdropClick(event: MouseEvent): void {
         if (event.target === event.currentTarget) {
             handleClose();
         }
@@ -29,7 +33,7 @@
 
     // Document-level escape key handler using runes effect
     $effect(() => {
-        function handleDocumentKeydown(event: KeyboardEvent) {
+        function handleDocumentKeydown(event: KeyboardEvent): void {
             if (event.key === 'Escape' && show) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -64,7 +68,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                {@render children?.()}
+                {@render children()}
             </div>
         </div>
     </div>

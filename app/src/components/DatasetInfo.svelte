@@ -1,21 +1,25 @@
-<script>
+<script lang="ts">
     import { formatTime, formatFileSize } from '../utils/mathUtils.ts';
     
-    // Use Svelte 5 runes mode for props
-    const { datasetInfo } = $props();
+    // Props using Svelte 5 $props() with proper TypeScript typing
+    const { 
+        datasetInfo 
+    }: {
+        datasetInfo: any;
+    } = $props();
     
     // Helper function to safely format numbers
-    function safeToLocaleString(value) {
+    function safeToLocaleString(value: any): string {
         return (value !== null && value !== undefined && !isNaN(value)) ? value.toLocaleString() : 'N/A';
     }
     
     // Helper function to safely format time
-    function safeFormatTime(value) {
+    function safeFormatTime(value: any): string {
         return (value !== null && value !== undefined && !isNaN(value)) ? formatTime(value) : 'N/A';
     }
     
     // Helper function to safely format file size
-    function safeFormatFileSize(value) {
+    function safeFormatFileSize(value: any): string {
         return (value !== null && value !== undefined && !isNaN(value)) ? formatFileSize(value) : 'N/A';
     }
 </script>

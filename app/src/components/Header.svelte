@@ -1,5 +1,5 @@
-<script>
-    import { Bug } from 'lucide-svelte';
+<script lang="ts">
+    import { Bug } from '@lucide/svelte';
 </script>
 
 <header class="bg-white px-8 py-4 rounded-lg shadow-md mb-4 flex items-center justify-between">

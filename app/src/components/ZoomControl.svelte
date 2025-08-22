@@ -1,27 +1,26 @@
 <script lang="ts">
     import { generateZoomLevelsWithLabels } from '../utils/zoomLevels';
     import { ZoomService } from '../stores/index';
-    import { ZoomIn, ZoomOut } from 'lucide-svelte';
+    import { ZoomIn, ZoomOut } from '@lucide/svelte';
 
-    interface Props {
+    // Props using Svelte 5 runes syntax
+    let { 
+        timeBetweenPoints,
+        segmentDuration,
+        selectedZoomLevel = $bindable(),
+        onZoomIn = () => {},
+        onZoomOut = () => {},
+        onZoomLevelChange = () => {}
+    }: {
         timeBetweenPoints: number;
         segmentDuration: number;
         selectedZoomLevel?: number;
         onZoomIn?: (newLevel: number) => void;
         onZoomOut?: (newLevel: number) => void;
         onZoomLevelChange?: (newLevel: number) => void;
-    }
-    
-    let { 
-        timeBetweenPoints,
-        segmentDuration,
-        selectedZoomLevel = $bindable(undefined),
-        onZoomIn = () => {},
-        onZoomOut = () => {},
-        onZoomLevelChange = () => {}
-    }: Props = $props();
+    } = $props();
 
-    // Generate zoom levels based on current parameters
+    // Generate zoom levels with labels based on timing parameters
     const zoomLevelsWithLabels = $derived(
         timeBetweenPoints && segmentDuration 
             ? generateZoomLevelsWithLabels(timeBetweenPoints, segmentDuration) 
@@ -42,7 +41,7 @@
     );
     const canZoomIn = $derived(currentLevelIndex > 0);
     const canZoomOut = $derived(currentLevelIndex < zoomLevelsWithLabels.length - 1 && currentLevelIndex >= 0);
-
+    
     function handleZoomIn() {
         if (canZoomIn && currentLevelIndex > 0) {
             const newLevel = zoomLevelsWithLabels[currentLevelIndex - 1]!.value;
@@ -65,7 +64,6 @@
         selectedZoomLevel = newLevel;
         onZoomLevelChange(newLevel);
     }
-</script>
 
 <div class="zoom-control bg-white p-4 rounded-lg shadow-md">
     <div class="zoom-control-header mb-3">

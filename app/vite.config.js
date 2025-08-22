@@ -3,7 +3,20 @@ import { defineConfig } from "vite";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [sveltekit()],
+  plugins: [
+    sveltekit({
+      // Configure Svelte plugin options
+      vitePlugin: {
+        onwarn: (warning, handler) => {
+          // Skip warnings from lucide-svelte about $$props in runes mode
+          if (warning.code === 'legacy_props_invalid' && warning.filename?.includes('node_modules/lucide-svelte')) {
+            return;
+          }
+          handler(warning);
+        }
+      }
+    })
+  ],
   
   server: {
     port: 5173,

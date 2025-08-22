@@ -47,7 +47,8 @@ export async function populateSelectors(
     if (DEBUG_UI) {
       console.warn("⚠️ populateSelectors: Store has no shape property");
       console.log("  - Available store properties:", Object.keys(store));
-      console.log("  - Store structure:", store);
+      // Use JSON.stringify to avoid console.log state proxy warning
+      console.log("  - Store structure:", JSON.stringify(store, null, 2));
     }
     return { channels: [], trcFiles: [], segments: [] };
   }

@@ -48,6 +48,20 @@ export async function initializePlotData(
 ): Promise<PlotDataResult> {
 
   try {
+    // Validate inputs
+    if (!rawStore) {
+      throw new Error("rawStore is required but was null/undefined");
+    }
+    if (!zarrGroup) {
+      throw new Error("zarrGroup is required but was null/undefined");
+    }
+    if (!overviewStore) {
+      throw new Error("overviewStore is required but was null/undefined");
+    }
+    if (typeof channel !== 'number' || typeof trc !== 'number' || typeof segment !== 'number') {
+      throw new Error(`Invalid indices: channel=${channel}, trc=${trc}, segment=${segment}`);
+    }
+
     // Extract metadata from Zarr attributes
     console.log("📝 Extracting Zarr attributes...");
     const attrs = await zarrGroup.attrs.asObject();
